@@ -1,4 +1,6 @@
 #include "core.hpp"
+#include <comet/inet/epoller.hpp>
+#include <comet/core/global.hpp>
 
 namespace mamba{ namespace comet{
 
@@ -12,9 +14,14 @@ void core::reconfigure()
   
 }
 
-void core::run( int argc, char* argv[], std::weak_ptr<global> g )
+void core::run( int argc, char* argv[], std::weak_ptr<global> gl )
 {
-  _global = g;
+  _global = gl;
+  if (auto g = _global.lock() )
+  {
+    _mux = std::make_shared<inet::epoller>();
+    g->mux = _mux;
+  }
 }
 
 void core::stop( )
