@@ -1,7 +1,7 @@
 add_custom_target(
-  create_build_info
+  config_build_info
   COMMAND
-    /bin/bash ${CMAKE_SOURCE_DIR}/../comet/build_info.sh > ${CMAKE_CURRENT_SOURCE_DIR}/build_info.h
+    /bin/bash ${CMAKE_SOURCE_DIR}/comet/build_info.sh > ${CMAKE_CURRENT_SOURCE_DIR}/build_info.h
   COMMENT
     "Create build info files"
   VERBATIM
@@ -19,6 +19,7 @@ add_library(
   ${comet_config_source_list}
 )
 
-add_dependencies( comet_config
-  create_build_info
+add_dependencies(
+  comet_config
+  config_build_info
 )

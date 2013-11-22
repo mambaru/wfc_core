@@ -31,7 +31,7 @@ public:
   virtual void idle();
 private:
   std::shared_ptr<config> _config;
-  std::weak_ptr<global> _global;
+  std::shared_ptr<global> _global;
   config_config _config_config;
 };
 

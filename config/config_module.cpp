@@ -3,7 +3,7 @@
 #include "config_module.hpp"
 #include "config_config_json.hpp"
 #include <comet/core/global.hpp>
-
+#include <iostream>
 #include "build_info.h"
 
 namespace mamba{ namespace comet{
@@ -45,6 +45,7 @@ bool config_module::parse_config(const std::string& confstr)
   }
   catch(const json::json_error& e)
   {
+    std::cout << "error " << e.message(confstr.begin(), confstr.end()) << std::endl;
     // В лог ошибку
     return false;
   }
@@ -53,14 +54,14 @@ bool config_module::parse_config(const std::string& confstr)
 
 void config_module::create( std::weak_ptr<global> gl )
 {
-  _global = gl;
-  _config = std::make_shared<config>();
-  if ( auto g = _global.lock() )
-    g->config = _config;
+  _global = gl.lock();
+  _config = std::make_shared<config>(_global);
+  _global->config = _config;
 }
 
 void config_module::configure(const std::string& confstr)
 {
+  std::cout << "config_module::configure " << confstr << std::endl;
   config_config_json::serializer()(_config_config, confstr.begin(), confstr.end());
 }
 

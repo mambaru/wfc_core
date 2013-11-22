@@ -4,5 +4,5 @@ using namespace ::mamba::comet;
 
 int main()
 {
-  config c;
+  config c(nullptr);
 }
