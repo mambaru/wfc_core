@@ -32,6 +32,11 @@ void core::run( int argc, char* argv[], std::weak_ptr<global> gl )
 
   if ( !this->_startup(argc, argv) )
       return;
+
+  std::cout << "sunrise" << std::endl;
+
+  this->_sunrise();
+  
 }
 
 void core::stop( )
@@ -56,13 +61,20 @@ bool core::_startup(int argc, char** argv)
   }
 
   if (p.generate)
-    _generate(p.generate_name);
+    _generate(p.generate_name, p.config_path);
 
   if ( p.help || p.generate )
     return false;
 
   if ( p.daemonize )
     daemonize();
+
+  if ( auto c = _global->config.lock() )
+  {
+    if ( !c->parse_config(p.config_path) )
+      return false;
+  }
+
 
   if ( p.daemonize && p.autoup )
   {
@@ -83,7 +95,10 @@ bool core::_startup(int argc, char** argv)
   if ( p.coredump )
     dumpable();
 
-   return true;
+  if ( auto c = _global->config.lock() )
+    c->configure(p.config_path);
+
+  return true;
 }
 
 void core::_show_help()
@@ -106,7 +121,7 @@ void core::_show_module_help(const std::string& module_name)
     if ( auto m = _global->modules.find(module_name).lock() )
     {
       std::cout << "----------------------------------------------" << std::endl;
-      std::cout << module_name << ":" << std::endl;
+      std::cout << module_name << " module:" << std::endl;
       std::cout << m->version() << std::endl;
       std::cout << m->description() << std::endl;
     }
@@ -120,11 +135,11 @@ void core::_show_module_help(const std::string& module_name)
   }
 }
 
-void core::_generate( const std::string& generate_name )
+void core::_generate( const std::string& type, const std::string& path )
 {
   if ( auto c = _global->config.lock() )
   {
-    std::cout <<  c->generate(generate_name) << std::endl;
+    std::cout <<  c->generate(type, path) << std::endl;
     // For JSON format: cat aaa.conf | python -mjson.tool
   }
   else

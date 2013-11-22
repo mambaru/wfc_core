@@ -38,7 +38,7 @@ private:
 private:
   // return true if ready for running
   bool _startup( int argc, char** argv);
-  void _generate( const std::string& generate_name );
+  void _generate( const std::string& type, const std::string& path );
   //bool _poccess_po( detail::po* p);
   void _show_help();
   void _show_module_help(const std::string& module_name);

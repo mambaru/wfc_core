@@ -6,6 +6,7 @@
 
 #include "build_info.h"
 
+#include <iostream>
 namespace mamba{ namespace comet{
 
 imodule::priority core_module::startup_priority()  const
@@ -61,6 +62,8 @@ void core_module::create( std::weak_ptr<global> gl )
 
 void core_module::configure(const std::string& confstr)
 {
+  std::cout << "core_module::configure " << confstr << std::endl;
+  
   core_config_json::serializer()(_config, confstr.begin(), confstr.end());
 }
 

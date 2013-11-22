@@ -11,7 +11,7 @@ po po::parse(int argc, char** argv)
 
   po po_info;
   size_t size = vpo.size();
-  for (size_t i=0; i < size; )
+  for (size_t i=1; i < size; )
   {
     if ( vpo[i] == "--help" || vpo[i]=="-h")
     {
