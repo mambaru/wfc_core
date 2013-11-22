@@ -16,12 +16,12 @@ class core_module: public imodule
 public:
   /// imodule
 
-  virtual priority startup_priority();
-  virtual priority shutdown_priority();
+  virtual priority startup_priority() const;
+  virtual priority shutdown_priority() const;
 
   virtual std::string version() const;
   virtual std::string description() const;
-  virtual std::string generate(const std::string& type);
+  virtual std::string generate(const std::string& type) const;
   virtual bool parse_config(const std::string& conf);
   virtual void create( std::weak_ptr<global> g );
   virtual void configure(const std::string& conf);

@@ -1,16 +1,18 @@
 #pragma once
-
+#include <vector>
 #include <comet/core/icore.hpp>
+#include <comet/core/imodule.hpp>
 #include <comet/inet/imux.hpp>
 
 #include "core_config.hpp"
 namespace mamba{ namespace comet{
 
-namespace detail{ struct po; }
+//namespace detail{ struct po; }
 
 class core
   : public icore
 {
+  
 public:
   
   virtual ~core();
@@ -22,17 +24,28 @@ public:
 
   // core_module
   void configure(const core_config& conf);
+  
+private:
+  typedef std::pair<std::string, std::shared_ptr<imodule> > module_pair;
+  typedef std::vector<module_pair> module_vector;
+
+  void _sunrise();
+  void _configure( const module_vector& m );
+  void _initialize(const module_vector& m);
+  void _start(const module_vector& m);
+  void _stop(const module_vector& m);
+
 private:
   // return true if ready for running
-  bool _po( int argc, char* argv[]);
-  void _generate( detail::po* p);
-  bool _poccess_po( detail::po* p);
+  bool _startup( int argc, char** argv);
+  void _generate( const std::string& generate_name );
+  //bool _poccess_po( detail::po* p);
   void _show_help();
   void _show_module_help(const std::string& module_name);
   
 private:
   std::shared_ptr< inet::imux<> > _mux;
-  std::weak_ptr<global> _global;
+  std::shared_ptr<global> _global;
   core_config _conf;
 };
 

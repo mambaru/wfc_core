@@ -4,30 +4,31 @@
 #include "core_config_json.hpp"
 #include <comet/core/global.hpp>
 
+#include "build_info.h"
 
 namespace mamba{ namespace comet{
 
-imodule::priority core_module::startup_priority()
+imodule::priority core_module::startup_priority()  const
 {
   return imodule::priority::core;  
 }
 
-imodule::priority core_module::shutdown_priority()
+imodule::priority core_module::shutdown_priority() const
 {
   return imodule::priority::core;
 }
 
 std::string core_module::version() const
 {
-  
+  return std::string(build_info);
 }
 
 std::string core_module::description() const
 {
-  
+  return std::string("Модуль ядра");
 }
 
-std::string core_module::generate(const std::string& type)
+std::string core_module::generate(const std::string& type)  const
 {
   std::string result;  
   core_config conf;
