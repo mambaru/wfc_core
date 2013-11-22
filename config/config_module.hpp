@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include "core_config.hpp"
+#include "config.hpp"
 
 namespace mamba{ namespace comet{
 
