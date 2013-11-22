@@ -25,4 +25,31 @@ void config::configure(const config_config& conf)
 }
 
 
+// iconfig
+void config::reconfigure()
+{
+  
+}
+
+bool config::parse_config(const std::string& path)
+{
+  return false;
+}
+
+void config::configure(const std::string& path)
+{
+  
+}
+
+std::string config::get_config(const std::string& name)
+{
+  return std::string("{}");
+}
+
+std::string config::generate(const std::string& type)
+{
+  return std::string();
+}
+
+
 }}
