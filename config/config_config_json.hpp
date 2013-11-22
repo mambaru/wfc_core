@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core_config.hpp"
+#include "config_config.hpp"
 #include <comet/json/json.hpp>
 #include <comet/json/name.hpp>
 
@@ -13,7 +13,7 @@ struct config_config_json
   typedef json::object<
     config_config,
     type_list_n<
-       json::member<n_enabled, core_config, bool, &core_config::enabled>
+       json::member<n_enabled, config_config, bool, &config_config::enabled>
     >::type
   >::serializer serializer; 
 };

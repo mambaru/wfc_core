@@ -10,12 +10,12 @@ namespace mamba{ namespace comet{
 
 imodule::priority config_module::startup_priority()  const
 {
-  return imodule::priority::core;  
+  return imodule::priority::config;  
 }
 
 imodule::priority config_module::shutdown_priority() const
 {
-  return imodule::priority::core;
+  return imodule::priority::config;
 }
 
 std::string config_module::version() const
@@ -31,12 +31,12 @@ std::string config_module::description() const
 std::string config_module::generate(const std::string& type)  const
 {
   std::string result;  
-  core_config conf;
-  core_config_json::serializer()(conf, std::back_inserter(result));
+  config_config conf;
+  config_config_json::serializer()(conf, std::back_inserter(result));
   return result;
 }
 
-bool core_module::config_config(const std::string& confstr)
+bool config_module::parse_config(const std::string& confstr)
 {
   try
   {
@@ -59,27 +59,27 @@ void config_module::create( std::weak_ptr<global> gl )
     g->config = _config;
 }
 
-void core_module::configure(const std::string& confstr)
+void config_module::configure(const std::string& confstr)
 {
   config_config_json::serializer()(_config_config, confstr.begin(), confstr.end());
 }
 
-void core_module::initialize()
+void config_module::initialize()
 {
   
 }
 
-void core_module::start()
+void config_module::start()
 {
   
 }
 
-void core_module::stop()
+void config_module::stop()
 {
   
 }
 
-void core_module::idle()
+void config_module::idle()
 {
   
 }
