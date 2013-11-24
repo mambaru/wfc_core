@@ -71,10 +71,13 @@ std::string config::generate(const std::string& type, const std::string& path)
   std::string confstr;
   configuration mainconf;
 
-  _global->modules.for_each([&mainconf, &type](const std::string& name, std::weak_ptr<imodule> module){
-    if (auto m = module.lock() )
-      mainconf[name] = m->generate(type);
-  } );
+  if (auto gm = _global->modules.lock())
+  {
+    gm->for_each([&mainconf, &type](const std::string& name, std::weak_ptr<imodule> module){
+      if (auto m = module.lock() )
+        mainconf[name] = m->generate(type);
+    } );
+  }
   /*
   mainconf["a"]="1234";
   mainconf["b"]="234";
