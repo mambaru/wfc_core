@@ -116,22 +116,25 @@ void core::_show_help()
 
 void core::_show_module_help(const std::string& module_name)
 {
-  if (!module_name.empty())
+  if (auto gm = _global->modules.lock() )
   {
-    if ( auto m = _global->modules.find(module_name).lock() )
+    if (!module_name.empty())
     {
-      std::cout << "----------------------------------------------" << std::endl;
-      std::cout << module_name << " module:" << std::endl;
-      std::cout << m->version() << std::endl;
-      std::cout << m->description() << std::endl;
+      if ( auto m = gm->find(module_name).lock() )
+      {
+        std::cout << "----------------------------------------------" << std::endl;
+        std::cout << module_name << " module:" << std::endl;
+        std::cout << m->version() << std::endl;
+        std::cout << m->description() << std::endl;
+      }
     }
-  }
-  else
-  {
-    _global->modules.for_each([this](const std::string& name, std::weak_ptr<imodule> mod)
+    else
     {
-      this->_show_module_help(name);
-    });
+      gm->for_each([this](const std::string& name, std::weak_ptr<imodule> mod)
+      {
+        this->_show_module_help(name);
+      });
+    }
   }
 }
 
@@ -151,9 +154,12 @@ void core::_generate( const std::string& type, const std::string& path )
 void core::_sunrise()
 {
   module_vector modules;
-  _global->modules.for_each([&modules](const std::string& name, std::weak_ptr<imodule> m){
-    modules.push_back( module_pair( name, m.lock()) );
-  });
+  if (auto gm = _global->modules.lock() )
+  {
+    gm->for_each([&modules](const std::string& name, std::weak_ptr<imodule> m){
+      modules.push_back( module_pair( name, m.lock()) );
+    });
+  }
 
   std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
     return left.second->startup_priority() < right.second->startup_priority();
