@@ -23,7 +23,7 @@ imodule::priority logger_module::shutdown_priority() const
 
 std::string logger_module::version() const
 {
-  return std::string(build_info);
+  return std::string(logger_build_info);
 }
 
 std::string logger_module::description() const
