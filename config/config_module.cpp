@@ -20,7 +20,7 @@ imodule::priority config_module::shutdown_priority() const
 
 std::string config_module::version() const
 {
-  return std::string(build_info);
+  return std::string(config_build_info);
 }
 
 std::string config_module::description() const
