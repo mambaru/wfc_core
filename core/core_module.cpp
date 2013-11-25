@@ -21,7 +21,7 @@ imodule::priority core_module::shutdown_priority() const
 
 std::string core_module::version() const
 {
-  return std::string(build_info);
+  return std::string(core_build_info);
 }
 
 std::string core_module::description() const

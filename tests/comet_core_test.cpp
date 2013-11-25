@@ -5,7 +5,7 @@ using namespace ::mamba::comet;
 
 int main(int argc, char* argv[])
 {
-  comet({
+  comet("",  {
     {"core", std::make_shared<core_module>()}
   }).run(argc, argv);
 

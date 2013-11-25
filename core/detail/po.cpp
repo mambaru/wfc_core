@@ -9,17 +9,26 @@ po po::parse(int argc, char** argv)
 {
   std::vector<std::string> vpo( argv,  argv+argc);
 
+  if ( vpo.empty() )
+    return po();
+    
   po po_info;
   size_t size = vpo.size();
+  po_info.program_name = vpo[0];
+  po_info.usage = ( size == 1 );
   for (size_t i=1; i < size; )
   {
     if ( vpo[i] == "--help" || vpo[i]=="-h")
     {
       po_info.help = true;
+    }
+    else if ( vpo[i] == "--info" || vpo[i]=="-i")
+    {
+      po_info.info = true;
       if (i != size - 1 && vpo[i+1][0]!='-')
       {
         ++i;
-        po_info.module_help = vpo[i];
+        po_info.info_name = vpo[i];
       }
     }
     else if (vpo[i] == "--name" || vpo[i]=="-n")

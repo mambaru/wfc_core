@@ -40,8 +40,10 @@ private:
   bool _startup( int argc, char** argv);
   void _generate( const std::string& type, const std::string& path );
   //bool _poccess_po( detail::po* p);
+  void _show_usage();
   void _show_help();
-  void _show_module_help(const std::string& module_name);
+  void _show_info();
+  void _show_module_info(const std::string& module_name);
   
 private:
   std::shared_ptr< inet::imux<> > _mux;

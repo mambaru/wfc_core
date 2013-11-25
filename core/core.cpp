@@ -53,18 +53,27 @@ bool core::_startup(int argc, char** argv)
 {
   detail::po p = detail::po::parse(argc, argv);
 
+  _global->program_name = p.program_name;
+  
+  if (p.usage)
+    _show_usage();
+  
   if (p.help)
+    _show_help();
+
+  if (p.info)
   {
-    if ( p.module_help.empty() )
-      _show_help();
-    _show_module_help(p.module_help);
+    if ( p.info_name.empty() )
+      _show_info();
+    _show_module_info(p.info_name);
   }
 
   if (p.generate)
     _generate(p.generate_name, p.config_path);
 
-  if ( p.help || p.generate )
+  if ( p.usage || p.help || p.info || p.generate )
     return false;
+    
 
   if ( p.daemonize )
     daemonize();
@@ -101,20 +110,51 @@ bool core::_startup(int argc, char** argv)
   return true;
 }
 
+void core::_show_usage()
+{
+  std::cout <<  "Usage" << std::endl;
+  std::cout <<  "  " << _global->program_name << " -h" << std::endl;
+  std::cout <<  "  " << _global->program_name << " [-h] -i [<module name>]" << std::endl;
+  std::cout <<  "  " << _global->program_name << " -G [<generate name>] [-C <path>]" << std::endl;
+  std::cout <<  "  " << _global->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
+}
+
+
 void core::_show_help()
 {
-  
+  this->_show_usage();
+  std::cout <<  "Options" << std::endl;
   std::cout
-     << "  -h [ --help ] arg         produce help message                    " << std::endl
+     << "  -h [ --help ]             produce help message                    " << std::endl
+     << "  -i [ --info ] arg         produce help message                    " << std::endl
      << "  -n [ --name ] arg         unique daemon instance name             " << std::endl
      << "  -d [ --daemonize ]                                                " << std::endl
      << "  -c [ --coredump ]                                                 " << std::endl
      << "  -a [ --autoup ] arg                                               " << std::endl
      << "  -C [ --config-path ] arg  path to the configuration file          " << std::endl
      << "  -G [ --generate ] arg     generate of configuration type          " << std::endl;
+  std::cout<< std::endl;
+  
+  if ( auto m = _global->modules.lock())
+  {
+    std::cout << "modules:" << std::endl;
+    m->for_each([](const std::string& name, std::weak_ptr<imodule> m){
+      std::cout << "  " << name <<  std::endl;
+    });
+  }
 }
 
-void core::_show_module_help(const std::string& module_name)
+void core::_show_info()
+{
+  std::cout << _global->program_name << " version:" << std::endl;
+  std::cout << _global->program_version << std::endl;
+  std::cout << "----------------------------------------------" << std::endl;
+  std::cout << "comet version:" << std::endl;
+  std::cout << _global->comet_version << std::endl;
+}
+
+
+void core::_show_module_info(const std::string& module_name)
 {
   if (auto gm = _global->modules.lock() )
   {
@@ -123,7 +163,7 @@ void core::_show_module_help(const std::string& module_name)
       if ( auto m = gm->find(module_name).lock() )
       {
         std::cout << "----------------------------------------------" << std::endl;
-        std::cout << module_name << " module:" << std::endl;
+        std::cout << module_name << " module version:" << std::endl;
         std::cout << m->version() << std::endl;
         std::cout << m->description() << std::endl;
       }
@@ -132,7 +172,7 @@ void core::_show_module_help(const std::string& module_name)
     {
       gm->for_each([this](const std::string& name, std::weak_ptr<imodule> mod)
       {
-        this->_show_module_help(name);
+        this->_show_module_info(name);
       });
     }
   }
