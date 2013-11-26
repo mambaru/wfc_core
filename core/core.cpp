@@ -5,6 +5,7 @@
 #include <comet/core/imodule.hpp>
 #include <comet/core/iconfig.hpp>
 #include <comet/system/system.hpp>
+#include <comet/logger.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -13,6 +14,19 @@
 #include <syslog.h>
 
 namespace mamba{ namespace comet{
+
+namespace {
+
+static void signal_sigint_handler(int)
+{
+  if ( auto g = global::static_global.lock() )
+    if ( auto c = g->core.lock() )
+      c->stop();
+  exit(0);
+}
+
+} // namespace
+
 
 core::~core()
 {
@@ -26,89 +40,208 @@ void core::reconfigure()
 
 void core::run( int argc, char* argv[], std::weak_ptr<global> gl )
 {
-  _global = gl.lock();
-  _mux = std::make_shared<inet::epoller>();
-  _global->mux = _mux;
+  this->_global = gl.lock();
+  this->_mux = std::make_shared<inet::epoller>();
+  this->_global->mux = this->_mux;
 
   if ( !this->_startup(argc, argv) )
       return;
 
-  std::cout << "sunrise" << std::endl;
+  CONFIG_LOG_MESSAGE("core::run: sunrise!")
 
   this->_sunrise();
-  
+
+  DAEMON_LOG_MESSAGE("***************************************")
+  DAEMON_LOG_MESSAGE("************* started *****************")
+  DAEMON_LOG_MESSAGE("instance name: " << this->_global->instance_name << std::endl)
+  this->_main_loop();
 }
 
 void core::stop( )
 {
-  
+  DAEMON_LOG_BEGIN("stop '" << this->_global->instance_name << "'...")
+  module_vector modules;
+  this->_prepare(modules);
+  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
+    return left.second->shutdown_priority() < right.second->shutdown_priority();
+  } );
+
+  this->_stop(modules);
+  DAEMON_LOG_END("stop '" << this->_global->instance_name << "'...")
+  DAEMON_LOG_MESSAGE("---------------------------------------")
 }
 
 void core::configure(const core_config& conf)
 {
-  _conf = conf;
+  CONFIG_LOG_MESSAGE("core module configured")
+  this->_conf = conf;
+}
+
+void core::_main_loop()
+{
+  for(;;)
+    this->_mux->select(_conf.wait_timeout_ms);
+    
 }
 
 bool core::_startup(int argc, char** argv)
 {
   detail::po p = detail::po::parse(argc, argv);
 
-  _global->program_name = p.program_name;
+  this->_global->program_name = p.program_name;
+  this->_global->instance_name = p.instance_name.empty()
+                                 ? p.instance_name
+                                 : p.program_name;
   
   if (p.usage)
-    _show_usage();
+    this->_show_usage();
   
   if (p.help)
-    _show_help();
+    this->_show_help();
 
   if (p.info)
   {
     if ( p.info_name.empty() )
-      _show_info();
-    _show_module_info(p.info_name);
+      this->_show_info();
+    this->_show_module_info(p.info_name);
   }
 
   if (p.generate)
-    _generate(p.generate_name, p.config_path);
+    this->_generate(p.generate_name, p.config_path);
 
   if ( p.usage || p.help || p.info || p.generate )
     return false;
-    
+
+  if ( auto c = this->_global->config.lock() )
+    c->initialize(p.config_path);
 
   if ( p.daemonize )
-    daemonize();
+    ::mamba::comet::daemonize();
 
-  if ( auto c = _global->config.lock() )
+  /*if ( auto c = this->_global->config.lock() )
   {
     if ( !c->parse_config(p.config_path) )
       return false;
-  }
-
+  }*/
 
   if ( p.daemonize && p.autoup )
   {
-    autoup(p.autoup_timeout, [p](bool restart, int status)
+    ::mamba::comet::autoup(p.autoup_timeout, [p](bool restart, int status)
     {
-      openlog( (p.instance_name+"(comet_core)").c_str(), 0, LOG_USER);
+      ::openlog( (p.instance_name+"(comet_core)").c_str(), 0, LOG_USER);
       std::stringstream ss;
       ss << "Daemon stop with status: " << status << ". ";
       if ( restart )
         ss << "Restarting...";
       else
         ss << "Do not restarted.";
-      syslog(LOG_ERR, ss.str().c_str());
-      closelog();
+      ::syslog(LOG_ERR, ss.str().c_str());
+      ::closelog();
     });
   }
 
   if ( p.coredump )
-    dumpable();
+    ::mamba::comet::dumpable();
 
-  if ( auto c = _global->config.lock() )
-    c->configure(p.config_path);
-
+  signal(SIGPIPE,  SIG_IGN);
+  signal(SIGPOLL,  SIG_IGN);
+  signal(SIGINT,   signal_sigint_handler);
+  signal(SIGTERM,  signal_sigint_handler);
+  
   return true;
 }
+
+///
+/// sunrise
+///
+
+void core::_prepare(module_vector& mv)
+{
+  if (auto gm = this->_global->modules.lock() )
+  {
+    gm->for_each([&mv](const std::string& name, std::weak_ptr<imodule> m){
+      mv.push_back( module_pair( name, m.lock()) );
+    });
+  }
+}
+
+void core::_sunrise()
+{
+  module_vector modules;
+  this->_prepare(modules);
+  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
+    return left.second->startup_priority() < right.second->startup_priority();
+  } );
+
+  CONFIG_LOG_MESSAGE("----------- configuration -------------")
+  this->_configure(modules);
+  
+  CONFIG_LOG_MESSAGE("----------- initialization ------------")
+  this->_initialize(modules);
+  
+  CONFIG_LOG_MESSAGE("-------------- starting ---------------")
+  this->_start(modules);
+}
+
+void core::_configure(const module_vector& modules)
+{
+  auto config = this->_global->config.lock();
+  if ( config )
+  {
+    std::for_each(modules.begin(), modules.end(), [config](const module_pair& m)
+    {
+      std::string confstr = config->get_config(m.first);
+      if ( !confstr.empty() )
+      {
+        CONFIG_LOG_BEGIN("core::configure: module '" << m.first << "'...")
+        m.second->configure(confstr);
+        CONFIG_LOG_END("core::configure: module '" << m.first << "'...Done!")
+      }
+      else
+      {
+        CONFIG_LOG_ERROR("core::configure: configuration for '" << m.first << "' not found!")
+      }
+    });
+  }
+  else
+  {
+    DAEMON_LOG_WARNING("Configure module is not set")
+  }
+}
+
+void core::_initialize(const module_vector& modules)
+{
+  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
+  {
+    CONFIG_LOG_BEGIN("core::initialize: module '" << m.first << "'...")
+    m.second->initialize();
+    CONFIG_LOG_END("core::initialize: module '" << m.first << "'...Done!")
+  });
+}
+
+void core::_start(const module_vector& modules)
+{
+  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
+  {
+    CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
+    m.second->start();
+    CONFIG_LOG_END("core::start: module '" << m.first << "'...Done!")
+  });
+}
+
+void core::_stop(const module_vector& modules)
+{
+  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
+  {
+    CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
+    m.second->stop();
+    CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
+  });
+}
+
+///
+/// help
+///
 
 void core::_show_usage()
 {
@@ -126,15 +259,15 @@ void core::_show_help()
   std::cout <<  "Options" << std::endl;
   std::cout
      << "  -h [ --help ]             produce help message                    " << std::endl
-     << "  -i [ --info ] arg         produce help message                    " << std::endl
+     << "  -i [ --info ] [arg]       show modules info                       " << std::endl
      << "  -n [ --name ] arg         unique daemon instance name             " << std::endl
-     << "  -d [ --daemonize ]                                                " << std::endl
-     << "  -c [ --coredump ]                                                 " << std::endl
-     << "  -a [ --autoup ] arg                                               " << std::endl
+     << "  -d [ --daemonize ]        run as daemon                           " << std::endl
+     << "  -c [ --coredump ]         allow core dump                         " << std::endl
+     << "  -a [ --autoup ] [arg]     auto restart daemon                     " << std::endl
      << "  -C [ --config-path ] arg  path to the configuration file          " << std::endl
-     << "  -G [ --generate ] arg     generate of configuration type          " << std::endl;
+     << "  -G [ --generate ] [arg]   generate configuration                  " << std::endl;
   std::cout<< std::endl;
-  
+
   if ( auto m = _global->modules.lock())
   {
     std::cout << "modules:" << std::endl;
@@ -152,7 +285,6 @@ void core::_show_info()
   std::cout << "comet version:" << std::endl;
   std::cout << _global->comet_version << std::endl;
 }
-
 
 void core::_show_module_info(const std::string& module_name)
 {
@@ -178,73 +310,20 @@ void core::_show_module_info(const std::string& module_name)
   }
 }
 
+///
+/// generate
+///
+
 void core::_generate( const std::string& type, const std::string& path )
 {
   if ( auto c = _global->config.lock() )
   {
-    std::cout <<  c->generate(type, path) << std::endl;
-    // For JSON format: cat aaa.conf | python -mjson.tool
+    c->generate(type, path);
   }
   else
   {
-    std::cout << "Config module not set" << std::endl;
+    std::cerr << "Config module not set" << std::endl;
   }
 }
-
-void core::_sunrise()
-{
-  module_vector modules;
-  if (auto gm = _global->modules.lock() )
-  {
-    gm->for_each([&modules](const std::string& name, std::weak_ptr<imodule> m){
-      modules.push_back( module_pair( name, m.lock()) );
-    });
-  }
-
-  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
-    return left.second->startup_priority() < right.second->startup_priority();
-  } );
-
-  _configure(modules);
-  _initialize(modules);
-  _start(modules);
-  
-}
-
-void core::_configure(const module_vector& modules)
-{
-  std::for_each(modules.begin(), modules.end(),
-    [config=_global->config.lock()](const module_pair& m)
-  {
-    if ( config )
-      m.second->configure(config->get_config(m.first));
-  });
-}
-
-void core::_initialize(const module_vector& modules)
-{
-  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
-  {
-    m.second->initialize();
-  });
-}
-
-void core::_start(const module_vector& modules)
-{
-  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
-  {
-    m.second->start();
-  });
-}
-
-void core::_stop(const module_vector& modules)
-{
-  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
-  {
-    m.second->stop();
-  });
-  
-}
-
 
 }}

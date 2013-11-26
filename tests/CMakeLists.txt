@@ -13,6 +13,7 @@ add_executable(comet_core_test comet_core_test.cpp )
 
 #message(STATUS ${COMET} )
 
+target_link_libraries(core_test comet )
 target_link_libraries(comet_core_test comet )
 target_link_libraries(comet_core_test comet_core )
 

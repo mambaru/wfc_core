@@ -29,11 +29,14 @@ private:
   typedef std::pair<std::string, std::shared_ptr<imodule> > module_pair;
   typedef std::vector<module_pair> module_vector;
 
+  void _prepare(module_vector& mv);
+  
   void _sunrise();
   void _configure( const module_vector& m );
   void _initialize(const module_vector& m);
   void _start(const module_vector& m);
   void _stop(const module_vector& m);
+  void _main_loop();
 
 private:
   // return true if ready for running

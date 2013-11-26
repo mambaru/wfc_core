@@ -4,6 +4,7 @@ include(BuildInfo)
 SET(
   comet_core_source_list
   detail/po.cpp  
+  
   core_module.cpp
   core.cpp
 )

@@ -39,32 +39,24 @@ std::string core_module::generate(const std::string& type)  const
 
 bool core_module::parse_config(const std::string& confstr)
 {
-  try
-  {
-    core_config conf;
-    core_config_json::serializer()(conf, confstr.begin(), confstr.end());
-  }
-  catch(const json::json_error& e)
-  {
-    // В лог ошибку
-    return false;
-  }
+  core_config conf;
+  core_config_json::serializer()(conf, confstr.begin(), confstr.end());
   return true;
 }
 
 void core_module::create( std::weak_ptr<global> gl )
 {
-  _global = gl;
+  _global = gl; // TODO: _global не нужен
   _core = std::make_shared<core>();
   if ( auto g = _global.lock() )
     g->core = _core;
+  global::static_global = gl;
 }
 
 void core_module::configure(const std::string& confstr)
 {
-  std::cout << "core_module::configure " << confstr << std::endl;
-  
   core_config_json::serializer()(_config, confstr.begin(), confstr.end());
+  _core->configure(_config);
 }
 
 void core_module::initialize()
