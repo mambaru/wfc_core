@@ -33,8 +33,14 @@ std::string logger_module::description() const
 
 std::string logger_module::generate(const std::string& type)  const
 {
-  std::string result;  
   logger_config conf;
+  conf.config = log_writer_config("./default.config.log");
+  conf.daemon = log_writer_config("./default.daemon.log");
+  conf.common = log_writer_config("./default.common.log");
+  conf.debug = log_writer_config("./default.debug.log");
+  conf.trace = log_writer_config("./default.trace.log");
+
+  std::string result;  
   logger_config_json::serializer()(conf, std::back_inserter(result));
   return result;
 }
@@ -60,7 +66,7 @@ void logger_module::create( std::weak_ptr<global> gl )
   _global = gl.lock();
   _logger = std::make_shared<logger>(_global);
   _global->logger = _logger;
-  global::global_logger = _logger;
+  _logger->configure( logger_config() );
 }
 
 void logger_module::configure(const std::string& confstr)

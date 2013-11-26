@@ -30,11 +30,6 @@ struct logger_config
   
   logger_config()
     : enabled(true)
-    , config("./default.config.log")
-    , daemon("./default.daemon.log")
-    , common("./default.common.log")
-    , debug("./default.debug.log")
-    , trace("./default.trace.log")
   {}
 };
 

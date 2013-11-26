@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <mutex>
-#include <comet/core/ilogger.hpp>
+#include <comet/logger/ilogger.hpp>
 #include <comet/core/imodule.hpp>
 #include <comet/inet/imux.hpp>
 

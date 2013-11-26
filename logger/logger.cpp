@@ -3,7 +3,7 @@
 #include <comet/inet/epoller.hpp>
 #include <comet/core/global.hpp>
 #include <comet/core/imodule.hpp>
-#include <comet/core/ilogger.hpp>
+#include <comet/logger/ilogger.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -30,8 +30,6 @@ public:
 
   void write(const std::string& name, const std::string& ident,  const std::string& str)
   {
-    std::cout << "void log_writer::write(const std::string& name, const std::string& ident,  const std::string& str)" << std::endl;
-    
     if (!_config.enabled)
       return;
 
@@ -64,9 +62,9 @@ private:
   {
     // begin_proccess
     this->_prepare(name, 6);
-    this->_prepare(ident, 14);
+    this->_prepare(ident, 9);
     
-    os << this->_mkdate() << " " << name      << " " << ident     << " " << str;
+    os << this->_mkdate() << " " << name << " " << ident << " " << str;
   }
 
   void _prepare( std::string& str, size_t width)
@@ -117,7 +115,6 @@ void logger::initialize(const std::string& name, std::stringstream& str)
 
 void logger::write(const std::string& name, const std::string& ident,  const std::string& str)
 {
-  std::cout << "void logger::write(const std::string& name, const std::string& ident,  const std::string& str)" << std::endl;
   std::lock_guard<std::mutex> lk(_mutex);
   
   if ( auto log = this->_find(name))
@@ -147,7 +144,7 @@ void logger::configure(const logger_config& conf)
 
 std::shared_ptr<log_writer> logger::_find(const std::string& name) const
 {
-  std::cout << "find " << name << " " << _log_map.size() << std::endl;
+  //std::cout << "find " << name << " " << _log_map.size() << std::endl;
   auto itr = _log_map.find(name);
   if ( itr==_log_map.end() )
     return nullptr;
@@ -157,7 +154,7 @@ std::shared_ptr<log_writer> logger::_find(const std::string& name) const
 void logger::_create_log(const std::string& name, const log_writer_config& lwc)
 {
   _log_map[name] = std::make_shared<log_writer>(lwc);
-  std::cout << "registry " << name << " " << _log_map.size() << std::endl;
+  //  std::cout << "registry " << name << " " << _log_map.size() << std::endl;
 }
 
 /*void logger::_create_log(const std::string& name, std::string filename, bool clog, bool sylog)
