@@ -1,6 +1,6 @@
 #pragma once
 
-#include "logger_config.hpp"
+#include "logger_module_config.hpp"
 #include <comet/core/imodule.hpp>
 #include <memory>
 #include <string>
@@ -28,9 +28,14 @@ public:
   virtual void stop();
   virtual void idle();
 private:
-  std::shared_ptr<logger> _logger;
+  std::shared_ptr<logger> _config_log;
+  std::shared_ptr<logger> _daemon_log;
+  std::shared_ptr<logger> _common_log;
+  std::shared_ptr<logger> _debug_log;
+  std::shared_ptr<logger> _trace_log;
+  
   std::shared_ptr<global> _global;
-  logger_config _logger_config;
+  logger_module_config    _config;
 };
 
 }}
