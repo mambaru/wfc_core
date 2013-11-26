@@ -3,7 +3,7 @@ enable_testing()
 include_directories(../config)
 
 add_executable(config_test config_test.cpp ../config/config.cpp )
-
+target_link_libraries(config_test comet)
 
 #link_directories(../../comet/build/comet)
 #link_directories(/home/migashko/prj/gitlab.lan/comet/build/comet/)

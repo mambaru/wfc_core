@@ -21,13 +21,14 @@ public:
   config(std::shared_ptr<global> gl);
   // iconfig
   virtual void reconfigure();
-  virtual bool parse_config(const std::string& path);
-  virtual void configure(const std::string& path);
-  virtual std::string get_config(const std::string& name);
-  virtual std::string generate(const std::string& type, const std::string& path);
+  //virtual bool parse_config(const std::string& path);
+  virtual void initialize(std::string path);
+  virtual std::string get_config(std::string name);
+  virtual std::string generate(std::string type, std::string path);
   // core_module
   void configure(const config_config& conf);
 private:
+  void _parse_configure(std::string source, std::string strconf, configuration& mainconf);
   std::string _load_from_file(const std::string& path);
   void _save_to_file(const std::string& path, const std::string& strconf);
 private:

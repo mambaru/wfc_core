@@ -38,17 +38,8 @@ std::string config_module::generate(const std::string& type)  const
 
 bool config_module::parse_config(const std::string& confstr)
 {
-  try
-  {
-    config_config conf;
-    config_config_json::serializer()(conf, confstr.begin(), confstr.end());
-  }
-  catch(const json::json_error& e)
-  {
-    std::cout << "error " << e.message(confstr.begin(), confstr.end()) << std::endl;
-    // В лог ошибку
-    return false;
-  }
+  config_config conf;
+  config_config_json::serializer()(conf, confstr.begin(), confstr.end());
   return true;
 }
 
@@ -61,8 +52,8 @@ void config_module::create( std::weak_ptr<global> gl )
 
 void config_module::configure(const std::string& confstr)
 {
-  std::cout << "config_module::configure " << confstr << std::endl;
   config_config_json::serializer()(_config_config, confstr.begin(), confstr.end());
+  _config->configure(_config_config);
 }
 
 void config_module::initialize()
