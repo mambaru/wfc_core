@@ -112,7 +112,7 @@ void logger_module::_reg_loggers()
   //_global->idle.insert( _daemon_log->callback([]()->bool{ std::cout << "idle daemon" << std::endl; return true;}) );
   //_global->idle.insert( f );
   //_global->idle.insert( f_fun() );
-  _global->idle.insert( _daemon_log->callback(f_fun()) );
+  _global->idle.push_back( _daemon_log->callback(f_fun()) );
   
   //_global->idle.insert( _daemon_log->callback([]()->bool{ std::cout << "idle daemon" << std::endl; return true;}) );
   //_global->idle.insert( _config_log->callback([]()->bool{ std::cout << "idle config" << std::endl; return true;}) );
