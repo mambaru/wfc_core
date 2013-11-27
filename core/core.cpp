@@ -38,14 +38,14 @@ void core::reconfigure()
   
 }
 
-void core::run( int argc, char* argv[], std::weak_ptr<global> gl )
+int core::run( int argc, char* argv[], std::weak_ptr<global> gl )
 {
   this->_global = gl.lock();
   this->_mux = std::make_shared<inet::epoller>();
   this->_global->mux = this->_mux;
 
   if ( !this->_startup(argc, argv) )
-      return;
+      return 0;
 
   CONFIG_LOG_MESSAGE("core::run: sunrise!")
 
@@ -54,21 +54,23 @@ void core::run( int argc, char* argv[], std::weak_ptr<global> gl )
   DAEMON_LOG_MESSAGE("***************************************")
   DAEMON_LOG_MESSAGE("************* started *****************")
   DAEMON_LOG_MESSAGE("instance name: " << this->_global->instance_name << std::endl)
-  this->_main_loop();
+  
+  return this->_main_loop();
 }
 
 void core::stop( )
 {
   DAEMON_LOG_BEGIN("stop '" << this->_global->instance_name << "'...")
+  CONFIG_LOG_MESSAGE("----------- stopping... ---------------")
   module_vector modules;
   this->_prepare(modules);
   std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
-    return left.second->shutdown_priority() < right.second->shutdown_priority();
+    return left.second->shutdown_priority() > right.second->shutdown_priority();
   } );
 
   this->_stop(modules);
-  DAEMON_LOG_END("stop '" << this->_global->instance_name << "'...")
-  DAEMON_LOG_MESSAGE("---------------------------------------")
+  DAEMON_LOG_END("stop '" << this->_global->instance_name << "'...Done!")
+  DAEMON_LOG_MESSAGE("=======================================")
 }
 
 void core::configure(const core_config& conf)
@@ -77,11 +79,69 @@ void core::configure(const core_config& conf)
   this->_conf = conf;
 }
 
-void core::_main_loop()
+int core::_main_loop()
+try
 {
+  _idle_time = std::chrono::steady_clock::now();
+  //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(_idle_time.time_since_epoch() ).count() << std::endl;
   for(;;)
+  {
     this->_mux->select(_conf.wait_timeout_ms);
+    std::cout << "tick" << std::endl;
+
+    auto now = std::chrono::steady_clock::now();
+    // std::cout << now.time_since_epoch() << std::endl;
+    //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() ).count() << std::endl;
+    //if ( std::chrono::duration_cast<std::chrono::milliseconds>( _idle_time - now ).count() >= 0 )
+    if ( _idle_time < now  )
+    {
+      std::cout << "idle" << std::endl;
+      
+      _global->idle.for_each();
+      _idle_time += std::chrono::milliseconds(_conf.idle_timeout_ms);
+      
+      //std::cout << "idle" << std::endl;
+      //std::chrono::milliseconds a;
+      //a = _conf.idle_timeout_ms;
+      //std::chrono::milliseconds ms = reinterpret_cast<long int>(_conf.idle_timeout_ms);
+      // auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( _conf.idle_timeout_ms);
+      /*_idle_time =*/ //std::chrono::duration_cast<std::chrono::milliseconds>(_idle_time - now);
+      
+      //_idle_time = now + std::chrono::duration_cast<std::chrono::milliseconds>( _conf.idle_timeout_ms);
+    }
+    //time_point_t now = std::chrono::steady_clock::now();
+    //std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).count();
+    // auto now = std::chrono::steady_clock::now();
+    //std::chrono::steady_clock now1(std::chrono::steady_clock::now()); //std::chrono::duration_cast<std::chrono::milliseconds>(  - std::chrono::steady_clock::now()).count();
+
+    /*
+    if ( _conf.idle_timeout_ms < std::chrono::duration_cast<std::chrono::milliseconds>( now1 - _idle_time ).count() )
+    {
+      std::cout << "idle" << std::endl;
+      _idle_time = now;
+    }
+    */
+      
     
+    //auto count = std::chrono::duration_cast<std::chrono::milli>(now).count()
+    /*
+    if ( _next_idle < now )
+      std::cout << "idle" << std::endl;
+    */
+  }
+  return 0;
+}
+catch(const std::exception& e)
+{
+  DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  DAEMON_LOG_FATAL( this->_global->instance_name << ": " << e.what() );
+  throw;
+}
+catch(...)
+{
+  DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  DAEMON_LOG_FATAL( this->_global->instance_name << ": unhandled exception" );
+  throw;
 }
 
 bool core::_startup(int argc, char** argv)
@@ -292,7 +352,7 @@ void core::_show_module_info(const std::string& module_name)
   {
     if (!module_name.empty())
     {
-      if ( auto m = gm->find(module_name).lock() )
+      if ( auto m = gm->get(module_name).lock() )
       {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << module_name << " module version:" << std::endl;

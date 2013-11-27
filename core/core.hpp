@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <chrono>
 #include <comet/core/icore.hpp>
 #include <comet/core/imodule.hpp>
 #include <comet/inet/imux.hpp>
@@ -19,7 +20,7 @@ public:
   
   /// icore
   virtual void reconfigure();
-  virtual void run( int argc, char* argv[], std::weak_ptr<global> g );
+  virtual int run( int argc, char* argv[], std::weak_ptr<global> g );
   virtual void stop( );
 
   // core_module
@@ -36,7 +37,7 @@ private:
   void _initialize(const module_vector& m);
   void _start(const module_vector& m);
   void _stop(const module_vector& m);
-  void _main_loop();
+  int _main_loop();
 
 private:
   // return true if ready for running
@@ -52,6 +53,13 @@ private:
   std::shared_ptr< inet::imux<> > _mux;
   std::shared_ptr<global> _global;
   core_config _conf;
+
+  //typedef std::chrono::duration<time_t, std::chrono::milliseconds> duration_type;
+  //typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_t;
+  typedef std::chrono::steady_clock::time_point time_point;
+  time_point _idle_time;
+  //std::chrono::milliseconds _idle_time;
+  
 };
 
 }}
