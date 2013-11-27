@@ -111,7 +111,7 @@ void config::_parse_configure(std::string source, std::string confstr, configura
   {
     for ( auto& mconf : mainconf)
     {
-      if ( auto m = modules->find(mconf.first).lock() )
+      if ( auto m = modules->get(mconf.first).lock() )
       {
         jsonbeg = mconf.second.begin();
         jsonend = mconf.second.end();
