@@ -97,7 +97,7 @@ try
     {
       std::cout << "idle" << std::endl;
       
-      _global->idle.for_each();
+      _global->idle.fire();
       _idle_time += std::chrono::milliseconds(_conf.idle_timeout_ms);
       
       //std::cout << "idle" << std::endl;
