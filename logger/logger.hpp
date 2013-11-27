@@ -1,8 +1,10 @@
 #pragma once
 #include <vector>
 #include <mutex>
+
 #include <comet/logger/ilogger.hpp>
 #include <comet/core/imodule.hpp>
+#include <comet/core/global.hpp>
 #include <comet/inet/imux.hpp>
 
 #include "logger_config.hpp"
@@ -14,6 +16,7 @@ namespace mamba{ namespace comet{
 
 class logger
   : public ilogger
+  , public callback_owner
 {
 public:
   logger(const logger_config& conf);

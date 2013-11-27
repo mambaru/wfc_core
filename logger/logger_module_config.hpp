@@ -25,23 +25,16 @@ struct logger_module_config
   bool enabled;
   bool sylog;
   bool single;
-  std::string cout;
+  time_t lifetime;
+  std::string stdout;
   std::string prefix;
-  
-  
-  /*
-  log_writer_config config;
-  log_writer_config daemon;
-  log_writer_config common;
-  log_writer_config debug;
-  log_writer_config trace;
-  */
   
   logger_module_config()
     : enabled(true)
     , sylog(false)
     , single(true)
-    , cout("clog")
+    , lifetime(0)
+    , stdout("clog")
     , prefix("")
   {}
 };
