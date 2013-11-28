@@ -28,6 +28,15 @@ static void signal_sighup_handler(int)
       c->reconfigure();
 }
 
+static time_t get_modify_time(const std::string& path)
+{
+  struct stat st;
+  if ( stat( path.c_str(), &st) != -1)
+    return st.st_mtime;
+  return static_cast<time_t>(-1);
+}
+
+
 } // namespace
 
 
@@ -37,20 +46,76 @@ config::~config()
 }
 
 config::config(std::shared_ptr<global> gl)
-  : _global(gl)
+  : _config_changed(0)
+  , _global(gl)
 {
-  
+  if ( _global )
+  {
+    _global->idle.push_back( callback([this]()
+    {
+      if ( !this->_conf.enabled )
+        return true;
+
+      if ( this->_conf.reload_changed && this->_config_changed!=0 )
+      {
+        time_t t = get_modify_time(this->_path);
+        if ( t!=this->_config_changed )
+          this->reconfigure();
+        this->_config_changed = t;
+      }
+      return true;
+    }));
+  }
 }
+
+
+/*
+void config::_check_and_reload_config_file(time_t now)
+{
+  if ( _observe_timeout==0 || _config_path.empty() )
+    return ;
+
+  if ( now < _observe_time)
+    return;
+
+  _observe_time = now + _observe_timeout;
+
+  time_t modify_time = get_modify_time(_config_path);
+
+  if ( modify_time > _modify_time )
+  {
+    _modify_time = modify_time;
+    this->reload_config();
+  }
+}
+*/
 
 void config::configure(const config_config& conf)
 {
+  _conf = conf;
   signal(SIGHUP, signal_sighup_handler);
+  if ( _conf.reload_changed )
+    _config_changed = get_modify_time(_path);
 }
 
-// iconfig
 void config::reconfigure()
 {
   CONFIG_LOG_MESSAGE("config::reconfigure()")
+  std::string confstr = _load_from_file(_path);
+  configuration mainconf;
+  try
+  {
+    _parse_configure(_path, confstr, mainconf);
+  }
+  catch(const config_error& e)
+  {
+    CONFIG_LOG_ERROR(e.what())
+    CONFIG_LOG_ERROR("Configuration ignored!")
+    return;
+  }
+  _mainconf = mainconf;
+  if ( auto c = _global->core.lock() )
+    c->reconfigure();
 }
 
 /*
@@ -152,41 +217,6 @@ void config::_parse_configure(std::string source, std::string confstr, configura
   }
 }
 
-
-    /*
-    std::for_each(_mainconf.begin(), _mainconf.end() []( auto& p){
-      
-    });
-    */
-    /*
-    modules->for_each([](const std::string& name, std::weak_ptr<imodule> module)
-    {
-      auto itr = _mainconf.find(name);
-      if ( itr == _mainconf.end() )
-        throw std::domain_error("invalid module name");
-      
-      try
-      {
-      }
-      catch(const json::json_error& e)
-      {
-      }
-    });
-    
-  }
-  
-}*/
-
-/*
-configuration config::_configure()
-{
-  configuration mainconf;
-  std::string confstr = _load_from_file(path);
-  configuration_json::serializer()(mainconf, confstr.begin(), confstr.end());
-  return mainconf;
-}
-*/
-
 std::string config::get_config(std::string name)
 {
   auto itr = _mainconf.find(name);
@@ -213,11 +243,14 @@ std::string config::generate(std::string type, std::string path)
         mainconf[name] = m->generate(type);
     } );
   }
+  
   /*
-  mainconf["a"]="1234";
-  mainconf["b"]="234";
+    mainconf["a"]="1234";
+    mainconf["b"]="234";
   */
+  
   configuration_json::serializer()(mainconf, std::back_inserter(confstr));
+
   // std::cout << "GENERATE" << std::endl;
   // std::cout << confstr << std::endl;
 
