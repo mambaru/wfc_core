@@ -3,7 +3,7 @@
 #include <mutex>
 
 #include <comet/logger/ilogger.hpp>
-#include <comet/core/imodule.hpp>
+#include <comet/module/imodule.hpp>
 #include <comet/core/global.hpp>
 #include <comet/callback/callback_owner.hpp>
 #include <comet/inet/imux.hpp>

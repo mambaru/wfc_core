@@ -2,7 +2,7 @@
 
 #include <comet/inet/epoller.hpp>
 #include <comet/core/global.hpp>
-#include <comet/core/imodule.hpp>
+#include <comet/module/imodule.hpp>
 #include <comet/logger/ilogger.hpp>
 #include <vector>
 #include <string>

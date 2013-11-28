@@ -23,7 +23,7 @@ imodule::priority logger_module::shutdown_priority() const
 
 std::string logger_module::version() const
 {
-  return std::string(logger_build_info);
+  return logger_build_info_string;
 }
 
 std::string logger_module::description() const
@@ -142,7 +142,7 @@ void logger_module::_unreg_loggers()
 }
 
 
-void logger_module::create( std::weak_ptr<global> gl )
+void logger_module::create( const std::string& name, std::weak_ptr<global> gl )
 {
   _global = gl.lock();
   _config = logger_module_config();
