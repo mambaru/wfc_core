@@ -1,6 +1,6 @@
 #pragma once
 
-#include <comet/core/imodule.hpp>
+#include <comet/module/imodule.hpp>
 #include <memory>
 #include <string>
 
@@ -23,7 +23,7 @@ public:
   virtual std::string description() const;
   virtual std::string generate(const std::string& type) const;
   virtual bool parse_config(const std::string& conf);
-  virtual void create( std::weak_ptr<global> g );
+  virtual void create( const std::string& name, std::weak_ptr<global> g );
   virtual void configure(const std::string& conf);
   virtual void initialize();
   virtual void start();

@@ -2,7 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <comet/core/icore.hpp>
-#include <comet/core/imodule.hpp>
+#include <comet/module/imodule.hpp>
 #include <comet/inet/imux.hpp>
 
 #include "core_config.hpp"

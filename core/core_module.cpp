@@ -21,7 +21,7 @@ imodule::priority core_module::shutdown_priority() const
 
 std::string core_module::version() const
 {
-  return std::string(core_build_info);
+  return core_build_info_string;
 }
 
 std::string core_module::description() const
@@ -44,7 +44,7 @@ bool core_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void core_module::create( std::weak_ptr<global> gl )
+void core_module::create( const std::string& name, std::weak_ptr<global> gl )
 {
   _global = gl; // TODO: _global не нужен
   _core = std::make_shared<core>();
