@@ -33,9 +33,16 @@ core::~core()
   
 }
 
-void core::reconfigure()
+core::core()
+  : _reconfigure_flag(false)
+  , _stop_flag(false)
 {
   
+}
+
+void core::reconfigure()
+{
+  _reconfigure_flag = true;
 }
 
 int core::run( int argc, char* argv[], std::weak_ptr<global> gl )
@@ -60,17 +67,7 @@ int core::run( int argc, char* argv[], std::weak_ptr<global> gl )
 
 void core::stop( )
 {
-  DAEMON_LOG_BEGIN("stop '" << this->_global->instance_name << "'...")
-  CONFIG_LOG_MESSAGE("----------- stopping... ---------------")
-  module_vector modules;
-  this->_prepare(modules);
-  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
-    return left.second->shutdown_priority() > right.second->shutdown_priority();
-  } );
-
-  this->_stop(modules);
-  DAEMON_LOG_END("stop '" << this->_global->instance_name << "'...Done!")
-  DAEMON_LOG_MESSAGE("=======================================")
+  _stop_flag = true;
 }
 
 void core::configure(const core_config& conf)
@@ -84,51 +81,24 @@ try
 {
   _idle_time = std::chrono::steady_clock::now();
   //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(_idle_time.time_since_epoch() ).count() << std::endl;
-  for(;;)
+  for(;!_stop_flag;)
   {
+    if ( _reconfigure_flag )
+    {
+      _reconfigure_flag = false;
+      this->_sunrise();
+    }
+    
     this->_mux->select(_conf.wait_timeout_ms);
-    std::cout << "tick" << std::endl;
-
     auto now = std::chrono::steady_clock::now();
-    // std::cout << now.time_since_epoch() << std::endl;
-    //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch() ).count() << std::endl;
-    //if ( std::chrono::duration_cast<std::chrono::milliseconds>( _idle_time - now ).count() >= 0 )
     if ( _idle_time < now  )
     {
-      std::cout << "idle" << std::endl;
-      
       _global->idle.fire();
       _idle_time += std::chrono::milliseconds(_conf.idle_timeout_ms);
-      
-      //std::cout << "idle" << std::endl;
-      //std::chrono::milliseconds a;
-      //a = _conf.idle_timeout_ms;
-      //std::chrono::milliseconds ms = reinterpret_cast<long int>(_conf.idle_timeout_ms);
-      // auto ms = std::chrono::duration_cast<std::chrono::milliseconds>( _conf.idle_timeout_ms);
-      /*_idle_time =*/ //std::chrono::duration_cast<std::chrono::milliseconds>(_idle_time - now);
-      
-      //_idle_time = now + std::chrono::duration_cast<std::chrono::milliseconds>( _conf.idle_timeout_ms);
     }
-    //time_point_t now = std::chrono::steady_clock::now();
-    //std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).count();
-    // auto now = std::chrono::steady_clock::now();
-    //std::chrono::steady_clock now1(std::chrono::steady_clock::now()); //std::chrono::duration_cast<std::chrono::milliseconds>(  - std::chrono::steady_clock::now()).count();
-
-    /*
-    if ( _conf.idle_timeout_ms < std::chrono::duration_cast<std::chrono::milliseconds>( now1 - _idle_time ).count() )
-    {
-      std::cout << "idle" << std::endl;
-      _idle_time = now;
-    }
-    */
-      
-    
-    //auto count = std::chrono::duration_cast<std::chrono::milli>(now).count()
-    /*
-    if ( _next_idle < now )
-      std::cout << "idle" << std::endl;
-    */
   }
+
+  this->_stop();
   return 0;
 }
 catch(const std::exception& e)
@@ -289,8 +259,20 @@ void core::_start(const module_vector& modules)
   });
 }
 
-void core::_stop(const module_vector& modules)
+void core::_stop()
 {
+  DAEMON_LOG_BEGIN("stop '" << this->_global->instance_name << "'...")
+  CONFIG_LOG_MESSAGE("----------- stopping... ---------------")
+  module_vector modules;
+  this->_prepare(modules);
+  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
+    return left.second->shutdown_priority() > right.second->shutdown_priority();
+  } );
+
+  //this->_stop(modules);
+  DAEMON_LOG_END("stop '" << this->_global->instance_name << "'...Done!")
+  DAEMON_LOG_MESSAGE("=======================================")
+
   std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")

@@ -15,8 +15,9 @@ class core
 {
   
 public:
-  
+
   virtual ~core();
+  core();
   
   /// icore
   virtual void reconfigure();
@@ -36,7 +37,7 @@ private:
   void _configure( const module_vector& m );
   void _initialize(const module_vector& m);
   void _start(const module_vector& m);
-  void _stop(const module_vector& m);
+  void _stop();
   int _main_loop();
 
 private:
@@ -58,6 +59,9 @@ private:
   //typedef std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> time_point_t;
   typedef std::chrono::steady_clock::time_point time_point;
   time_point _idle_time;
+
+  bool _reconfigure_flag;
+  bool _stop_flag;
   //std::chrono::milliseconds _idle_time;
   
 };
