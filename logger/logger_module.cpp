@@ -78,7 +78,7 @@ void logger_module::_create_multi()
   lconf.stdout = _config.stdout;
   lconf.lifetime = _config.lifetime;
   
-  bool emptypath = !_config.prefix.empty() && _config.prefix!="disabled";
+  bool emptypath = _config.prefix.empty() || _config.prefix=="disabled";
 
   if ( !emptypath ) lconf.path = _config.prefix + ".daemon.log";
   _daemon_log = std::make_shared<logger>( lconf );
@@ -112,7 +112,7 @@ void logger_module::_reg_loggers()
   //_global->idle.insert( _daemon_log->callback([]()->bool{ std::cout << "idle daemon" << std::endl; return true;}) );
   //_global->idle.insert( f );
   //_global->idle.insert( f_fun() );
-  _global->idle.push_back( _daemon_log->callback(f_fun()) );
+  //_global->idle.push_back( _daemon_log->callback(f_fun()) );
   
   //_global->idle.insert( _daemon_log->callback([]()->bool{ std::cout << "idle daemon" << std::endl; return true;}) );
   //_global->idle.insert( _config_log->callback([]()->bool{ std::cout << "idle config" << std::endl; return true;}) );
@@ -217,8 +217,8 @@ void logger_module::configure(const std::string& confstr)
 
   
   /// !!!_logger->configure(_logger_config);
-  CONFIG_LOG_MESSAGE("logger_module: configured");
-  CONFIG_LOG_BEGIN_PROCESS("logger_module: configured");
+  // CONFIG_LOG_MESSAGE("logger_module: configured");
+  // CONFIG_LOG_BEGIN_PROCESS("logger_module: configured");
 }
 
 void logger_module::initialize()

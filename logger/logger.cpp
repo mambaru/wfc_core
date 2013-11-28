@@ -72,6 +72,7 @@ namespace {
 logger::logger(const logger_config& conf)
   : _conf(conf)
 {
+  std::cout<< "conf path " << _conf.path << std::endl;
 }
 
 void logger::initialize(const std::string& name, std::stringstream& str)
