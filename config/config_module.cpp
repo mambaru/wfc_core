@@ -20,7 +20,7 @@ imodule::priority config_module::shutdown_priority() const
 
 std::string config_module::version() const
 {
-  return std::string(config_build_info);
+  return config_build_info_string;
 }
 
 std::string config_module::description() const
@@ -43,7 +43,7 @@ bool config_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void config_module::create( std::weak_ptr<global> gl )
+void config_module::create( const std::string& name, std::weak_ptr<global> gl )
 {
   _global = gl.lock();
   _config = std::make_shared<config>(_global);

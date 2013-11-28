@@ -2,7 +2,7 @@
 
 #include <comet/inet/epoller.hpp>
 #include <comet/core/global.hpp>
-#include <comet/core/imodule.hpp>
+#include <comet/module/imodule.hpp>
 #include <comet/core/iconfig.hpp>
 #include <comet/core/except.hpp>
 #include <comet/system/system.hpp>

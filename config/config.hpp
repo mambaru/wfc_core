@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <comet/core/iconfig.hpp>
-#include <comet/core/imodule.hpp>
+#include <comet/module/imodule.hpp>
 #include <comet/inet/imux.hpp>
 #include <comet/callback/callback_owner.hpp>
 
