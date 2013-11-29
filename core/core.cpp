@@ -87,6 +87,7 @@ try
     {
       _reconfigure_flag = false;
       this->_sunrise();
+      DAEMON_LOG_MESSAGE("Daemon reconfigured!")
     }
     
     this->_mux->select(_conf.wait_timeout_ms);
