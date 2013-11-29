@@ -7,6 +7,8 @@
 #  VERBATIM
 #)
 
+include(BuildInfo)
+
 SET(
   comet_logger_source_list
   logger_module.cpp
