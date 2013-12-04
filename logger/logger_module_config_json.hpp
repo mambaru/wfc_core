@@ -35,7 +35,7 @@ struct logger_module_config_json
 
   typedef json::object<
     logger_module_config,
-    type_list_n<
+    fas::type_list_n<
       json::member<n_enabled, logger_module_config, bool,        &logger_module_config::enabled>,
       json::member<n_single,  logger_module_config, bool,        &logger_module_config::single>,
       json::member<n_syslog,  logger_module_config, bool,        &logger_module_config::sylog>,
