@@ -94,7 +94,7 @@ try
     auto now = std::chrono::steady_clock::now();
     if ( _idle_time < now  )
     {
-      _global->idle.fire();
+      _global->idle.fire([](global::idle_callback callback){ return callback();});
       _idle_time += std::chrono::milliseconds(_conf.idle_timeout_ms);
     }
   }
