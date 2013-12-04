@@ -54,7 +54,7 @@ config::config(std::shared_ptr<global> gl)
     _global->idle.push_back( callback([this]()
     {
       if ( !this->_conf.enabled )
-        return true;
+        return callback_status::ready;
 
       if ( this->_conf.reload_changed && this->_config_changed!=0 )
       {
@@ -63,7 +63,7 @@ config::config(std::shared_ptr<global> gl)
           this->reconfigure();
         this->_config_changed = t;
       }
-      return true;
+      return callback_status::ready;
     }));
   }
 }
