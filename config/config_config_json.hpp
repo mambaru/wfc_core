@@ -13,7 +13,7 @@ struct config_config_json
   
   typedef json::object<
     config_config,
-    type_list_n<
+    fas::type_list_n<
        json::member<n_enabled,        config_config, bool, &config_config::enabled>,
        json::member<n_reload_changed, config_config, bool, &config_config::reload_changed>
     >::type
