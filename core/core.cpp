@@ -107,7 +107,7 @@ void core::_idle()
   }
   
   _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds(_conf.idle_timeout_ms));
-  _idle_timer->async_wait([this](const boost::system::error_code& e){
+  _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
     this->_idle();  
   });
 }
@@ -116,7 +116,7 @@ int core::_main_loop()
 try
 {
   _idle_timer = std::make_unique<idle_timer>(*_io_service,  boost::posix_time::milliseconds(_conf.idle_timeout_ms) );
-  _idle_timer->async_wait([this](const boost::system::error_code& e){
+  _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
     this->_idle();  
   });
   /*
@@ -378,7 +378,7 @@ void core::_show_help()
   if ( auto m = _global->modules.lock())
   {
     std::cout << "modules:" << std::endl;
-    m->for_each([](const std::string& name, std::weak_ptr<imodule> m){
+    m->for_each([](const std::string& name, std::weak_ptr<imodule> /*m*/){
       std::cout << "  " << name <<  std::endl;
     });
   }
@@ -409,7 +409,7 @@ void core::_show_module_info(const std::string& module_name)
     }
     else
     {
-      gm->for_each([this](const std::string& name, std::weak_ptr<imodule> mod)
+      gm->for_each([this](const std::string& name, std::weak_ptr<imodule> /*mod*/)
       {
         this->_show_module_info(name);
       });
