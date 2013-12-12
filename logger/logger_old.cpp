@@ -1,9 +1,9 @@
 #include "logger.hpp"
 
-#include <comet/inet/epoller.hpp>
-#include <comet/core/global.hpp>
-#include <comet/core/imodule.hpp>
-#include <comet/logger/ilogger.hpp>
+#include <wfc/inet/epoller.hpp>
+#include <wfc/core/global.hpp>
+#include <wfc/core/imodule.hpp>
+#include <wfc/logger/ilogger.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -13,7 +13,7 @@
 #include <syslog.h>
 
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 class log_writer
 {
@@ -184,4 +184,4 @@ void logger::_create_log(const std::string& name, const log_writer_config& lwc)
 }
 */
 
-}}
+}

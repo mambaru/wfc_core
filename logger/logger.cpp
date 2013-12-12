@@ -1,9 +1,9 @@
 #include "logger.hpp"
 
-#include <comet/inet/epoller.hpp>
-#include <comet/core/global.hpp>
-#include <comet/module/imodule.hpp>
-#include <comet/logger/ilogger.hpp>
+//#include <wfc/inet/epoller.hpp>
+#include <wfc/core/global.hpp>
+#include <wfc/module/imodule.hpp>
+#include <wfc/logger/ilogger.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -13,7 +13,7 @@
 #include <syslog.h>
 
 
-namespace mamba{ namespace comet{
+namespace wfc{
   
 namespace {
   void prepare( std::string& str, size_t width)
@@ -92,4 +92,4 @@ void logger::write(const std::string& name, const std::string& ident,  const std
     write_to_sylog(name, ident, str);
 }
 
-}}
+}

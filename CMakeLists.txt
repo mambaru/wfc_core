@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(comet_logger)
+project(wfc_logger)
 
-include_directories(../comet)
+include_directories(../wfc)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/comet/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/wfc/cmake")
 
 add_subdirectory(logger)
 add_subdirectory(tests)

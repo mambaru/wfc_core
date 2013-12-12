@@ -1,7 +1,7 @@
 #add_custom_target(
 #  logger_build_info
 #  COMMAND
-#    /bin/bash ${CMAKE_SOURCE_DIR}/comet/build_info.sh logger
+#    /bin/bash ${CMAKE_SOURCE_DIR}/wfc/build_info.sh logger
 #  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 #  COMMENT "Create build info files"
 #  VERBATIM
@@ -10,19 +10,19 @@
 include(BuildInfo)
 
 SET(
-  comet_logger_source_list
+  wfc_logger_source_list
   logger_module.cpp
   logger.cpp
 )
 
 add_library(
-  comet_logger SHARED
-  ${comet_logger_source_list}
+  wfc_logger SHARED
+  ${wfc_logger_source_list}
 )
 
-build_info(comet_logger logger)
-#target_link_libraries(comet_logger /tmp/logger_build_info.o)
+build_info(wfc_logger logger)
+#target_link_libraries(wfc_logger boost_system)
 #add_dependencies(
-#  comet_logger
+#  wfc_logger
 #  logger_build_info
 #)

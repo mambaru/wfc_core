@@ -2,16 +2,16 @@
 #include <vector>
 #include <mutex>
 
-#include <comet/logger/ilogger.hpp>
-#include <comet/module/imodule.hpp>
-#include <comet/core/global.hpp>
-#include <comet/callback/callback_owner.hpp>
-#include <comet/inet/imux.hpp>
+#include <wfc/logger/ilogger.hpp>
+#include <wfc/module/imodule.hpp>
+#include <wfc/core/global.hpp>
+#include <wfc/callback/callback_owner.hpp>
+//#include <wfc/inet/imux.hpp>
 
 #include "logger_config.hpp"
 #include <unordered_map>
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 // class log_writer;
 
@@ -31,4 +31,4 @@ private:
   logger_config _conf;
 };
 
-}}
+}

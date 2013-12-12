@@ -2,14 +2,14 @@
 
 #include "logger_module.hpp"
 #include "logger_module_config_json.hpp"
-#include <comet/core/global.hpp>
+#include <wfc/core/global.hpp>
 #include <iostream>
 #include <memory>
 #include "build_info.h"
-#include <comet/logger.hpp>
+#include <wfc/logger.hpp>
 #include "logger.hpp"
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 imodule::priority logger_module::startup_priority()  const
 {
@@ -241,4 +241,4 @@ void logger_module::idle()
   
 }
 
-}}
+}

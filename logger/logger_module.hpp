@@ -1,12 +1,12 @@
 #pragma once
 
 #include "logger_module_config.hpp"
-#include <comet/module/imodule.hpp>
+#include <wfc/module/imodule.hpp>
 #include <memory>
 #include <string>
 
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 struct global;
 class logger;
@@ -43,4 +43,4 @@ private:
   logger_module_config    _config;
 };
 
-}}
+}

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "logger_module_config.hpp"
-#include <comet/json/json.hpp>
-#include <comet/json/name.hpp>
+#include <wfc/json/json.hpp>
+#include <wfc/json/name.hpp>
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
   /*
   struct log_writer_config
@@ -47,4 +47,4 @@ struct logger_module_config_json
   
 };
 
-}}
+}

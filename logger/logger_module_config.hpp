@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 /*
 struct log_writer_config
@@ -39,4 +39,4 @@ struct logger_module_config
   {}
 };
 
-}}
+}
