@@ -28,7 +28,7 @@ std::string config_module::description() const
   return std::string("Модуль ядра");
 }
 
-std::string config_module::generate(const std::string& type)  const
+std::string config_module::generate(const std::string& /*type*/)  const
 {
   std::string result;  
   config_config conf;
@@ -43,7 +43,7 @@ bool config_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void config_module::create( const std::string& name, std::weak_ptr<global> gl )
+void config_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )
 {
   _global = gl.lock();
   _config = std::make_shared<config>(_global);
