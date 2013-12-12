@@ -1,6 +1,6 @@
 #include "core.hpp"
 
-using namespace ::mamba::comet;
+using namespace ::wfc;
 
 int main()
 {

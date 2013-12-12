@@ -1,6 +1,6 @@
 #include <string>
 
-namespace mamba{ namespace comet{ namespace detail{
+namespace wfc{ namespace detail{
 
 struct po
 {
@@ -34,4 +34,4 @@ struct po
 
  
 
-}}}
+}}

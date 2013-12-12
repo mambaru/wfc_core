@@ -3,7 +3,7 @@ message(STATUS "MODULE PATH: ${CMAKE_MODULE_PATH}")
 include(BuildInfo)
 
 SET(
-  comet_core_source_list
+  wfc_core_source_list
   detail/po.cpp  
   
   core_module.cpp
@@ -11,8 +11,8 @@ SET(
 )
 
 add_library(
-  comet_core SHARED
-  ${comet_core_source_list}
+  wfc_core SHARED
+  ${wfc_core_source_list}
 )
 
-build_info(comet_core core)
+build_info(wfc_core core)

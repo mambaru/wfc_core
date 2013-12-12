@@ -1,20 +1,33 @@
 #include "core.hpp"
 #include "detail/po.hpp"
-#include <comet/inet/epoller.hpp>
-#include <comet/core/global.hpp>
-#include <comet/module/imodule.hpp>
-#include <comet/core/iconfig.hpp>
-#include <comet/system/system.hpp>
-#include <comet/logger.hpp>
+//#include <wfc/inet/epoller.hpp>
+#include <wfc/core/global.hpp>
+#include <wfc/module/imodule.hpp>
+#include <wfc/core/iconfig.hpp>
+#include <wfc/system/system.hpp>
+#include <wfc/logger.hpp>
+#include <wfc/memory.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
 #include <syslog.h>
+#include <boost/asio.hpp>
 
-namespace mamba{ namespace comet{
 
+namespace wfc{
+
+// using idle_timer = ::boost::asio::deadline_timer;
+  
+  /*
+class idle_timer
+  : public boost::asio::deadline_timer
+{
+  //boost::asio::deadline_timer timer;
+};
+*/
+  
 namespace {
 
 static void signal_sigint_handler(int)
@@ -48,8 +61,8 @@ void core::reconfigure()
 int core::run( int argc, char* argv[], std::weak_ptr<global> gl )
 {
   this->_global = gl.lock();
-  this->_mux = std::make_shared<inet::epoller>();
-  this->_global->mux = this->_mux;
+  this->_io_service = std::make_shared<boost::asio::io_service>();
+  this->_global->io_service = this->_io_service;
 
   if ( !this->_startup(argc, argv) )
       return 0;
@@ -76,9 +89,59 @@ void core::configure(const core_config& conf)
   this->_conf = conf;
 }
 
+void core::_idle()
+{
+  if ( _stop_flag )
+  {
+    this->_io_service->stop();
+    return;
+  }
+
+  _global->idle.fire([](global::idle_callback callback){ return callback();});
+
+  if ( _reconfigure_flag )
+  {
+    _reconfigure_flag = false;
+    this->_sunrise();
+    DAEMON_LOG_MESSAGE("Daemon reconfigured!")
+  }
+  
+  _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds(_conf.idle_timeout_ms));
+  _idle_timer->async_wait([this](const boost::system::error_code& e){
+    this->_idle();  
+  });
+}
+
 int core::_main_loop()
 try
 {
+  _idle_timer = std::make_unique<idle_timer>(*_io_service,  boost::posix_time::milliseconds(_conf.idle_timeout_ms) );
+  _idle_timer->async_wait([this](const boost::system::error_code& e){
+    this->_idle();  
+  });
+  /*
+  this->_io_service->dispatch([this](){
+    if ( _stop_flag )
+    {
+      this->_io_service->stop();
+      return;
+    }
+    
+    if (_reconfigure_flag)
+    {
+      _reconfigure_flag = false;
+      this->_sunrise();
+      DAEMON_LOG_MESSAGE("Daemon reconfigured!")
+    }
+  });*/
+  
+  //for(;!_stop_flag;)
+  {
+    std::cout << "poll " << std::endl;
+    this->_io_service->run();
+  }
+  this->_stop();
+  /*
   _idle_time = std::chrono::steady_clock::now();
   //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(_idle_time.time_since_epoch() ).count() << std::endl;
   for(;!_stop_flag;)
@@ -100,6 +163,7 @@ try
   }
 
   this->_stop();
+  */
   return 0;
 }
 catch(const std::exception& e)
@@ -147,7 +211,7 @@ bool core::_startup(int argc, char** argv)
     c->initialize(p.config_path);
 
   if ( p.daemonize )
-    ::mamba::comet::daemonize();
+    ::wfc::daemonize();
 
   /*if ( auto c = this->_global->config.lock() )
   {
@@ -157,9 +221,9 @@ bool core::_startup(int argc, char** argv)
 
   if ( p.daemonize && p.autoup )
   {
-    ::mamba::comet::autoup(p.autoup_timeout, [p](bool restart, int status)
+    ::wfc::autoup(p.autoup_timeout, [p](bool restart, int status)
     {
-      ::openlog( (p.instance_name+"(comet_core)").c_str(), 0, LOG_USER);
+      ::openlog( (p.instance_name+"(wfc_core)").c_str(), 0, LOG_USER);
       std::stringstream ss;
       ss << "Daemon stop with status: " << status << ". ";
       if ( restart )
@@ -172,7 +236,7 @@ bool core::_startup(int argc, char** argv)
   }
 
   if ( p.coredump )
-    ::mamba::comet::dumpable();
+    ::wfc::dumpable();
 
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
@@ -325,8 +389,8 @@ void core::_show_info()
   std::cout << _global->program_name << " version:" << std::endl;
   std::cout << _global->program_version << std::endl;
   std::cout << "----------------------------------------------" << std::endl;
-  std::cout << "comet version:" << std::endl;
-  std::cout << _global->comet_version << std::endl;
+  std::cout << "wfc version:" << std::endl;
+  std::cout << _global->wfc_version << std::endl;
 }
 
 void core::_show_module_info(const std::string& module_name)
@@ -369,4 +433,4 @@ void core::_generate( const std::string& type, const std::string& path )
   }
 }
 
-}}
+}

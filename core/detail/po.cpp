@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 
-namespace mamba{ namespace comet{ namespace detail{
+namespace wfc{ namespace detail{
 
 po po::parse(int argc, char** argv)
 {
@@ -81,4 +81,4 @@ po po::parse(int argc, char** argv)
   return po_info;
 }
 
-}}}
+}}

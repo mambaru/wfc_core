@@ -1,12 +1,12 @@
 #pragma once
 
-#include <comet/module/imodule.hpp>
+#include <wfc/module/imodule.hpp>
 #include <memory>
 #include <string>
 
 #include "core_config.hpp"
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 struct global;
 class core;
@@ -35,4 +35,4 @@ private:
   core_config _config;
 };
 
-}}
+}

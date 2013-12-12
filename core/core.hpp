@@ -1,15 +1,19 @@
 #pragma once
 #include <vector>
 #include <chrono>
-#include <comet/core/icore.hpp>
-#include <comet/module/imodule.hpp>
-#include <comet/inet/imux.hpp>
-
+#include <wfc/core/icore.hpp>
+#include <wfc/module/imodule.hpp>
+//#include <wfc/inet/imux.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio.hpp>
 #include "core_config.hpp"
-namespace mamba{ namespace comet{
+
+namespace wfc{
 
 //namespace detail{ struct po; }
 
+class idle_timer;
+  
 class core
   : public icore
 {
@@ -50,8 +54,9 @@ private:
   void _show_info();
   void _show_module_info(const std::string& module_name);
   
+  void _idle();
 private:
-  std::shared_ptr< inet::imux<> > _mux;
+  std::shared_ptr< boost::asio::io_service > _io_service;
   std::shared_ptr<global> _global;
   core_config _conf;
 
@@ -62,8 +67,11 @@ private:
 
   bool _reconfigure_flag;
   bool _stop_flag;
+  typedef boost::asio::deadline_timer idle_timer;
+  std::unique_ptr<idle_timer> _idle_timer;
   //std::chrono::milliseconds _idle_time;
+  
   
 };
 
-}}
+}
