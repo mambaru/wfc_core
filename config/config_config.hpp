@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 struct config_config
 {
@@ -12,4 +12,4 @@ struct config_config
   {}
 };
 
-}}
+}

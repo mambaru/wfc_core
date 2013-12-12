@@ -2,11 +2,11 @@
 #include "config.hpp"
 #include "config_module.hpp"
 #include "config_config_json.hpp"
-#include <comet/core/global.hpp>
+#include <wfc/core/global.hpp>
 #include <iostream>
 #include "build_info.h"
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 imodule::priority config_module::startup_priority()  const
 {
@@ -76,4 +76,4 @@ void config_module::idle()
   
 }
 
-}}
+}

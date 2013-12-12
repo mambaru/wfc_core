@@ -2,8 +2,8 @@
 #include <string>
 #include <unordered_map>
 
-namespace mamba{ namespace comet{
+namespace wfc{
 
 typedef std::unordered_map<std::string, std::string> configuration;
 
-}}
+}

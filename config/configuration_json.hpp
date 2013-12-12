@@ -1,9 +1,9 @@
 #pragma once
 
-#include <comet/json/json.hpp>
-#include <comet/json/name.hpp>
+#include <wfc/json/json.hpp>
+#include <wfc/json/name.hpp>
 #include "configuration.hpp"
-namespace mamba{ namespace comet{
+namespace wfc{
 
 struct configuration_json
 {
@@ -15,4 +15,4 @@ struct configuration_json
   >::serializer serializer;
 };
 
-}}
+}

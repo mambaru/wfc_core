@@ -1,6 +1,6 @@
 #include "config.hpp"
 
-using namespace ::mamba::comet;
+using namespace ::wfc;
 
 int main()
 {

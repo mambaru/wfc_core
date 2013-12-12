@@ -1,12 +1,12 @@
 #include "config.hpp"
 
-#include <comet/inet/epoller.hpp>
-#include <comet/core/global.hpp>
-#include <comet/module/imodule.hpp>
-#include <comet/core/iconfig.hpp>
-#include <comet/core/except.hpp>
-#include <comet/system/system.hpp>
-#include <comet/logger.hpp>
+//#include <wfc/inet/epoller.hpp>
+#include <wfc/core/global.hpp>
+#include <wfc/module/imodule.hpp>
+#include <wfc/core/iconfig.hpp>
+#include <wfc/core/except.hpp>
+#include <wfc/system/system.hpp>
+#include <wfc/logger.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -17,7 +17,7 @@
 
 #include "configuration.hpp"
 #include "configuration_json.hpp"
-namespace mamba{ namespace comet{
+namespace wfc{
 
 namespace {
 
@@ -45,14 +45,45 @@ config::~config()
   
 }
 
+void config::_init_timer()
+{
+  /*_timer_owner = std::make_unique<callback_owner>();
+  if ( !_global )
+    return;
+  */
+  
+  /*
+  _global->idle( std::chrono::milliseconds(1000), _timer_owner->callback([this]()
+    {
+      if ( !this->_conf.enabled )
+        return callback_status::ready;
+
+      if ( this->_conf.reload_changed && this->_config_changed!=0 )
+      {
+        time_t t = get_modify_time(this->_path);
+        if ( t!=this->_config_changed )
+          this->reconfigure();
+        this->_config_changed = t;
+      }
+      return callback_status::ready;
+    }));
+    */
+
+}
+
 config::config(std::shared_ptr<global> gl)
   : _config_changed(0)
   , _global(gl)
 {
+  
+  
   if ( _global )
   {
+    std::cout << "_global->idle.push_back" << std::endl;
     _global->idle.push_back( callback([this]()
+    //_global->idle( std::chrono::milliseconds(1000), callback([this]()
     {
+      std::cout << "idle config" << std::endl;
       if ( !this->_conf.enabled )
         return callback_status::ready;
 
@@ -96,6 +127,7 @@ void config::configure(const config_config& conf)
   signal(SIGHUP, signal_sighup_handler);
   if ( _conf.reload_changed )
     _config_changed = get_modify_time(_path);
+  _init_timer();
 }
 
 void config::reconfigure()
@@ -116,6 +148,7 @@ void config::reconfigure()
   _mainconf = mainconf;
   if ( auto c = _global->core.lock() )
     c->reconfigure();
+  _init_timer();
 }
 
 /*
@@ -287,4 +320,4 @@ void config::_save_to_file(const std::string& path, const std::string& strconf)
   );
 }
 
-}}
+}
