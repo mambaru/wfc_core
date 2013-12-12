@@ -63,8 +63,9 @@ namespace {
       write_to_stream(*p, name, ident, str);
   }
 
-  void write_to_sylog(const std::string& name, const std::string& ident,  const std::string& str)
+  void write_to_sylog(const std::string& /*name*/, const std::string& /*ident*/,  const std::string& /*str*/)
   {
+    // TODO:
   }
   
 } // namespace
@@ -75,7 +76,7 @@ logger::logger(const logger_config& conf)
   std::cout<< "conf path " << _conf.path << std::endl;
 }
 
-void logger::initialize(const std::string& name, std::stringstream& str)
+void logger::initialize(const std::string& /*name*/, std::stringstream& /*str*/)
 {
   std::lock_guard<std::mutex> lk(_mutex);
 }

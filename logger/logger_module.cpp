@@ -31,7 +31,7 @@ std::string logger_module::description() const
   return std::string("Модуль ядра");
 }
 
-std::string logger_module::generate(const std::string& type)  const
+std::string logger_module::generate(const std::string& /*type*/)  const
 {
   logger_module_config conf;
   conf.prefix = "./default_log";
@@ -142,7 +142,7 @@ void logger_module::_unreg_loggers()
 }
 
 
-void logger_module::create( const std::string& name, std::weak_ptr<global> gl )
+void logger_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )
 {
   _global = gl.lock();
   _config = logger_module_config();
