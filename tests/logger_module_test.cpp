@@ -5,6 +5,7 @@
 #include <fas/type_list.hpp>
 using namespace ::wfc;
 
+/*
 typedef fas::generate<
   fas::int_<10>,
   fas::generator<
@@ -21,6 +22,7 @@ typedef fas::for_<
   >
   
 >::type1 type;
+*/
 
 int main()
 {
