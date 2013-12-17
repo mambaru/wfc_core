@@ -12,7 +12,7 @@ namespace wfc{
 
 //class config_timer;
 class config
-  : public callback_owner
+  : public callback_owner<>
   , public iconfig
 {
   
