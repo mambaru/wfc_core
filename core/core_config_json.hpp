@@ -8,9 +8,9 @@ namespace wfc{
 
 struct core_config_json
 {
-  NAME(enabled)
-  NAME(idle_timeout_ms)
-  NAME(wait_timeout_ms)
+  FAS_NAME(enabled)
+  FAS_NAME(idle_timeout_ms)
+  FAS_NAME(wait_timeout_ms)
   
   typedef json::object<
     core_config,
