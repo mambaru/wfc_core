@@ -8,8 +8,8 @@ namespace wfc{
 
 struct config_config_json
 {
-  NAME(enabled)
-  NAME(reload_changed)
+  FAS_NAME(enabled)
+  FAS_NAME(reload_changed)
   
   typedef json::object<
     config_config,
