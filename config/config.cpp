@@ -80,7 +80,7 @@ config::config(std::shared_ptr<global> gl)
   if ( _global )
   {
     std::cout << "_global->idle.push_back" << std::endl;
-    _global->idle.push_back( callback([this]()
+    _global->idle.push_back( callback<callback_status>([this]()
     //_global->idle( std::chrono::milliseconds(1000), callback([this]()
     {
       std::cout << "idle config" << std::endl;
