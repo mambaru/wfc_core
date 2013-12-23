@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <chrono>
+#include <wfc/io_service.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/module/imodule.hpp>
 //#include <wfc/inet/imux.hpp>
@@ -25,7 +26,7 @@ public:
   
   /// icore
   virtual void reconfigure();
-  virtual int run( int argc, char* argv[], std::weak_ptr<global> g );
+  virtual int run( /*int argc, char* argv[],*/ std::weak_ptr<global> g );
   virtual void stop( );
 
   // core_module
@@ -45,19 +46,19 @@ private:
   int _main_loop();
 
 private:
-  // return true if ready for running
+  /*
   bool _startup( int argc, char** argv);
   void _generate( const std::string& type, const std::string& path );
-  //bool _poccess_po( detail::po* p);
   void _show_usage();
   void _show_help();
   void _show_info();
   void _show_module_info(const std::string& module_name);
+  */
   
   void _idle();
 private:
-  std::shared_ptr< boost::asio::io_service > _io_service;
-  std::shared_ptr<global> _global;
+  std::shared_ptr< wfc::io_service > _io_service;
+  std::weak_ptr<global> _global;
   core_config _conf;
 
   //typedef std::chrono::duration<time_t, std::chrono::milliseconds> duration_type;

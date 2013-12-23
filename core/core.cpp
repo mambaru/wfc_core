@@ -28,6 +28,7 @@ class idle_timer
 };
 */
   
+  
 namespace {
 
 static void signal_sigint_handler(int)
@@ -58,22 +59,32 @@ void core::reconfigure()
   _reconfigure_flag = true;
 }
 
-int core::run( int argc, char* argv[], std::weak_ptr<global> gl )
+int core::run( /*int argc, char* argv[],*/ std::weak_ptr<global> gl )
 {
-  this->_global = gl.lock();
-  this->_io_service = std::make_shared<boost::asio::io_service>();
-  this->_global->io_service = this->_io_service;
+  _global = gl;
+  auto global = _global.lock();
+  _io_service = std::make_shared<wfc::io_service>();
+  global->io_service = this->_io_service;
 
-  if ( !this->_startup(argc, argv) )
+  /*if ( !this->_startup(argc, argv) )
       return 0;
+      */
+  
+  signal(SIGPIPE,  SIG_IGN);
+  signal(SIGPOLL,  SIG_IGN);
+  signal(SIGINT,   signal_sigint_handler);
+  signal(SIGTERM,  signal_sigint_handler);
+
 
   CONFIG_LOG_MESSAGE("core::run: sunrise!")
+  
+  
 
   this->_sunrise();
 
   DAEMON_LOG_MESSAGE("***************************************")
   DAEMON_LOG_MESSAGE("************* started *****************")
-  DAEMON_LOG_MESSAGE("instance name: " << this->_global->instance_name << std::endl)
+  DAEMON_LOG_MESSAGE("instance name: " << global->instance_name << std::endl)
   
   return this->_main_loop();
 }
@@ -97,7 +108,9 @@ void core::_idle()
     return;
   }
 
-  _global->idle.fire([](global::idle_callback callback){ return callback();});
+  auto global = _global.lock();
+  
+  global->idle.fire([](global::idle_callback callback){ return callback();});
 
   if ( _reconfigure_flag )
   {
@@ -169,16 +182,24 @@ try
 catch(const std::exception& e)
 {
   DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  DAEMON_LOG_FATAL( this->_global->instance_name << ": " << e.what() );
+  if ( auto global = _global.lock() )
+  {
+    DAEMON_LOG_FATAL( global->instance_name << ": " << e.what() )
+  }
   throw;
 }
 catch(...)
 {
+  auto global = _global.lock();
   DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  DAEMON_LOG_FATAL( this->_global->instance_name << ": unhandled exception" );
+  if ( auto global = _global.lock() )
+  {
+    DAEMON_LOG_FATAL( global->instance_name << ": unhandled exception" )
+  }
   throw;
 }
 
+/*
 bool core::_startup(int argc, char** argv)
 {
   detail::po p = detail::po::parse(argc, argv);
@@ -213,12 +234,6 @@ bool core::_startup(int argc, char** argv)
   if ( p.daemonize )
     ::wfc::daemonize();
 
-  /*if ( auto c = this->_global->config.lock() )
-  {
-    if ( !c->parse_config(p.config_path) )
-      return false;
-  }*/
-
   if ( p.daemonize && p.autoup )
   {
     ::wfc::autoup(p.autoup_timeout, [p](bool restart, int status)
@@ -237,14 +252,10 @@ bool core::_startup(int argc, char** argv)
 
   if ( p.coredump )
     ::wfc::dumpable();
-
-  signal(SIGPIPE,  SIG_IGN);
-  signal(SIGPOLL,  SIG_IGN);
-  signal(SIGINT,   signal_sigint_handler);
-  signal(SIGTERM,  signal_sigint_handler);
-  
+ 
   return true;
 }
+*/
 
 ///
 /// sunrise
@@ -252,11 +263,14 @@ bool core::_startup(int argc, char** argv)
 
 void core::_prepare(module_vector& mv)
 {
-  if (auto gm = this->_global->modules.lock() )
+  if ( auto global = _global.lock() )
   {
-    gm->for_each([&mv](const std::string& name, std::weak_ptr<imodule> m){
-      mv.push_back( module_pair( name, m.lock()) );
-    });
+    if (auto gm = global->modules.lock() )
+    {
+      gm->for_each([&mv](const std::string& name, std::weak_ptr<imodule> m){
+        mv.push_back( module_pair( name, m.lock()) );
+      });
+    }
   }
 }
 
@@ -280,7 +294,11 @@ void core::_sunrise()
 
 void core::_configure(const module_vector& modules)
 {
-  auto config = this->_global->config.lock();
+  auto global = _global.lock();
+  if ( !global )
+    return;
+  
+  auto config = global->config.lock();
   if ( config )
   {
     std::for_each(modules.begin(), modules.end(), [config](const module_pair& m)
@@ -326,7 +344,11 @@ void core::_start(const module_vector& modules)
 
 void core::_stop()
 {
-  DAEMON_LOG_BEGIN("stop '" << this->_global->instance_name << "'...")
+  auto global = _global.lock();
+  if ( !global )
+    return;
+
+  DAEMON_LOG_BEGIN("stop '" << global->instance_name << "'...")
   CONFIG_LOG_MESSAGE("----------- stopping... ---------------")
   module_vector modules;
   this->_prepare(modules);
@@ -335,7 +357,7 @@ void core::_stop()
   } );
 
   //this->_stop(modules);
-  DAEMON_LOG_END("stop '" << this->_global->instance_name << "'...Done!")
+  DAEMON_LOG_END("stop '" << global->instance_name << "'...Done!")
   DAEMON_LOG_MESSAGE("=======================================")
 
   std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
@@ -350,6 +372,7 @@ void core::_stop()
 /// help
 ///
 
+/*
 void core::_show_usage()
 {
   std::cout <<  "Usage" << std::endl;
@@ -378,7 +401,7 @@ void core::_show_help()
   if ( auto m = _global->modules.lock())
   {
     std::cout << "modules:" << std::endl;
-    m->for_each([](const std::string& name, std::weak_ptr<imodule> /*m*/){
+    m->for_each([](const std::string& name, std::weak_ptr<imodule>){
       std::cout << "  " << name <<  std::endl;
     });
   }
@@ -409,7 +432,7 @@ void core::_show_module_info(const std::string& module_name)
     }
     else
     {
-      gm->for_each([this](const std::string& name, std::weak_ptr<imodule> /*mod*/)
+      gm->for_each([this](const std::string& name, std::weak_ptr<imodule>)
       {
         this->_show_module_info(name);
       });
@@ -432,5 +455,6 @@ void core::_generate( const std::string& type, const std::string& path )
     std::cerr << "Config module not set" << std::endl;
   }
 }
+*/
 
 }
