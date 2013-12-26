@@ -9,4 +9,4 @@ include(Wfc)
 include_directories(wfc)
 
 add_subdirectory(core)
-add_subdirectory(tests)
+#add_subdirectory(tests)
