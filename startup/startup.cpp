@@ -149,7 +149,7 @@ void startup_impl::_show_help()
      << "  -i [ --info ] [arg]       show modules info                       " << std::endl
      << "  -n [ --name ] arg         unique daemon instance name             " << std::endl
      << "  -d [ --daemonize ]        run as daemon                           " << std::endl
-     << "  -c [ --startupdump ]         allow startup dump                         " << std::endl
+     << "  -c [ --coredump ]         allow core dump                         " << std::endl
      << "  -a [ --autoup ] [arg]     auto restart daemon                     " << std::endl
      << "  -C [ --config-path ] arg  path to the configuration file          " << std::endl
      << "  -G [ --generate ] [arg]   generate configuration                  " << std::endl;
