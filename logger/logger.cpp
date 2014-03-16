@@ -50,7 +50,6 @@ namespace {
 
   void write_to_stdout(const std::string& stdout, const std::string& name, const std::string& ident,  const std::string& str)
   {
-    // std::cout <<  "cout "<< cout <<  std::endl;
     std::ostream *p = nullptr;
     if (stdout=="cout")
       p = &std::cout;
@@ -73,7 +72,6 @@ namespace {
 logger::logger(const logger_config& conf)
   : _conf(conf)
 {
-  std::cout<< "conf path " << _conf.path << std::endl;
 }
 
 void logger::initialize(const std::string& /*name*/, std::stringstream& /*str*/)
@@ -83,7 +81,6 @@ void logger::initialize(const std::string& /*name*/, std::stringstream& /*str*/)
 
 void logger::write(const std::string& name, const std::string& ident,  const std::string& str)
 {
-  // std::cout <<  "--cout "<< _conf.cout <<  std::endl;
   std::lock_guard<std::mutex> lk(_mutex);
   if ( !_conf.path.empty() )
     write_to_file(_conf.path, name, ident, str);
