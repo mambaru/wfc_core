@@ -46,7 +46,6 @@ bool startup_module::parse_config(const std::string& confstr)
 
 void startup_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )
 {
-  std::cout << "void startup_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )" << std::endl;
   _global = gl; // TODO: _global не нужен
   _startup = std::make_shared<startup_impl>(gl);
   if ( auto g = _global.lock() )
