@@ -1,3 +1,5 @@
+/*
+ 
 #include <string>
 
 namespace wfc{ namespace detail{
@@ -31,7 +33,6 @@ struct po
 
   static po parse(int argc, char** argv);
 };
-
- 
-
 }}
+
+*/

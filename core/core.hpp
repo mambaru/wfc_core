@@ -57,7 +57,7 @@ private:
   
   void _idle();
 private:
-  std::shared_ptr< wfc::io_service > _io_service;
+  //std::shared_ptr< wfc::io_service > _io_service;
   std::weak_ptr<global> _global;
   core_config _conf;
 

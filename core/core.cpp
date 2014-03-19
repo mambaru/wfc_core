@@ -52,8 +52,8 @@ int core::run( /*int argc, char* argv[],*/ std::weak_ptr<global> gl )
 {
   _global = gl;
   auto global = _global.lock();
-  _io_service = std::make_shared<wfc::io_service>();
-  global->io_service = this->_io_service;
+  //_io_service = std::make_shared<wfc::io_service>();
+  //global->io_service = this->_io_service;
   
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
@@ -84,13 +84,15 @@ void core::configure(const core_config& conf)
 
 void core::_idle()
 {
+  auto global = _global.lock();
+  
   if ( _stop_flag )
   {
-    this->_io_service->stop();
+    global->io_service.stop();
     return;
   }
 
-  auto global = _global.lock();
+  
   
   global->idle.fire([](global::idle_callback callback){ return callback();});
 
@@ -110,14 +112,17 @@ void core::_idle()
 int core::_main_loop()
 try
 {
-  _idle_timer = std::make_unique<idle_timer>(*_io_service,  boost::posix_time::milliseconds(_conf.idle_timeout_ms) );
-  _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
-    this->_idle();  
-  });
-  
-  this->_io_service->run();
+  if ( auto g = _global.lock() )
+  {
+    _idle_timer = std::make_unique<idle_timer>(g->io_service,  boost::posix_time::milliseconds(_conf.idle_timeout_ms) );
+    _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
+      this->_idle();  
+    });
+    g->io_service.run();
+  }
   this->_stop();
   return 0;
+  
 }
 catch(const std::exception& e)
 {

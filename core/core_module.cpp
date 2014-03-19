@@ -50,7 +50,6 @@ void core_module::create( const std::string& /*name*/, std::weak_ptr<global> gl 
   _core = std::make_shared<core>();
   if ( auto g = _global.lock() )
     g->core = _core;
-  global::static_global = gl;
 }
 
 void core_module::configure(const std::string& confstr)
