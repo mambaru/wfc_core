@@ -48,13 +48,11 @@ void core::reconfigure()
   _reconfigure_flag = true;
 }
 
-int core::run( /*int argc, char* argv[],*/ std::weak_ptr<global> gl )
+int core::run( std::weak_ptr<global> gl )
 {
   _global = gl;
   auto global = _global.lock();
-  //_io_service = std::make_shared<wfc::io_service>();
-  //global->io_service = this->_io_service;
-  
+    
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
   signal(SIGINT,   signal_sigint_handler);
@@ -78,8 +76,19 @@ void core::stop( )
 
 void core::configure(const core_config& conf)
 {
-  CONFIG_LOG_MESSAGE("core module configured")
   this->_conf = conf;
+  
+  if ( this->_conf.rlimit_as_gb != nullptr )
+  {
+    rlim_t limit = *(this->_conf.rlimit_as_gb)*1024*1024*1024;
+    rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};
+    getrlimit( RLIMIT_AS, &rlim );
+    CONFIG_LOG_MESSAGE("current RLIMIT_DATA: " << rlim.rlim_cur << ", " << rlim.rlim_max)
+    CONFIG_LOG_MESSAGE("rlimit_as_gb: " << *(this->_conf.rlimit_as_gb) << "Gb")
+    rlim.rlim_cur = limit;
+    setrlimit( RLIMIT_AS, &rlim );
+  }
+  CONFIG_LOG_MESSAGE("core module configured " << (this->_conf.rlimit_as_gb != nullptr) )
 }
 
 void core::_idle()
@@ -110,7 +119,7 @@ void core::_idle()
 }
 
 int core::_main_loop()
-try
+//try
 {
   if ( auto g = _global.lock() )
   {
@@ -124,6 +133,7 @@ try
   return 0;
   
 }
+/*
 catch(const std::exception& e)
 {
   DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -143,6 +153,7 @@ catch(...)
   }
   throw;
 }
+*/
 
 ///
 /// sunrise

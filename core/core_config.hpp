@@ -4,14 +4,10 @@ namespace wfc{
 
 struct core_config
 {
-  bool enabled;
-  time_t idle_timeout_ms;
-  time_t wait_timeout_ms;
-  core_config()
-    : enabled(true)
-    , idle_timeout_ms(1000)
-    , wait_timeout_ms(200)
-  {}
+  bool enabled = false;
+  time_t idle_timeout_ms = 1000;
+  time_t wait_timeout_ms = 200;
+  std::shared_ptr<size_t> rlimit_as_gb;
 };
 
 }
