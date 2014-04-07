@@ -25,7 +25,6 @@ static void signal_sigint_handler(int)
   if ( auto g = global::static_global.lock() )
     if ( auto c = g->core.lock() )
       c->stop();
-  exit(0);
 }
 
 } // namespace
@@ -97,12 +96,12 @@ void core::_idle()
   
   if ( _stop_flag )
   {
+    std::cout << "void core::_idle() stop..." << std::endl;
     global->io_service.stop();
+    std::cout << "...void core::_idle() stop" << std::endl;
     return;
   }
 
-  
-  
   global->idle.fire([](global::idle_callback callback){ return callback();});
 
   if ( _reconfigure_flag )
@@ -124,12 +123,14 @@ int core::_main_loop()
   if ( auto g = _global.lock() )
   {
     _idle_timer = std::make_unique<idle_timer>(g->io_service,  boost::posix_time::milliseconds(_conf.idle_timeout_ms) );
-    _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
+    _idle_timer->async_wait([this](const boost::system::error_code& ){
       this->_idle();  
     });
     g->io_service.run();
   }
+  std::cout << "this->_stop()..." << std::endl;
   this->_stop();
+  std::cout << "...this->_stop()" << std::endl;
   return 0;
   
 }
@@ -242,6 +243,9 @@ void core::_start(const module_vector& modules)
 
 void core::_stop()
 {
+  if ( _idle_timer!=nullptr )
+    _idle_timer->cancel();
+  
   auto global = _global.lock();
   if ( !global )
     return;
@@ -254,15 +258,23 @@ void core::_stop()
     return left.second->shutdown_priority() > right.second->shutdown_priority();
   } );
 
+  /*
+  if (auto gm = global->modules.lock() )
+    gm->clear();
+  */
+  
+  std::for_each(modules.begin(), modules.end(), [](module_pair& m)
+  {
+    CONFIG_LOG_BEGIN("core::stop: module '" << m.first << "'...")
+    m.second->stop();
+    std::cout << "m.second.use_count = " << m.second.use_count() << std::endl;
+    //m.second.reset();
+    CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
+  });
+  
   DAEMON_LOG_END("stop '" << global->instance_name << "'...Done!")
   DAEMON_LOG_MESSAGE("=======================================")
 
-  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
-  {
-    CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
-    m.second->stop();
-    CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
-  });
 }
 
 
