@@ -96,9 +96,7 @@ void core::_idle()
   
   if ( _stop_flag )
   {
-    std::cout << "void core::_idle() stop..." << std::endl;
     global->io_service.stop();
-    std::cout << "...void core::_idle() stop" << std::endl;
     return;
   }
 
@@ -128,9 +126,9 @@ int core::_main_loop()
     });
     g->io_service.run();
   }
-  std::cout << "this->_stop()..." << std::endl;
+  
   this->_stop();
-  std::cout << "...this->_stop()" << std::endl;
+  
   return 0;
   
 }
@@ -267,7 +265,7 @@ void core::_stop()
   {
     CONFIG_LOG_BEGIN("core::stop: module '" << m.first << "'...")
     m.second->stop();
-    std::cout << "m.second.use_count = " << m.second.use_count() << std::endl;
+    
     //m.second.reset();
     CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
   });
