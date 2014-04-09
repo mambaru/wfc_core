@@ -26,6 +26,7 @@ public:
   virtual void initialize();
   virtual void start();
   virtual void stop();
+  virtual void shutdown();
   virtual void idle();
 private:
   void _create_single();

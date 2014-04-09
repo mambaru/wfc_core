@@ -164,6 +164,10 @@ void logger_module::start()
 
 void logger_module::stop()
 {
+}
+
+void logger_module::shutdown()
+{
   
 }
 
