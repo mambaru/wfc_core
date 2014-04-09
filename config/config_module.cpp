@@ -66,6 +66,11 @@ void config_module::start()
   
 }
 
+void config_module::shutdown()
+{
+  
+}
+
 void config_module::stop()
 {
   
