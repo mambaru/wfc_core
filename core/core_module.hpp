@@ -28,6 +28,7 @@ public:
   virtual void initialize();
   virtual void start();
   virtual void stop();
+  virtual void shutdown();
   virtual void idle();
 private:
   std::shared_ptr<core> _core;

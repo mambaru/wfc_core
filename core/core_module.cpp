@@ -73,6 +73,11 @@ void core_module::stop()
   
 }
 
+void core_module::shutdown()
+{
+  
+}
+
 void core_module::idle()
 {
   
