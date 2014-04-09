@@ -76,6 +76,11 @@ void startup_module::stop()
   
 }
 
+void startup_module::shutdown()
+{
+  
+}
+
 void startup_module::idle()
 {
   
