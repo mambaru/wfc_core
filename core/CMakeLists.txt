@@ -16,3 +16,5 @@ add_library(
 )
 
 build_info(wfc_core core)
+
+install(TARGETS wfc_core DESTINATION ${CMAKE_INSTALL_PREFIX})
