@@ -20,5 +20,5 @@ add_library(
 )
 
 build_info(wfc_config config)
-#target_link_libraries(wfc_config /tmp/config_build_info.o)
-#add_dependencies(wfc_config config_build_info)
+
+install(TARGETS wfc_config DESTINATION ${CMAKE_INSTALL_PREFIX})
