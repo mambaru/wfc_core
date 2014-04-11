@@ -16,3 +16,5 @@ add_library(
 )
 
 build_info(wfc_startup startup)
+
+install(TARGETS wfc_startup DESTINATION ${CMAKE_INSTALL_PREFIX})
