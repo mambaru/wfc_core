@@ -94,11 +94,13 @@ void core::_idle()
 {
   auto global = _global.lock();
   
+  
   if ( _stop_flag )
   {
     global->io_service.stop();
     return;
   }
+  
 
   global->idle.fire([](global::idle_callback callback){ return callback();});
 
@@ -125,9 +127,20 @@ int core::_main_loop()
       this->_idle();  
     });
     g->io_service.run();
+    g->io_service.reset();
   }
   
   this->_stop();
+  
+  /*
+  if ( auto g = _global.lock() )
+  {
+    while ( 0!=g->io_service.poll() )
+    {
+     
+    }
+  }
+  */
   
   return 0;
   
