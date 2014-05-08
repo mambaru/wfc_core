@@ -43,7 +43,10 @@ struct logger_module_config_json
       json::member<n_stdout,  logger_module_config, std::string, &logger_module_config::stdout>,
       json::member<n_prefix,  logger_module_config, std::string, &logger_module_config::prefix>
     >::type
-  >::serializer serializer;
+  > type;
+  
+  typedef type::serializer serializer;
+  typedef type::target target;
   
 };
 

@@ -21,8 +21,5 @@ add_library(
 )
 
 build_info(wfc_logger logger)
-#target_link_libraries(wfc_logger boost_system)
-#add_dependencies(
-#  wfc_logger
-#  logger_build_info
-#)
+
+install(TARGETS wfc_logger DESTINATION ${CMAKE_INSTALL_PREFIX})

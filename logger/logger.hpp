@@ -17,7 +17,7 @@ namespace wfc{
 
 class logger
   : public ilogger
-  , public callback_owner<>
+  , public callback_owner/*<>*/
 {
 public:
   logger(const logger_config& conf);
