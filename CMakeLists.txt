@@ -9,4 +9,7 @@ include(Wfc)
 include_directories(wfc)
 
 add_subdirectory(startup)
-#add_subdirectory(tests)
+
+if ( WFC_BUILD_ALL )
+  add_subdirectory(tests)
+endif()
