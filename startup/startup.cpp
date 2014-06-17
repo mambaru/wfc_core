@@ -106,6 +106,12 @@ bool startup_impl::_startup(int argc, char** argv)
         ss << "Restarting...";
       else
         ss << "Do not restarted.";
+      
+      if ( status!= 0 )
+        DAEMON_LOG_FATAL( ss.str() )
+      else
+        DAEMON_LOG_MESSAGE( ss.str() )
+        
       ::syslog(LOG_ERR, ss.str().c_str());
       ::closelog();
     });
