@@ -17,7 +17,11 @@ struct config_config_json
        json::member<n_enabled,        config_config, bool, &config_config::enabled>,
        json::member<n_reload_changed, config_config, bool, &config_config::reload_changed>
     >::type
-  >::serializer serializer; 
+  > type; 
+  
+  typedef type::target target;
+  typedef type::serializer serializer; 
+
 };
 
 }
