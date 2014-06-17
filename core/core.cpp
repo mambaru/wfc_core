@@ -77,17 +77,28 @@ void core::configure(const core_config& conf)
 {
   this->_conf = conf;
   
-  if ( this->_conf.rlimit_as_gb != nullptr )
+  if ( this->_conf.rlimit_as_mb != 0 )
   {
-    rlim_t limit = *(this->_conf.rlimit_as_gb)*1024*1024*1024;
+    rlim_t limit = this->_conf.rlimit_as_mb*1024*1024;
     rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};
-    getrlimit( RLIMIT_AS, &rlim );
-    CONFIG_LOG_MESSAGE("current RLIMIT_DATA: " << rlim.rlim_cur << ", " << rlim.rlim_max)
-    CONFIG_LOG_MESSAGE("rlimit_as_gb: " << *(this->_conf.rlimit_as_gb) << "Gb")
-    rlim.rlim_cur = limit;
-    setrlimit( RLIMIT_AS, &rlim );
+    if ( 0 == getrlimit( RLIMIT_AS, &rlim ) )
+    {
+      CONFIG_LOG_MESSAGE("current RLIMIT_DATA: " << rlim.rlim_cur << ", " << rlim.rlim_max)
+      CONFIG_LOG_MESSAGE("rlimit_as_mb: " << this->_conf.rlimit_as_mb << "Mb")
+      
+      rlim.rlim_cur = limit;
+      if ( 0 != setrlimit( RLIMIT_AS, &rlim ) )
+      {
+        CONFIG_LOG_ERROR("setrlimit: " << strerror(errno) )
+      }
+    }
+    else
+    {
+      CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
+    }
+    
   }
-  CONFIG_LOG_MESSAGE("core module configured " << (this->_conf.rlimit_as_gb != nullptr) )
+  CONFIG_LOG_MESSAGE("core module configured " )
 }
 
 void core::_idle()
