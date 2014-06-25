@@ -138,6 +138,7 @@ int core::_main_loop()
       this->_idle();  
     });
     g->io_service.run();
+    DEBUG_LOG_MESSAGE("### int core::_main_loop() reset")
     g->io_service.reset();
   }
   
@@ -245,21 +246,27 @@ void core::_configure(const module_vector& modules)
 
 void core::_initialize(const module_vector& modules)
 {
-  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
+  auto& io = _global.lock()->io_service;
+  std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::initialize: module '" << m.first << "'...")
     m.second->initialize();
     CONFIG_LOG_END("core::initialize: module '" << m.first << "'...Done!")
+    io.poll();
+    io.reset();
   });
 }
 
 void core::_start(const module_vector& modules)
 {
-  std::for_each(modules.begin(), modules.end(), [](const module_pair& m)
+  auto& io = _global.lock()->io_service;
+  std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
     m.second->start();
     CONFIG_LOG_END("core::start: module '" << m.first << "'...Done!")
+    io.poll();
+    io.reset();
   });
 }
 
