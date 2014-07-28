@@ -23,8 +23,12 @@ namespace {
 static void signal_sigint_handler(int)
 {
   if ( auto g = global::static_global.lock() )
+  {
     if ( auto c = g->core.lock() )
+    {
       c->stop();
+    }
+  }
 }
 
 } // namespace
@@ -70,6 +74,7 @@ int core::run( std::weak_ptr<global> gl )
 
 void core::stop( )
 {
+  TRACE_LOG_MESSAGE( "void core::stop( ) -1-" )
   _stop_flag = true;
 }
 
@@ -103,8 +108,8 @@ void core::configure(const core_config& conf)
 
 void core::_idle()
 {
-  auto global = _global.lock();
   
+  auto global = _global.lock();
   
   if ( _stop_flag )
   {
@@ -112,7 +117,6 @@ void core::_idle()
     return;
   }
   
-
   global->idle.fire([](global::idle_callback callback){ return callback();});
 
   if ( _reconfigure_flag )
@@ -138,7 +142,6 @@ int core::_main_loop()
       this->_idle();  
     });
     g->io_service.run();
-    DEBUG_LOG_MESSAGE("### int core::_main_loop() reset")
     g->io_service.reset();
   }
   
