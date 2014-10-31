@@ -4,7 +4,7 @@
 #include "config_config_json.hpp"
 #include <wfc/core/global.hpp>
 #include <iostream>
-#include "build_info.h"
+#include "config_build_info.h"
 
 namespace wfc{
 
