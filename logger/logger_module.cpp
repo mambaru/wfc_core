@@ -5,7 +5,7 @@
 #include <wfc/core/global.hpp>
 #include <iostream>
 #include <memory>
-#include "build_info.h"
+#include "logger_build_info.h"
 #include <wfc/logger.hpp>
 #include "logger.hpp"
 
