@@ -74,7 +74,8 @@ int core::run( std::weak_ptr<global> gl )
 
 void core::stop( )
 {
-  TRACE_LOG_MESSAGE( "void core::stop( ) -1-" )
+  // Может вызываться из обработчика сигнала и получим deadlock в logger
+  // TRACE_LOG_MESSAGE( "void core::stop( ) -1-" )
   _stop_flag = true;
 }
 
@@ -113,6 +114,7 @@ void core::_idle()
   
   if ( _stop_flag )
   {
+    DAEMON_LOG_MESSAGE("wfc_core: stop signal")
     global->io_service.stop();
     return;
   }
