@@ -24,8 +24,13 @@ namespace {
 static void signal_sighup_handler(int)
 {
   if ( auto g = global::static_global.lock() )
-    if ( auto c = g->config.lock() )
-      c->reconfigure();
+  {
+    g->io_service.post([g]()
+    {
+      if ( auto c = g->config.lock() )
+        c->reconfigure();
+    });
+  }
 }
 
 static time_t get_modify_time(const std::string& path)
@@ -35,7 +40,6 @@ static time_t get_modify_time(const std::string& path)
     return st.st_mtime;
   return static_cast<time_t>(-1);
 }
-
 
 } // namespace
 
