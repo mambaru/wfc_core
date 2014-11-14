@@ -26,12 +26,12 @@ namespace wfc{
   
 struct logger_module_config_json
 {
-  FAS_NAME(enabled)
-  FAS_NAME(single)
-  FAS_NAME(syslog)
-  FAS_NAME(lifetime)
-  FAS_NAME(stdout)
-  FAS_NAME(prefix)
+  JSON_NAME(enabled)
+  JSON_NAME(single)
+  JSON_NAME(syslog)
+  JSON_NAME(lifetime)
+  JSON_NAME(stdout)
+  JSON_NAME(prefix)
 
   typedef json::object<
     logger_module_config,
