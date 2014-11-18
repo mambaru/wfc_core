@@ -119,7 +119,7 @@ void core::_idle()
     return;
   }
   
-  global->idle.fire([](global::idle_callback callback){ return callback();});
+  global->idle.fire([](global::idle_handler handler){ return handler();});
 
   if ( _reconfigure_flag )
   {
