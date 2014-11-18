@@ -43,9 +43,9 @@ bool config_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void config_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )
+void config_module::create( const std::string& /*name*/, std::shared_ptr<global> gl )
 {
-  _global = gl.lock();
+  _global = gl;
   _config = std::make_shared<config>(_global);
   _global->config = _config;
 }

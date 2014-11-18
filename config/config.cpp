@@ -23,11 +23,11 @@ namespace {
 
 static void signal_sighup_handler(int)
 {
-  if ( auto g = global::static_global.lock() )
+  if ( auto g = global::static_global )
   {
     g->io_service.post([g]()
     {
-      if ( auto c = g->config.lock() )
+      if ( auto c = g->config )
         c->reconfigure();
     });
   }
@@ -102,7 +102,7 @@ void config::reconfigure()
     return;
   }
   _mainconf = mainconf;
-  if ( auto c = _global->core.lock() )
+  if ( auto c = _global->core )
     c->reconfigure();
   _init_timer();
 }
@@ -144,11 +144,11 @@ void config::_parse_configure(std::string source, std::string confstr, configura
     throw config_error(ss.str());
   }
 
-  if ( auto modules = _global->modules.lock() )
+  if ( auto modules = _global->modules )
   {
     for ( auto& mconf : mainconf)
     {
-      if ( auto m = modules->get(mconf.first).lock() )
+      if ( auto m = modules->get(mconf.first) )
       {
         jsonbeg = mconf.second.begin();
         jsonend = mconf.second.end();
@@ -204,11 +204,11 @@ std::string config::generate(std::string type, std::string path)
   std::string confstr;
   configuration mainconf;
 
-  if (auto gm = _global->modules.lock())
+  if (auto gm = _global->modules)
   {
-    gm->for_each([&mainconf, &type](const std::string& name, std::weak_ptr<imodule> module){
-      if (auto m = module.lock() )
-        mainconf[name] = m->generate(type);
+    gm->for_each([&mainconf, &type](const std::string& name, std::shared_ptr<imodule> module){
+      if (module!=nullptr)
+        mainconf[name] = module->generate(type);
     } );
   }
   
