@@ -1,4 +1,7 @@
 #include <string>
+#include <map>
+
+#include <wfc/core/global.hpp>
 
 namespace wfc{ namespace detail{
 
@@ -17,6 +20,14 @@ struct po
   std::string instance_name;
   std::string config_path;
   std::string generate_name;
+  
+  ::wfc::module_options::module_options_map module_options;
+  /*typedef std::map<std::string, std::string> options_map;
+  typedef std::map<std::string, options_map> module_options_map;
+  
+  module_options_map module_options;
+  */
+  
 
   po()
     : usage(false)

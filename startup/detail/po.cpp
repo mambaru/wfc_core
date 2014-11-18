@@ -1,6 +1,8 @@
 #include "po.hpp"
 #include <vector>
 #include <stdexcept>
+#include <cstring>
+#include <iostream>
 
 
 namespace wfc{ namespace detail{
@@ -16,6 +18,7 @@ po po::parse(int argc, char** argv)
   size_t size = vpo.size();
   po_info.program_name = vpo[0];
   po_info.usage = ( size == 1 );
+  
   for (size_t i=1; i < size; )
   {
     if ( vpo[i] == "--help" || vpo[i]=="-h")
@@ -66,7 +69,7 @@ po po::parse(int argc, char** argv)
     else if (vpo[i] == "--generate" || vpo[i]=="-G")
     {
       po_info.generate = true;
-      if (i != size - 1 && vpo[i+1][0]!='-')
+      if ( (i != size - 1) && (vpo[i+1][0]!='-'))
       {
         ++i;
         po_info.generate_name = vpo[i];
@@ -74,7 +77,31 @@ po po::parse(int argc, char** argv)
     }
     else
     {
-      throw std::runtime_error( std::string("unrecognized option '") + vpo[i]+ "'");
+      bool is_module_opt = false;
+      if ( vpo[i].find("--")!=std::string::npos )
+      {
+        std::string opt = vpo[i].substr(2);
+        size_t pos = opt.find_first_of('-');
+        if ( pos != std::string::npos )
+        {
+          size_t pos2 = opt.find_first_of('=', pos);
+          std::string name = opt.substr(0, pos);
+          std::string key = opt.substr(pos+1, pos2-pos-1);
+          std::string value;
+          if (pos2 != std::string::npos)
+          {
+            value = opt.substr(pos2+1);
+          }
+          if (!name.empty() && !key.empty())
+          {
+            po_info.module_options[name][key] = value;
+            is_module_opt = true;
+          }
+        }
+      }
+      
+      if ( !is_module_opt )
+        throw std::runtime_error( std::string("unrecognized option '") + vpo[i]+ "'");
     }
     ++i;
   }

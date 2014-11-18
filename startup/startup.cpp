@@ -70,6 +70,8 @@ bool startup_impl::_startup(int argc, char** argv)
                                  ? p.instance_name
                                  : p.program_name;
   
+  this->_global->options = p.module_options;
+  
   if (p.usage)
     this->_show_usage();
   

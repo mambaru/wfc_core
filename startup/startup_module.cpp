@@ -55,28 +55,28 @@ void startup_module::create( const std::string& /*name*/, std::shared_ptr<global
   //!!! global::static_global = gl;
 }
 
-void startup_module::configure(const std::string& confstr)
+void startup_module::configure(const std::string& confstr, const std::string&)
 {
   startup_config_json::serializer()(_config, confstr.begin(), confstr.end());
   _startup->configure(_config);
 }
 
-void startup_module::initialize()
+void startup_module::initialize(const std::string&)
 {
   
 }
 
-void startup_module::start()
+void startup_module::start(const std::string&)
 {
   
 }
 
-void startup_module::stop()
+void startup_module::stop(const std::string&)
 {
   
 }
 
-void startup_module::shutdown()
+void startup_module::shutdown(const std::string&)
 {
   
 }
