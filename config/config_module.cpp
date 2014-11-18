@@ -50,28 +50,28 @@ void config_module::create( const std::string& /*name*/, std::shared_ptr<global>
   _global->config = _config;
 }
 
-void config_module::configure(const std::string& confstr)
+void config_module::configure(const std::string& confstr, const std::string&)
 {
   config_config_json::serializer()(_config_config, confstr.begin(), confstr.end());
   _config->configure(_config_config);
 }
 
-void config_module::initialize()
+void config_module::initialize(const std::string&)
 {
   
 }
 
-void config_module::start()
+void config_module::start(const std::string&)
 {
   
 }
 
-void config_module::shutdown()
+void config_module::shutdown(const std::string&)
 {
   
 }
 
-void config_module::stop()
+void config_module::stop(const std::string&)
 {
   
 }
