@@ -3,7 +3,7 @@
 #include <wfc/core/iconfig.hpp>
 #include <wfc/module/imodule.hpp>
 //#include <wfc/inet/imux.hpp>
-#include <wfc/callback/callback_owner.hpp>
+#include <wfc/core/callback_owner.hpp>
 
 #include "configuration.hpp"
 #include "config_config.hpp"
