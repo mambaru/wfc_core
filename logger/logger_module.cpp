@@ -104,7 +104,7 @@ void logger_module::_reg_loggers()
     return true;
   };
   
-  if ( auto lr = _global->loggers.lock() )
+  if ( auto lr = _global->loggers )
   {
     lr->set("daemon", _daemon_log);
     lr->set("config", _config_log);
@@ -116,9 +116,9 @@ void logger_module::_reg_loggers()
 
 void logger_module::_unreg_loggers()
 {
-  if ( auto lr = _global->loggers.lock() )
+  if ( auto lr = _global->loggers )
   {
-    std::weak_ptr<ilogger> nptr;
+    std::shared_ptr<ilogger> nptr;
     lr->set("daemon", nptr );
     lr->set("config", nptr );
     lr->set("common", nptr );
@@ -128,9 +128,9 @@ void logger_module::_unreg_loggers()
 }
 
 
-void logger_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )
+void logger_module::create( const std::string& /*name*/, std::shared_ptr<global> gl )
 {
-  _global = gl.lock();
+  _global = gl;
   _config = logger_module_config();
 
   _create_single();
