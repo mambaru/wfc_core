@@ -53,28 +53,28 @@ void core_module::create( const std::string& /*name*/, std::shared_ptr<global> g
     g->core = _core;
 }
 
-void core_module::configure(const std::string& confstr)
+void core_module::configure(const std::string& confstr, const std::string&)
 {
   core_config_json::serializer()(_config, confstr.begin(), confstr.end());
   _core->configure(_config);
 }
 
-void core_module::initialize()
+void core_module::initialize(const std::string&)
 {
   
 }
 
-void core_module::start()
+void core_module::start(const std::string&)
 {
   
 }
 
-void core_module::stop()
+void core_module::stop(const std::string&)
 {
   
 }
 
-void core_module::shutdown()
+void core_module::shutdown(const std::string&)
 {
   
 }

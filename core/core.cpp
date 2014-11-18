@@ -233,7 +233,7 @@ void core::_configure(const module_vector& modules)
       if ( !confstr.empty() )
       {
         CONFIG_LOG_BEGIN("core::configure: module '" << m.first << "'...")
-        m.second->configure(confstr);
+        m.second->configure(confstr, std::string() );
         CONFIG_LOG_END("core::configure: module '" << m.first << "'...Done!")
       }
       else
@@ -254,7 +254,7 @@ void core::_initialize(const module_vector& modules)
   std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::initialize: module '" << m.first << "'...")
-    m.second->initialize();
+    m.second->initialize(std::string());
     CONFIG_LOG_END("core::initialize: module '" << m.first << "'...Done!")
     io.poll();
     io.reset();
@@ -267,7 +267,7 @@ void core::_start(const module_vector& modules)
   std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
-    m.second->start();
+    m.second->start(std::string());
     CONFIG_LOG_END("core::start: module '" << m.first << "'...Done!")
     io.poll();
     io.reset();
@@ -299,7 +299,7 @@ void core::_stop()
   std::for_each(modules.begin(), modules.end(), [](module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::stop: module '" << m.first << "'...")
-    m.second->stop();
+    m.second->stop(std::string());
     
     //m.second.reset();
     CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
