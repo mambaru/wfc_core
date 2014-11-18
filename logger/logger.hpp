@@ -5,7 +5,7 @@
 #include <wfc/logger/ilogger.hpp>
 #include <wfc/module/imodule.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/callback/callback_owner.hpp>
+#include <wfc/core/callback_owner.hpp>
 //#include <wfc/inet/imux.hpp>
 
 #include "logger_config.hpp"
