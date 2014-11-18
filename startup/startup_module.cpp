@@ -44,7 +44,7 @@ bool startup_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void startup_module::create( const std::string& /*name*/, std::weak_ptr<global> gl )
+void startup_module::create( const std::string& /*name*/, std::shared_ptr<global> gl )
 {
   _global = gl; // TODO: _global не нужен
   _startup = std::make_shared<startup_impl>(gl);

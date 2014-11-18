@@ -89,7 +89,7 @@ bool startup_impl::_startup(int argc, char** argv)
   if ( p.usage || p.help || p.info || p.generate )
     return false;
 
-  if ( auto c = this->_global->config.lock() )
+  if ( auto c = this->_global->config )
     c->initialize(p.config_path);
 
   if ( p.daemonize )
@@ -161,7 +161,7 @@ void startup_impl::_show_help()
      << "  -G [ --generate ] [arg]   generate configuration                  " << std::endl;
   std::cout<< std::endl;
 
-  if ( auto m = _global->modules.lock())
+  if ( auto m = _global->modules)
   {
     std::cout << "modules:" << std::endl;
     m->for_each([](const std::string& name, std::weak_ptr<imodule> /*m*/){
@@ -181,11 +181,11 @@ void startup_impl::_show_info()
 
 void startup_impl::_show_module_info(const std::string& module_name)
 {
-  if (auto gm = _global->modules.lock() )
+  if (auto gm = _global->modules )
   {
     if (!module_name.empty())
     {
-      if ( auto m = gm->get(module_name).lock() )
+      if ( auto m = gm->get(module_name) )
       {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << module_name << " module version:" << std::endl;
@@ -195,7 +195,7 @@ void startup_impl::_show_module_info(const std::string& module_name)
     }
     else
     {
-      gm->for_each([this](const std::string& name, std::weak_ptr<imodule> /*mod*/)
+      gm->for_each([this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
       {
         this->_show_module_info(name);
       });
@@ -209,7 +209,7 @@ void startup_impl::_show_module_info(const std::string& module_name)
 
 void startup_impl::_generate( const std::string& type, const std::string& path )
 {
-  if ( auto c = _global->config.lock() )
+  if ( auto c = _global->config )
   {
     c->generate(type, path);
   }
