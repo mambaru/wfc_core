@@ -22,9 +22,9 @@ namespace {
 
 static void signal_sigint_handler(int)
 {
-  if ( auto g = global::static_global.lock() )
+  if ( auto g = global::static_global )
   {
-    if ( auto c = g->core.lock() )
+    if ( auto c = g->core )
     {
       c->stop();
     }
@@ -51,7 +51,7 @@ void core::reconfigure()
   _reconfigure_flag = true;
 }
 
-int core::run( std::weak_ptr<global> gl )
+int core::run( std::shared_ptr<global> gl )
 {
   _global = gl;
   auto global = _global.lock();
@@ -192,10 +192,10 @@ void core::_prepare(module_vector& mv)
 {
   if ( auto global = _global.lock() )
   {
-    if (auto gm = global->modules.lock() )
+    if (auto gm = global->modules )
     {
-      gm->for_each([&mv](const std::string& name, std::weak_ptr<imodule> m){
-        mv.push_back( module_pair( name, m.lock()) );
+      gm->for_each([&mv](const std::string& name, std::shared_ptr<imodule> m){
+        mv.push_back( module_pair( name, m) );
       });
     }
   }
@@ -225,8 +225,7 @@ void core::_configure(const module_vector& modules)
   if ( !global )
     return;
   
-  auto config = global->config.lock();
-  if ( config )
+  if ( auto config = global->config )
   {
     std::for_each(modules.begin(), modules.end(), [config](const module_pair& m)
     {

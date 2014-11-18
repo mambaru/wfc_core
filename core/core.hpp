@@ -26,7 +26,7 @@ public:
   
   /// icore
   virtual void reconfigure();
-  virtual int run( /*int argc, char* argv[],*/ std::weak_ptr<global> g );
+  virtual int run( /*int argc, char* argv[],*/ std::shared_ptr<global> g );
   virtual void stop( );
 
   // core_module
