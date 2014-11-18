@@ -137,7 +137,7 @@ void logger_module::create( const std::string& /*name*/, std::shared_ptr<global>
   _reg_loggers();
 }
 
-void logger_module::configure(const std::string& confstr)
+void logger_module::configure(const std::string& confstr, const std::string&)
 {
   logger_module_config_json::serializer()(_config, confstr.begin(), confstr.end());
 
@@ -152,21 +152,21 @@ void logger_module::configure(const std::string& confstr)
     _unreg_loggers();
 }
 
-void logger_module::initialize()
+void logger_module::initialize(const std::string&)
 {
   
 }
 
-void logger_module::start()
+void logger_module::start(const std::string&)
 {
   
 }
 
-void logger_module::stop()
+void logger_module::stop(const std::string&)
 {
 }
 
-void logger_module::shutdown()
+void logger_module::shutdown(const std::string&)
 {
   
 }

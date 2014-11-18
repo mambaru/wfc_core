@@ -22,11 +22,11 @@ public:
   virtual std::string generate(const std::string& type) const;
   virtual bool parse_config(const std::string& conf);
   virtual void create( const std::string& name, std::shared_ptr<global> g );
-  virtual void configure(const std::string& conf);
-  virtual void initialize();
-  virtual void start();
-  virtual void stop();
-  virtual void shutdown();
+  virtual void configure(const std::string& conf, const std::string&);
+  virtual void initialize(const std::string&);
+  virtual void start(const std::string&);
+  virtual void stop(const std::string&);
+  virtual void shutdown(const std::string&);
   virtual void idle();
 private:
   void _create_single();
