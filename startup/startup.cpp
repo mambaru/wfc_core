@@ -160,7 +160,8 @@ void startup_impl::_show_help()
      << "  -c [ --coredump ]         allow core dump                         " << std::endl
      << "  -a [ --autoup ] [arg]     auto restart daemon                     " << std::endl
      << "  -C [ --config-path ] arg  path to the configuration file          " << std::endl
-     << "  -G [ --generate ] [arg]   generate configuration                  " << std::endl;
+     << "  -G [ --generate ] [arg]   generate configuration                  " << std::endl
+     << "  --NAME-KEY=[VALUE]        module defined options                  " << std::endl;
   std::cout<< std::endl;
 
   if ( auto m = _global->modules)
