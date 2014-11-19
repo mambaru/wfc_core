@@ -104,27 +104,27 @@ void logger_module::_reg_loggers()
     return true;
   };
   
-  if ( auto lr = _global->loggers )
-  {
-    lr->set("daemon", _daemon_log);
-    lr->set("config", _config_log);
-    lr->set("common", _common_log);
-    lr->set("debug",  _debug_log );
-    lr->set("trace",  _trace_log );
-  }
+  /*if ( auto lr = _global->loggers )
+  {*/
+    _global->registry.set("log-daemon", _daemon_log);
+    _global->registry.set("log-config", _config_log);
+    _global->registry.set("log-common", _common_log);
+    _global->registry.set("log-debug",  _debug_log );
+    _global->registry.set("log-trace",  _trace_log );
+  //}
 }
 
 void logger_module::_unreg_loggers()
 {
-  if ( auto lr = _global->loggers )
-  {
+  /*if ( auto lr = _global->loggers )
+  {*/
     std::shared_ptr<ilogger> nptr;
-    lr->set("daemon", nptr );
-    lr->set("config", nptr );
-    lr->set("common", nptr );
-    lr->set("debug",  nptr );
-    lr->set("trace",  nptr );
-  }
+    _global->registry.set("log-daemon", nptr );
+    _global->registry.set("log-config", nptr );
+    _global->registry.set("log-common", nptr );
+    _global->registry.set("log-debug",  nptr );
+    _global->registry.set("log-trace",  nptr );
+  //}
 }
 
 
