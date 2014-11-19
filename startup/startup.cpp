@@ -164,13 +164,13 @@ void startup_impl::_show_help()
      << "  --NAME-KEY=[VALUE]        module defined options                  " << std::endl;
   std::cout<< std::endl;
 
-  if ( auto m = _global->modules)
-  {
-    std::cout << "modules:" << std::endl;
-    m->for_each([](const std::string& name, std::weak_ptr<imodule> /*m*/){
-      std::cout << "  " << name <<  std::endl;
-    });
-  }
+  /*if ( auto m = _global->modules)*/
+  //{
+  std::cout << "modules:" << std::endl;
+  _global->registry.for_each<imodule>([](const std::string& name, std::shared_ptr<imodule> /*m*/){
+    std::cout << "  " << name <<  std::endl;
+  });
+  //}
 }
 
 void startup_impl::_show_info()
@@ -184,11 +184,11 @@ void startup_impl::_show_info()
 
 void startup_impl::_show_module_info(const std::string& module_name)
 {
-  if (auto gm = _global->modules )
-  {
+  /*if (auto gm = _global->modules )
+  {*/
     if (!module_name.empty())
     {
-      if ( auto m = gm->get(module_name) )
+      if ( auto m = _global->registry.get<imodule>(module_name) )
       {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << module_name << " module version:" << std::endl;
@@ -198,12 +198,12 @@ void startup_impl::_show_module_info(const std::string& module_name)
     }
     else
     {
-      gm->for_each([this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
+      _global->registry.for_each<imodule>([this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
       {
         this->_show_module_info(name);
       });
     }
-  }
+  // }
 }
 
 ///
