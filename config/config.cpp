@@ -143,11 +143,12 @@ void config::_parse_configure(std::string source, std::string confstr, configura
     throw config_error(ss.str());
   }
 
-  if ( auto modules = _global->modules )
-  {
+  /*if ( auto modules = _global->modules )
+  {*/
     for ( auto& mconf : mainconf)
     {
-      if ( auto m = modules->get(mconf.first) )
+      std::cout << "ещлЖ "<< mconf.first << std::endl;
+      if ( auto m = _global->registry.get<imodule>(mconf.first) )
       {
         jsonbeg = mconf.second.begin();
         jsonend = mconf.second.end();
@@ -185,7 +186,7 @@ void config::_parse_configure(std::string source, std::string confstr, configura
         throw config_error(ss.str());
       }
     }
-  }
+  //}
 }
 
 std::string config::get_config(std::string name)
@@ -203,13 +204,13 @@ std::string config::generate(std::string type, std::string path)
   std::string confstr;
   configuration mainconf;
 
-  if (auto gm = _global->modules)
-  {
-    gm->for_each([&mainconf, &type](const std::string& name, std::shared_ptr<imodule> module){
+  /*if (auto gm = _global->modules)
+  {*/
+    _global->registry.for_each<imodule>([&mainconf, &type](const std::string& name, std::shared_ptr<imodule> module){
       if (module!=nullptr)
         mainconf[name] = module->generate(type);
     } );
-  }
+  /*}*/
   
   
   configuration_json::serializer()(mainconf, std::back_inserter(confstr));
