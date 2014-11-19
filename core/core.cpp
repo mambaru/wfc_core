@@ -192,12 +192,12 @@ void core::_prepare(module_vector& mv)
 {
   if ( auto global = _global.lock() )
   {
-    if (auto gm = global->modules )
-    {
-      gm->for_each([&mv](const std::string& name, std::shared_ptr<imodule> m){
+    /*if (auto gm = global->modules )
+    {*/
+      global->registry.for_each<imodule>([&mv](const std::string& name, std::shared_ptr<imodule> m){
         mv.push_back( module_pair( name, m) );
       });
-    }
+    //}
   }
 }
 
