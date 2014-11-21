@@ -22,6 +22,8 @@ namespace {
 
 static void signal_sigint_handler(int)
 {
+  std::cout << "Stop signal handler" << std::endl;
+  
   if ( auto g = global::static_global.lock() )
   {
     if ( auto c = g->core.lock() )
