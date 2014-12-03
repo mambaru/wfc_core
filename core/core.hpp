@@ -66,8 +66,8 @@ private:
   typedef std::chrono::steady_clock::time_point time_point;
   time_point _idle_time;
 
-  bool _reconfigure_flag;
-  bool _stop_flag;
+  std::atomic<bool> _reconfigure_flag;
+  std::atomic<bool> _stop_flag;
   typedef boost::asio::deadline_timer idle_timer;
   std::unique_ptr<idle_timer> _idle_timer;
   //std::chrono::milliseconds _idle_time;
