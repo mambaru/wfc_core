@@ -25,7 +25,8 @@ static void signal_sigint_handler(int)
   std::cout << "Stop signal handler" << std::endl;
   if ( auto g = global::static_global )
   {
-    if ( auto c = g->core )
+    //if ( auto c = g->core )
+    if ( auto c = g->registry.get<icore>("core") )
     {
       c->stop();
     }
@@ -195,7 +196,7 @@ void core::_prepare(module_vector& mv)
   {
     /*if (auto gm = global->modules )
     {*/
-      global->registry.for_each<imodule>([&mv](const std::string& name, std::shared_ptr<imodule> m){
+      global->registry.for_each<imodule>([&mv](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> m){
         mv.push_back( module_pair( name, m) );
       });
     //}
@@ -226,7 +227,8 @@ void core::_configure(const module_vector& modules)
   if ( !global )
     return;
   
-  if ( auto config = global->config )
+  //if ( auto config = global->config )
+  if ( auto config = global->registry.get<iconfig>("config") )
   {
     std::for_each(modules.begin(), modules.end(), [config](const module_pair& m)
     {

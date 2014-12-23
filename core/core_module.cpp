@@ -50,7 +50,10 @@ void core_module::create( const std::string& /*name*/, std::shared_ptr<global> g
   _global = gl; // TODO: _global не нужен
   _core = std::make_shared<core>();
   if ( auto g = _global.lock() )
-    g->core = _core;
+  {
+    g->registry.set("core", _core);
+    //g->core = _core;
+  }
 }
 
 void core_module::configure(const std::string& confstr, const std::string&)
