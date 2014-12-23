@@ -91,7 +91,8 @@ bool startup_impl::_startup(int argc, char** argv)
   if ( p.usage || p.help || p.info || p.generate )
     return false;
 
-  if ( auto c = this->_global->config )
+  //if ( auto c = this->_global->config )
+  if ( auto c = this->_global->registry.get<iconfig>("config") )
     c->initialize(p.config_path);
 
   if ( p.daemonize )
@@ -167,7 +168,7 @@ void startup_impl::_show_help()
   /*if ( auto m = _global->modules)*/
   //{
   std::cout << "modules:" << std::endl;
-  _global->registry.for_each<imodule>([](const std::string& name, std::shared_ptr<imodule> /*m*/){
+  _global->registry.for_each<imodule>([](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> /*m*/){
     std::cout << "  " << name <<  std::endl;
   });
   //}
@@ -182,13 +183,16 @@ void startup_impl::_show_info()
   std::cout << _global->wfc_version << std::endl;
 }
 
+
+
+
 void startup_impl::_show_module_info(const std::string& module_name)
 {
   /*if (auto gm = _global->modules )
   {*/
     if (!module_name.empty())
     {
-      if ( auto m = _global->registry.get<imodule>(module_name) )
+      if ( auto m = _global->registry.get<imodule>("module", module_name) )
       {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << module_name << " module version:" << std::endl;
@@ -198,7 +202,7 @@ void startup_impl::_show_module_info(const std::string& module_name)
     }
     else
     {
-      _global->registry.for_each<imodule>([this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
+      _global->registry.for_each<imodule>([this](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> /*mod*/)
       {
         this->_show_module_info(name);
       });
@@ -212,7 +216,8 @@ void startup_impl::_show_module_info(const std::string& module_name)
 
 void startup_impl::_generate( const std::string& type, const std::string& path )
 {
-  if ( auto c = _global->config )
+  //if ( auto c = _global->config )
+  if ( auto c = _global->registry.get<iconfig>("config") )
   {
     c->generate(type, path);
   }

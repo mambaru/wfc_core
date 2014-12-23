@@ -49,7 +49,10 @@ void startup_module::create( const std::string& /*name*/, std::shared_ptr<global
   _global = gl; // TODO: _global не нужен
   _startup = std::make_shared<startup_impl>(gl);
   if ( auto g = _global.lock() )
-    g->startup = _startup;
+  {
+    g->registry.set("startup", _startup);
+    //g->startup = _startup;
+  }
  
   
   //!!! global::static_global = gl;
