@@ -47,7 +47,8 @@ void config_module::create( const std::string& /*name*/, std::shared_ptr<global>
 {
   _global = gl;
   _config = std::make_shared<config>(_global);
-  _global->config = _config;
+  //_global->config = _config;
+  _global->registry.set("config", _config);
 }
 
 void config_module::configure(const std::string& confstr, const std::string&)
