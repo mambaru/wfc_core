@@ -4,6 +4,7 @@
 #include <wfc/core/global.hpp>
 #include <wfc/module/imodule.hpp>
 #include <wfc/core/iconfig.hpp>
+#include <wfc/core/icore.hpp>
 #include <wfc/core/except.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
