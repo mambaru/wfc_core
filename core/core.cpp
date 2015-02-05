@@ -66,6 +66,14 @@ int core::run( std::shared_ptr<global> gl )
   CONFIG_LOG_MESSAGE("core::run: sunrise!")
   
   this->_sunrise();
+  
+  
+  global->after_start.fire([](global::fire_handler handler){ 
+    DAEMON_LOG_BEGIN("after start handler")
+    handler();
+    DAEMON_LOG_END("after start handler")
+  });
+
 
   DAEMON_LOG_MESSAGE("***************************************")
   DAEMON_LOG_MESSAGE("************* started *****************")
@@ -121,7 +129,7 @@ void core::_idle()
     return;
   }
   
-  global->idle.fire([](global::idle_handler handler){ return handler();});
+  global->idle.fire([](global::fire_handler handler){ return handler();});
 
   if ( _reconfigure_flag )
   {
@@ -287,30 +295,37 @@ void core::_stop()
     return;
 
   DAEMON_LOG_BEGIN("stop '" << global->instance_name << "'...")
+  
+  global->before_stop.fire([](global::fire_handler handler){ 
+    DAEMON_LOG_BEGIN("before stop handler")
+    handler();
+    DAEMON_LOG_END("before stop handler")
+  });
+
   CONFIG_LOG_MESSAGE("----------- stopping... ---------------")
+
+
   module_vector modules;
   this->_prepare(modules);
   std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
     return left.second->shutdown_priority() > right.second->shutdown_priority();
   } );
-
-  /*
-  if (auto gm = global->modules.lock() )
-    gm->clear();
-  */
   
   std::for_each(modules.begin(), modules.end(), [](module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::stop: module '" << m.first << "'...")
     m.second->stop(std::string());
-    
-    //m.second.reset();
     CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
   });
   
+  global->after_stop.fire([](global::fire_handler handler){ 
+    DAEMON_LOG_BEGIN("after stop handler")
+    handler();
+    DAEMON_LOG_END("after stop handler")
+  });
+
   DAEMON_LOG_END("stop '" << global->instance_name << "'...Done!")
   DAEMON_LOG_MESSAGE("=======================================")
-
 }
 
 
