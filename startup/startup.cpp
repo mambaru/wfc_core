@@ -86,10 +86,14 @@ bool startup_impl::_startup(int argc, char** argv)
   }
 
   if (p.generate)
+  {
     this->_generate(p.generate_name, p.config_path);
+  }
 
   if ( p.usage || p.help || p.info || p.generate )
+  {
     return false;
+  }
 
   //if ( auto c = this->_global->config )
   if ( auto c = this->_global->registry.get<iconfig>("config") )
@@ -111,9 +115,13 @@ bool startup_impl::_startup(int argc, char** argv)
         ss << "Do not restarted.";
       
       if ( status!= 0 )
+      {
         DAEMON_LOG_FATAL( ss.str() )
+      }
       else
+      {
         DAEMON_LOG_MESSAGE( ss.str() )
+      }
         
       ::syslog(LOG_ERR, ss.str().c_str());
       ::closelog();
