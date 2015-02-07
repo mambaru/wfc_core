@@ -2,8 +2,6 @@
 
 //#include <wfc/inet/epoller.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/module/imodule.hpp>
-#include <wfc/logger/ilogger.hpp>
 #include <vector>
 #include <string>
 #include <iostream>

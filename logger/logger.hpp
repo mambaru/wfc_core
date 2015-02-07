@@ -3,9 +3,8 @@
 #include <mutex>
 
 #include <wfc/logger/ilogger.hpp>
-#include <wfc/module/imodule.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/core/callback_owner.hpp>
+//#include <wfc/core/callback_owner.hpp>
 //#include <wfc/inet/imux.hpp>
 
 #include "logger_config.hpp"
@@ -17,7 +16,7 @@ namespace wfc{
 
 class logger
   : public ilogger
-  , public callback_owner/*<>*/
+  //, public callback_owner/*<>*/
 {
 public:
   logger(const logger_config& conf);

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "logger_module_config.hpp"
-#include <wfc/module/imodule.hpp>
+#include <wfc/core/imodule.hpp>
 #include <memory>
 #include <string>
 

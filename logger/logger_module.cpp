@@ -28,7 +28,7 @@ std::string logger_module::version() const
 
 std::string logger_module::description() const
 {
-  return std::string("Модуль ядра");
+  return std::string("Log module");
 }
 
 std::string logger_module::generate(const std::string& /*type*/)  const
