@@ -2,7 +2,7 @@
 
 //#include <wfc/inet/epoller.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/module/imodule.hpp>
+#include <wfc/core/imodule.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/core/except.hpp>
@@ -62,7 +62,7 @@ config::config(std::shared_ptr<global> gl)
 {
   if ( _global )
   {
-    _global->idle.push_back( this->callback<void>([this]()
+    _global->idle.push_back( /*this->callback<void>(*/[this]()
     {
       if ( !this->_conf.enabled )
         return;
@@ -74,7 +74,7 @@ config::config(std::shared_ptr<global> gl)
           this->reconfigure();
         this->_config_changed = t;
       }
-    }));
+    }/*)*/);
   }
 }
 
@@ -206,17 +206,13 @@ std::string config::generate(std::string type, std::string path)
   std::string confstr;
   configuration mainconf;
 
-  /*if (auto gm = _global->modules)
-  {*/
-    _global->registry.for_each<imodule>([&mainconf, &type](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> module){
-      if (module!=nullptr)
-        mainconf[name] = module->generate(type);
-    } );
-  /*}*/
-  
+  _global->registry.for_each<imodule>("module", [&mainconf, &type](const std::string& name, std::shared_ptr<imodule> module)
+  {
+    if (module!=nullptr)
+      mainconf[name] = module->generate(type);
+  });
   
   configuration_json::serializer()(mainconf, std::back_inserter(confstr));
-
 
   if ( path.empty() )
     path = "generate.conf";

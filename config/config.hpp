@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
 #include <wfc/core/iconfig.hpp>
-#include <wfc/module/imodule.hpp>
+#include <wfc/core/global.hpp>
+//#include <wfc/module/imodule.hpp>
 //#include <wfc/inet/imux.hpp>
-#include <wfc/core/callback_owner.hpp>
+//#include <wfc/core/callback_owner.hpp>
 
 #include "configuration.hpp"
 #include "config_config.hpp"
@@ -12,8 +13,9 @@ namespace wfc{
 
 //class config_timer;
 class config
-  : public callback_owner/*<>*/
-  , public iconfig
+  :  public iconfig
+//  : public callback_owner/*<>*/
+//  , public iconfig
 {
   
 public:
