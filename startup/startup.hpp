@@ -2,7 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <wfc/core/istartup.hpp>
-#include <wfc/module/imodule.hpp>
+//#include <wfc/module/imodule.hpp>
 //#include <wfc/inet/imux.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio.hpp>
@@ -28,10 +28,11 @@ public:
   // startup_module
   void configure(const startup_config& conf);
   void reconfigure();
+  /*
 private:
   typedef std::pair<std::string, std::shared_ptr<imodule> > module_pair;
   typedef std::vector<module_pair> module_vector;
-
+*/
 private:
   bool _startup( int argc, char** argv);
   void _generate( const std::string& type, const std::string& path );

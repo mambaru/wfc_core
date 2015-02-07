@@ -2,7 +2,7 @@
 #include "detail/po.hpp"
 //#include <wfc/inet/epoller.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/module/imodule.hpp>
+#include <wfc/core/imodule.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
@@ -176,7 +176,7 @@ void startup_impl::_show_help()
   /*if ( auto m = _global->modules)*/
   //{
   std::cout << "modules:" << std::endl;
-  _global->registry.for_each<imodule>([](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> /*m*/){
+  _global->registry.for_each<imodule>("module", []( const std::string& name, std::shared_ptr<imodule> /*m*/){
     std::cout << "  " << name <<  std::endl;
   });
   //}
@@ -210,7 +210,7 @@ void startup_impl::_show_module_info(const std::string& module_name)
     }
     else
     {
-      _global->registry.for_each<imodule>([this](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> /*mod*/)
+      _global->registry.for_each<imodule>("module", [this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
       {
         this->_show_module_info(name);
       });
