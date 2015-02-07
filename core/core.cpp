@@ -1,8 +1,4 @@
 #include "core.hpp"
-#include "detail/po.hpp"
-//#include <wfc/inet/epoller.hpp>
-#include <wfc/core/global.hpp>
-#include <wfc/module/imodule.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
@@ -13,7 +9,9 @@
 #include <sstream>
 #include <algorithm>
 #include <syslog.h>
-#include <boost/asio.hpp>
+//#include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp>
+
 
 
 namespace wfc{
@@ -22,10 +20,9 @@ namespace {
 
 static void signal_sigint_handler(int)
 {
-  std::cout << "Stop signal handler" << std::endl;
+  std::clog << "Stop signal handler" << std::endl;
   if ( auto g = global::static_global )
   {
-    //if ( auto c = g->core )
     if ( auto c = g->registry.get<icore>("core") )
     {
       c->stop();
@@ -33,8 +30,12 @@ static void signal_sigint_handler(int)
   }
 }
 
+
 } // namespace
 
+
+// class idle_timer: public boost::asio::deadline_timer {};
+typedef boost::asio::deadline_timer idle_timer;
 
 core::~core()
 {
@@ -45,7 +46,6 @@ core::core()
   : _reconfigure_flag(false)
   , _stop_flag(false)
 {
-  
 }
 
 void core::reconfigure()
@@ -56,7 +56,6 @@ void core::reconfigure()
 int core::run( std::shared_ptr<global> gl )
 {
   _global = gl;
-  auto global = _global.lock();
     
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
@@ -65,34 +64,29 @@ int core::run( std::shared_ptr<global> gl )
 
   CONFIG_LOG_MESSAGE("core::run: sunrise!")
   
-  this->_sunrise();
+  this->_sunrise();  
   
-  
-  global->after_start.fire([](global::fire_handler handler){ 
-    DAEMON_LOG_BEGIN("after start handler")
-    handler();
-    DAEMON_LOG_END("after start handler")
-  });
+  DAEMON_LOG_BEGIN("after start handlers")
+  _global->after_start.fire();
+  DAEMON_LOG_BEGIN("after start handlers")
 
 
   DAEMON_LOG_MESSAGE("***************************************")
   DAEMON_LOG_MESSAGE("************* started *****************")
-  DAEMON_LOG_MESSAGE("instance name: " << global->instance_name << std::endl)
+  DAEMON_LOG_MESSAGE("instance name: " << _global->instance_name << std::endl)
   
   return this->_main_loop();
 }
 
 void core::stop( )
 {
-  // Может вызываться из обработчика сигнала и получим deadlock в logger
-  // TRACE_LOG_MESSAGE( "void core::stop( ) -1-" )
   _stop_flag = true;
 }
 
 void core::configure(const core_config& conf)
 {
   this->_conf = conf;
-  
+
   if ( this->_conf.rlimit_as_mb != 0 )
   {
     rlim_t limit = this->_conf.rlimit_as_mb*1024*1024;
@@ -112,24 +106,20 @@ void core::configure(const core_config& conf)
     {
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
-    
   }
   CONFIG_LOG_MESSAGE("core module configured " )
 }
 
 void core::_idle()
 {
-  
-  auto global = _global.lock();
-  
   if ( _stop_flag )
   {
     DAEMON_LOG_MESSAGE("wfc_core: stop signal")
-    global->io_service.stop();
+    _global->io_service.stop();
     return;
   }
   
-  global->idle.fire([](global::fire_handler handler){ return handler();});
+  _global->idle.fire();
 
   if ( _reconfigure_flag )
   {
@@ -145,54 +135,23 @@ void core::_idle()
 }
 
 int core::_main_loop()
-//try
 {
-  if ( auto g = _global.lock() )
+  _idle_timer = std::make_unique<idle_timer>(
+    _global->io_service,  
+    boost::posix_time::milliseconds(_conf.idle_timeout_ms) 
+  );
+
+  _idle_timer->async_wait([this](const boost::system::error_code& )
   {
-    _idle_timer = std::make_unique<idle_timer>(g->io_service,  boost::posix_time::milliseconds(_conf.idle_timeout_ms) );
-    _idle_timer->async_wait([this](const boost::system::error_code& ){
-      this->_idle();  
-    });
-    g->io_service.run();
-    g->io_service.reset();
-  }
+    this->_idle();  
+  });
+  _global->io_service.run();
+  _global->io_service.reset();
   
   this->_stop();
-  
-  /*
-  if ( auto g = _global.lock() )
-  {
-    while ( 0!=g->io_service.poll() )
-    {
-     
-    }
-  }
-  */
-  
   return 0;
-  
 }
-/*
-catch(const std::exception& e)
-{
-  DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  if ( auto global = _global.lock() )
-  {
-    DAEMON_LOG_FATAL( global->instance_name << ": " << e.what() )
-  }
-  throw;
-}
-catch(...)
-{
-  auto global = _global.lock();
-  DAEMON_LOG_MESSAGE("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  if ( auto global = _global.lock() )
-  {
-    DAEMON_LOG_FATAL( global->instance_name << ": unhandled exception" )
-  }
-  throw;
-}
-*/
+
 
 ///
 /// sunrise
@@ -200,15 +159,9 @@ catch(...)
 
 void core::_prepare(module_vector& mv)
 {
-  if ( auto global = _global.lock() )
-  {
-    /*if (auto gm = global->modules )
-    {*/
-      global->registry.for_each<imodule>([&mv](const std::string& /*prefix*/, const std::string& name, std::shared_ptr<imodule> m){
-        mv.push_back( module_pair( name, m) );
-      });
-    //}
-  }
+  _global->registry.for_each<imodule>("module",  [&mv](const std::string& name, std::shared_ptr<imodule> m){
+    mv.push_back( module_pair( name, m) );
+  });
 }
 
 void core::_sunrise()
@@ -231,12 +184,11 @@ void core::_sunrise()
 
 void core::_configure(const module_vector& modules)
 {
-  auto global = _global.lock();
-  if ( !global )
+  if (!_global)
     return;
   
   //if ( auto config = global->config )
-  if ( auto config = global->registry.get<iconfig>("config") )
+  if ( auto config = _global->registry.get<iconfig>("config") )
   {
     std::for_each(modules.begin(), modules.end(), [config](const module_pair& m)
     {
@@ -261,7 +213,7 @@ void core::_configure(const module_vector& modules)
 
 void core::_initialize(const module_vector& modules)
 {
-  auto& io = _global.lock()->io_service;
+  auto& io = _global->io_service;
   std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::initialize: module '" << m.first << "'...")
@@ -274,7 +226,7 @@ void core::_initialize(const module_vector& modules)
 
 void core::_start(const module_vector& modules)
 {
-  auto& io = _global.lock()->io_service;
+  auto& io = _global->io_service;
   std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
   {
     CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
@@ -290,17 +242,14 @@ void core::_stop()
   if ( _idle_timer!=nullptr )
     _idle_timer->cancel();
   
-  auto global = _global.lock();
-  if ( !global )
+  if ( !_global )
     return;
 
-  DAEMON_LOG_BEGIN("stop '" << global->instance_name << "'...")
+  DAEMON_LOG_BEGIN("stop '" << _global->instance_name << "'...")
   
-  global->before_stop.fire([](global::fire_handler handler){ 
-    DAEMON_LOG_BEGIN("before stop handler")
-    handler();
-    DAEMON_LOG_END("before stop handler")
-  });
+  DAEMON_LOG_BEGIN("before stop handler")
+  _global->before_stop.fire();
+  DAEMON_LOG_END("before stop handler")
 
   CONFIG_LOG_MESSAGE("----------- stopping... ---------------")
 
@@ -318,13 +267,11 @@ void core::_stop()
     CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
   });
   
-  global->after_stop.fire([](global::fire_handler handler){ 
-    DAEMON_LOG_BEGIN("after stop handler")
-    handler();
-    DAEMON_LOG_END("after stop handler")
-  });
+  DAEMON_LOG_BEGIN("after stop handlers")
+  _global->after_stop.fire();
+  DAEMON_LOG_END("after stop handlers")
 
-  DAEMON_LOG_END("stop '" << global->instance_name << "'...Done!")
+  DAEMON_LOG_END("stop '" << _global->instance_name << "'...Done!")
   DAEMON_LOG_MESSAGE("=======================================")
 }
 

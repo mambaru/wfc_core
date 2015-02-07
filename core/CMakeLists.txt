@@ -4,7 +4,7 @@ include(BuildInfo)
 
 SET(
   wfc_core_source_list
-  detail/po.cpp  
+#detail/po.cpp  
   
   core_module.cpp
   core.cpp

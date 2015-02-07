@@ -2,11 +2,11 @@
 #include "core.hpp"
 #include "core_module.hpp"
 #include "core_config_json.hpp"
-#include <wfc/core/global.hpp>
-
 #include "core_build_info.h"
 
-#include <iostream>
+#include <wfc/core/global.hpp>
+
+
 namespace wfc{
 
 imodule::priority core_module::startup_priority()  const
@@ -26,7 +26,7 @@ std::string core_module::version() const
 
 std::string core_module::description() const
 {
-  return std::string("Модуль ядра");
+  return std::string("Core module");
 }
 
 std::string core_module::generate(const std::string& /*type*/)  const
@@ -45,14 +45,12 @@ bool core_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void core_module::create( const std::string& /*name*/, std::shared_ptr<global> gl )
+void core_module::create( const std::string& /*name*/, std::shared_ptr<global> g )
 {
-  _global = gl; // TODO: _global не нужен
   _core = std::make_shared<core>();
-  if ( auto g = _global.lock() )
+  if ( g != nullptr )
   {
     g->registry.set("core", _core);
-    //g->core = _core;
   }
 }
 

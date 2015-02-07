@@ -1,8 +1,7 @@
 #pragma once
 
 #include "core_config.hpp"
-#include <wfc/json/json.hpp>
-#include <wfc/json/name.hpp>
+#include <wfc/json.hpp>
 
 namespace wfc{
 

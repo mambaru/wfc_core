@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ctime>
+
 namespace wfc{
 
 struct core_config
