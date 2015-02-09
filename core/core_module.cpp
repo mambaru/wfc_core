@@ -33,7 +33,7 @@ std::string core_module::generate(const std::string& /*type*/)  const
 {
   std::string result;  
   core_config conf;
-  conf.enabled = true;
+  //conf.enabled = true;
   core_config_json::serializer()(conf, std::back_inserter(result));
   return result;
 }

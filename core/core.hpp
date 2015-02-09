@@ -15,8 +15,6 @@
 
 namespace wfc{
 
-//class idle_timer;
-  
 class core
   : public icore
 {
@@ -60,7 +58,6 @@ private:
   std::atomic<bool> _stop_flag;
   typedef boost::asio::deadline_timer idle_timer;
   std::unique_ptr<idle_timer> _idle_timer;
-  
 };
 
 }

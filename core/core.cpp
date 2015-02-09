@@ -34,8 +34,7 @@ static void signal_sigint_handler(int)
 } // namespace
 
 
-// class idle_timer: public boost::asio::deadline_timer {};
-typedef boost::asio::deadline_timer idle_timer;
+//typedef boost::asio::deadline_timer idle_timer;
 
 core::~core()
 {
