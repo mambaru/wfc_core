@@ -28,7 +28,6 @@ static void signal_sighup_handler(int)
   {
     g->io_service.post([g]()
     {
-      //if ( auto c = g->config )
       if ( auto c = g->registry.get<iconfig>("config") )
         c->reconfigure();
     });
@@ -62,10 +61,11 @@ config::config(std::shared_ptr<global> gl)
 {
   if ( _global )
   {
-    _global->idle.push_back( /*this->callback<void>(*/[this]()
+    _global->idle.push_back( [this]()
     {
-      if ( !this->_conf.enabled )
+      /*if ( !this->_conf.enabled )
         return;
+      */
 
       if ( this->_conf.reload_changed && this->_config_changed!=0 )
       {
@@ -74,7 +74,7 @@ config::config(std::shared_ptr<global> gl)
           this->reconfigure();
         this->_config_changed = t;
       }
-    }/*)*/);
+    });
   }
 }
 
@@ -103,7 +103,6 @@ void config::reconfigure()
     return;
   }
   _mainconf = mainconf;
-  //if ( auto c = _global->core )
   if ( auto c = _global->registry.get<icore>("core") )
     c->reconfigure();
   _init_timer();

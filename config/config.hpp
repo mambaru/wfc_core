@@ -2,35 +2,27 @@
 #include <vector>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/global.hpp>
-//#include <wfc/module/imodule.hpp>
-//#include <wfc/inet/imux.hpp>
-//#include <wfc/core/callback_owner.hpp>
 
 #include "configuration.hpp"
 #include "config_config.hpp"
 
 namespace wfc{
 
-//class config_timer;
 class config
   :  public iconfig
-//  : public callback_owner/*<>*/
-//  , public iconfig
 {
-  
 public:
-  
   virtual ~config();
-
   config(std::shared_ptr<global> gl);
   // iconfig
   virtual void reconfigure();
-  //virtual bool parse_config(const std::string& path);
   virtual void initialize(std::string path);
   virtual std::string get_config(std::string name);
   virtual std::string generate(std::string type, std::string path);
+
   // core_module
   void configure(const config_config& conf);
+  
 private:
   void _parse_configure(std::string source, std::string strconf, configuration& mainconf);
   std::string _load_from_file(const std::string& path);
