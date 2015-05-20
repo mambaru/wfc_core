@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wfc/module/domain_object.hpp>
+#include <wfc/domain_object.hpp>
 #include "logger_config.hpp"
 #include <memory>
 #include <string>
