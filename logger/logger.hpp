@@ -1,33 +1,38 @@
 #pragma once
-#include <vector>
-#include <mutex>
 
-#include <wfc/logger/ilogger.hpp>
-#include <wfc/core/global.hpp>
-//#include <wfc/core/callback_owner.hpp>
-//#include <wfc/inet/imux.hpp>
-
+#include <wfc/module/domain_object.hpp>
 #include "logger_config.hpp"
-#include <unordered_map>
+#include <memory>
+#include <string>
+
 
 namespace wfc{
 
-// class log_writer;
+class logger_writer;
 
 class logger
-  : public ilogger
-  //, public callback_owner/*<>*/
+  : public domain_object<iinterface, logger_config>
+  , public std::enable_shared_from_this<logger>
 {
 public:
-  logger(const logger_config& conf);
-  virtual void initialize(const std::string& name, std::stringstream& str);
-  virtual void write(const std::string& name, const std::string& ident,  const std::string& str);  
+  
+  virtual void reconfigure();
+  virtual void stop(const std::string& );
+  virtual void start(const std::string& );
+  
 private:
-
+  
+  void create_single_();
+  void create_multi_();
+  void reg_loggers_();
+  void unreg_loggers_();
+  
 private:
-  std::mutex _mutex;
-  std::string _filename;
-  logger_config _conf;
+  
+  std::shared_ptr<logger_writer> _config_log;
+  std::shared_ptr<logger_writer> _domain_log;
+  std::shared_ptr<logger_writer> _common_log;
+  std::shared_ptr<logger_writer> _debug_log;
 };
 
 }

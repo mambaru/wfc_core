@@ -1,17 +1,24 @@
 #pragma once
+#include <string>
 
 namespace wfc{
 
 struct logger_config
 {
+  bool enabled;
   bool sylog;
+  bool single;
   time_t lifetime;
-  std::string path;
   std::string stdout;
+  std::string prefix;
+  
   logger_config()
-    : sylog(false)
+    : enabled(true)
+    , sylog(false)
+    , single(true)
     , lifetime(0)
     , stdout("clog")
+    , prefix("")
   {}
 };
 
