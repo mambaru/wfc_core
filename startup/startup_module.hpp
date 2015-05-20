@@ -1,5 +1,24 @@
 #pragma once
 
+#include <wfc/module/module.hpp>
+
+namespace wfc{
+
+class startup_module_impl;
+
+class startup_module
+  : public ::wfc::module
+{
+public:
+  startup_module();
+};
+
+}
+
+
+/*
+#pragma once
+
 #include <wfc/core/imodule.hpp>
 #include <memory>
 #include <string>
@@ -37,3 +56,4 @@ private:
 };
 
 }
+*/

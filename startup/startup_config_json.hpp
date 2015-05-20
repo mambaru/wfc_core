@@ -1,8 +1,7 @@
 #pragma once
 
 #include "startup_config.hpp"
-#include <wfc/json/json.hpp>
-#include <wfc/json/name.hpp>
+#include <wfc/json.hpp>
 
 namespace wfc{
 
@@ -19,7 +18,11 @@ struct startup_config_json
        json::member<n_idle_timeout_ms, startup_config, time_t, &startup_config::idle_timeout_ms>,
        json::member<n_wait_timeout_ms, startup_config, time_t, &startup_config::wait_timeout_ms>
     >::type
-  >::serializer serializer; 
+  > type;
+  typedef type::serializer serializer;
+  typedef type::member_list member_list;
+  typedef type::target target;
+
 };
 
 }

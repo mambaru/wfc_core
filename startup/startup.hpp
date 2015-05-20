@@ -2,6 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <wfc/core/istartup.hpp>
+#include <wfc/module/domain_object.hpp>
 //#include <wfc/module/imodule.hpp>
 //#include <wfc/inet/imux.hpp>
 #include <boost/asio/io_service.hpp>
@@ -15,19 +16,24 @@ namespace wfc{
 class idle_timer;
   
 class startup_impl
-  : public istartup
+  // : public istartup
+  : public ::wfc::domain_object<istartup, startup_config>
 {
   
 public:
-
+  virtual ~startup_impl();
+  /*
   virtual ~startup_impl();
   startup_impl( std::weak_ptr<global> g );
+  */
   
   virtual bool startup( int argc, char* argv[] );
 
   // startup_module
+  /*
   void configure(const startup_config& conf);
   void reconfigure();
+  */
   /*
 private:
   typedef std::pair<std::string, std::shared_ptr<imodule> > module_pair;
@@ -43,8 +49,9 @@ private:
   void _show_module_info(const std::string& module_name);
   
 private:
-  std::shared_ptr<global> _global;
+  /*std::shared_ptr<global> _global;
   startup_config _conf;
+  */
 };
 
 }

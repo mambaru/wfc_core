@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(comet_core)
+project(wfc_startup)
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/wfc/cmake;${CMAKE_CURRENT_SOURCE_DIR}/../wfc/cmake")
+if ( NOT CMAKE_MODULE_PATH )
+  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+  include_directories(wfc)
+endif()
 
 include(Wfc)
-
-include_directories(wfc)
 
 add_subdirectory(startup)
 
 if ( WFC_BUILD_ALL )
-  add_subdirectory(tests)
+  #add_subdirectory(tests)
 endif()

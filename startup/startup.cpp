@@ -2,7 +2,9 @@
 #include "detail/po.hpp"
 //#include <wfc/inet/epoller.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/core/imodule.hpp>
+#include <wfc/module/imodule.hpp>
+#include <wfc/module/iobject.hpp>
+#include <wfc/module/ipackage.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
@@ -39,38 +41,43 @@ startup_impl::~startup_impl()
   
 }
 
+/*
 startup_impl::startup_impl(std::weak_ptr<global> g )
   : _global(g)
 {
   
 }
+*/
 
+/*
 void startup_impl::reconfigure()
 {
 }
-
+*/
 bool startup_impl::startup( int argc, char* argv[])
 {
   return this->_startup(argc, argv);
 }
 
+/*
 void startup_impl::configure(const startup_config& conf)
 {
   CONFIG_LOG_MESSAGE("startup module configured")
   this->_conf = conf;
 }
+*/
 
 
 bool startup_impl::_startup(int argc, char** argv)
 {
   detail::po p = detail::po::parse(argc, argv);
 
-  this->_global->program_name = p.program_name;
-  this->_global->instance_name = p.instance_name.empty()
+  this->global()->program_name = p.program_name;
+  this->global()->instance_name = p.instance_name.empty()
                                  ? p.instance_name
                                  : p.program_name;
   
-  this->_global->options = p.module_options;
+  this->global()->options = p.module_options;
   
   if (p.usage)
     this->_show_usage();
@@ -96,8 +103,8 @@ bool startup_impl::_startup(int argc, char** argv)
   }
 
   //if ( auto c = this->_global->config )
-  if ( auto c = this->_global->registry.get<iconfig>("config") )
-    c->initialize(p.config_path);
+  if ( auto c = this->global()->registry.get<iconfig>("config") )
+    c->load_and_parse(p.config_path);
 
   if ( p.daemonize )
     ::wfc::daemonize();
@@ -116,11 +123,11 @@ bool startup_impl::_startup(int argc, char** argv)
       
       if ( status!= 0 )
       {
-        DAEMON_LOG_FATAL( ss.str() )
+        DOMAIN_LOG_FATAL( ss.str() )
       }
       else
       {
-        DAEMON_LOG_MESSAGE( ss.str() )
+        DOMAIN_LOG_MESSAGE( ss.str() )
       }
         
       ::syslog(LOG_ERR, ss.str().c_str());
@@ -150,10 +157,10 @@ bool startup_impl::_startup(int argc, char** argv)
 void startup_impl::_show_usage()
 {
   std::cout <<  "Usage" << std::endl;
-  std::cout <<  "  " << _global->program_name << " -h" << std::endl;
-  std::cout <<  "  " << _global->program_name << " [-h] -i [<module name>]" << std::endl;
-  std::cout <<  "  " << _global->program_name << " -G [<generate name>] [-C <path>]" << std::endl;
-  std::cout <<  "  " << _global->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " -h" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " [-h] -i [<module name>]" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " -G [<generate name>] [-C <path>]" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
 }
 
 
@@ -176,7 +183,7 @@ void startup_impl::_show_help()
   /*if ( auto m = _global->modules)*/
   //{
   std::cout << "modules:" << std::endl;
-  _global->registry.for_each<imodule>("module", []( const std::string& name, std::shared_ptr<imodule> /*m*/){
+  this->global()->registry.for_each<imodule>("module", []( const std::string& name, std::shared_ptr<imodule> /*m*/){
     std::cout << "  " << name <<  std::endl;
   });
   //}
@@ -184,11 +191,11 @@ void startup_impl::_show_help()
 
 void startup_impl::_show_info()
 {
-  std::cout << _global->program_name << " version:" << std::endl;
-  std::cout << _global->program_version << std::endl;
+  std::cout << this->global()->program_name << " version:" << std::endl;
+  std::cout << this->global()->program_version << std::endl;
   std::cout << "----------------------------------------------" << std::endl;
   std::cout << "wfc version:" << std::endl;
-  std::cout << _global->wfc_version << std::endl;
+  std::cout << this->global()->wfc_version << std::endl;
 }
 
 
@@ -200,17 +207,17 @@ void startup_impl::_show_module_info(const std::string& module_name)
   {*/
     if (!module_name.empty())
     {
-      if ( auto m = _global->registry.get<imodule>("module", module_name) )
+      if ( auto m = this->global()->registry.get<imodule>("module", module_name) )
       {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << module_name << " module version:" << std::endl;
-        std::cout << m->version() << std::endl;
+        std::cout << m->name() << std::endl;
         std::cout << m->description() << std::endl;
       }
     }
     else
     {
-      _global->registry.for_each<imodule>("module", [this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
+      this->global()->registry.for_each<imodule>("module", [this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
       {
         this->_show_module_info(name);
       });
@@ -225,9 +232,9 @@ void startup_impl::_show_module_info(const std::string& module_name)
 void startup_impl::_generate( const std::string& type, const std::string& path )
 {
   //if ( auto c = _global->config )
-  if ( auto c = _global->registry.get<iconfig>("config") )
+  if ( auto c = this->global()->registry.get<iconfig>("config") )
   {
-    c->generate(type, path);
+    c->generate_and_write(type, path);
   }
   else
   {

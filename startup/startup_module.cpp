@@ -1,4 +1,28 @@
 
+#include "startup_module.hpp"
+#include "startup_object.hpp"
+#include <wfc/module/object_list.hpp>
+#include <wfc/json.hpp>
+
+namespace wfc{
+  
+JSON_NAME2(startup_module_name, "startup")
+
+class startup_module_impl: public ::wfc::object_list<
+  startup_module_name,
+  startup_object
+>
+{  
+};
+
+startup_module::startup_module()
+  : module( std::make_shared<startup_module_impl>() )
+{
+}
+
+}
+
+/*
 #include "startup.hpp"
 #include "startup_module.hpp"
 #include "startup_config_json.hpp"
@@ -29,7 +53,7 @@ std::string startup_module::description() const
   return std::string("startup module");
 }
 
-std::string startup_module::generate(const std::string& /*type*/)  const
+std::string startup_module::generate(const std::string&)  const
 {
   std::string result;  
   startup_config conf;
@@ -44,7 +68,7 @@ bool startup_module::parse_config(const std::string& confstr)
   return true;
 }
 
-void startup_module::create( const std::string& /*name*/, std::shared_ptr<global> gl )
+void startup_module::create( const std::string& , std::shared_ptr<global> gl )
 {
   _global = gl; // TODO: _global не нужен
   _startup = std::make_shared<startup_impl>(gl);
@@ -90,3 +114,4 @@ void startup_module::idle()
 }
 
 }
+*/

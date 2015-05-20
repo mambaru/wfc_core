@@ -4,10 +4,15 @@ include(BuildInfo)
 
 SET(
   wfc_startup_source_list
-  detail/po.cpp  
-  
-  startup_module.cpp
   startup.cpp
+  startup_object.cpp
+  startup_module.cpp
+  startup_package.cpp
+  detail/po.cpp  
+  #detail/po.cpp  
+  
+  #startup_module.cpp
+  #startup.cpp
 )
 
 add_library(
