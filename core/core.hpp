@@ -1,5 +1,6 @@
 #pragma once
-#include <wfc/core/imodule.hpp>
+#include <wfc/module/domain_object.hpp>
+#include <wfc/module/iobject.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/core/global.hpp>
 
@@ -16,7 +17,7 @@
 namespace wfc{
 
 class core
-  : public icore
+  : public ::wfc::domain_object<icore, core_config>
 {
   
 public:
@@ -25,15 +26,18 @@ public:
   core();
   
   /// icore
-  virtual int run( std::shared_ptr<global> g );
-  virtual void reconfigure();
-  virtual void stop( );
+  virtual int run( /*std::shared_ptr<wfcglobal> g*/ );
+  virtual void core_reconfigure();
+  virtual void core_stop( );
+  
 
   // core_module
-  void configure(const core_config& conf);
+  // void configure(const core_config& conf);
+  
+  virtual void reconfigure();
   
 private:
-  typedef std::pair<std::string, std::shared_ptr<imodule> > module_pair;
+  typedef std::pair<std::string, std::shared_ptr<iobject> > module_pair;
   typedef std::vector<module_pair> module_vector;
 
   void _prepare(module_vector& mv);
@@ -48,8 +52,8 @@ private:
   void _idle();
   
 private:
-  std::shared_ptr<global> _global;
-  core_config _conf;
+  // std::shared_ptr<global> _global;
+  // core_config _conf;
 
   typedef std::chrono::steady_clock::time_point time_point;
   time_point _idle_time;

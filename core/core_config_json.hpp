@@ -21,7 +21,10 @@ struct core_config_json
        json::member<n_rlimit_as_mb, core_config, size_t, &core_config::rlimit_as_mb >
        
     >::type
-  >::serializer serializer; 
+  > type;
+  typedef type::target target;
+  typedef type::serializer serializer;
+  typedef type::member_list member_list;
 };
 
 }
