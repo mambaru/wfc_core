@@ -2,7 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <wfc/core/istartup.hpp>
-#include <wfc/module/domain_object.hpp>
+#include <wfc/domain_object.hpp>
 //#include <wfc/module/imodule.hpp>
 //#include <wfc/inet/imux.hpp>
 #include <boost/asio/io_service.hpp>
