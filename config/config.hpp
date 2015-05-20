@@ -2,7 +2,7 @@
 #include <vector>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/module/domain_object.hpp>
+#include <wfc/domain_object.hpp>
 
 #include "configuration.hpp"
 #include "config_config.hpp"

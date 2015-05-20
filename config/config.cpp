@@ -125,7 +125,7 @@ void config::load_and_parse(std::string path)
   catch(const std::domain_error& e)
   {
     std::cerr << e.what() << std::endl;
-    throw;
+    throw e;
   }
 
   _mainconf = mainconf;
