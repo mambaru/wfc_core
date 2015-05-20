@@ -2,12 +2,11 @@
 
 //#include <wfc/inet/epoller.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/core/imodule.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/icore.hpp>
-#include <wfc/core/except.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
+#include <wfc/module/iobject.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -24,12 +23,12 @@ namespace {
 
 static void signal_sighup_handler(int)
 {
-  if ( auto g = global::static_global )
+  if ( auto g = wfcglobal::static_global )
   {
     g->io_service.post([g]()
     {
       if ( auto c = g->registry.get<iconfig>("config") )
-        c->reconfigure();
+        c->reload_and_reconfigure();
     });
   }
 }
@@ -55,29 +54,35 @@ void config::_init_timer()
 
 }
 
-config::config(std::shared_ptr<global> gl)
+config::config()
   : _config_changed(0)
-  , _global(gl)
 {
-  if ( _global )
-  {
-    _global->idle.push_back( [this]()
-    {
-      /*if ( !this->_conf.enabled )
-        return;
-      */
+}
 
-      if ( this->_conf.reload_changed && this->_config_changed!=0 )
+void config::start(const std::string& /*arg*/)
+{
+  // TODO: Опционально
+  if ( this->options().reload_sighup )
+  {
+    signal(SIGHUP, signal_sighup_handler);
+  }
+  
+  if ( auto g = this->global() )
+  {
+    g->idle.push_back( [this]()
+    {
+      if ( this->options().reload_changed && this->_config_changed!=0 )
       {
         time_t t = get_modify_time(this->_path);
         if ( t!=this->_config_changed )
-          this->reconfigure();
+          this->reload_and_reconfigure();
         this->_config_changed = t;
       }
     });
   }
 }
 
+/*
 void config::configure(const config_config& conf)
 {
   _conf = conf;
@@ -86,8 +91,8 @@ void config::configure(const config_config& conf)
     _config_changed = get_modify_time(_path);
   _init_timer();
 }
-
-void config::reconfigure()
+*/
+void config::reload_and_reconfigure()
 {
   CONFIG_LOG_MESSAGE("config::reconfigure()")
   std::string confstr = _load_from_file(_path);
@@ -96,20 +101,20 @@ void config::reconfigure()
   {
     _parse_configure(_path, confstr, mainconf);
   }
-  catch(const config_error& e)
+  catch(const std::domain_error& e)
   {
     CONFIG_LOG_ERROR(e.what())
     CONFIG_LOG_ERROR("Configuration ignored!")
     return;
   }
   _mainconf = mainconf;
-  if ( auto c = _global->registry.get<icore>("core") )
-    c->reconfigure();
+  if ( auto c = this->global()->registry.get<icore>("core") )
+    c->core_reconfigure();
   _init_timer();
 }
 
 
-void config::initialize(std::string path)
+void config::load_and_parse(std::string path)
 {
   std::string confstr = _load_from_file(path);
   configuration mainconf;
@@ -117,7 +122,7 @@ void config::initialize(std::string path)
   {
     _parse_configure(path, confstr, mainconf);
   }
-  catch(const config_error& e)
+  catch(const std::domain_error& e)
   {
     std::cerr << e.what() << std::endl;
     throw;
@@ -142,26 +147,26 @@ void config::_parse_configure(std::string source, std::string confstr, configura
     std::stringstream ss;
     ss << "Invalid json configuration from '" << source << "':" << std::endl;
     ss << e.message( jsonbeg, jsonend );
-    throw config_error(ss.str());
+    throw std::domain_error(ss.str());
   }
 
   /*if ( auto modules = _global->modules )
   {*/
     for ( auto& mconf : mainconf)
     {
-      if ( auto m = _global->registry.get<imodule>("module", mconf.first) )
+      if ( auto m = this->global()->registry.get<iobject>("object", mconf.first) )
       {
         jsonbeg = mconf.second.begin();
         jsonend = mconf.second.end();
         try
         {
           jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
-          if ( !m->parse_config( std::string(jsonbeg, jsonend)) )
+          if ( !m->parse( std::string(jsonbeg, jsonend)) )
           {
             std::stringstream ss;
             ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
             ss << "Configuration is not valid! see documentation for module";
-            throw config_error(ss.str());  
+            throw std::domain_error(ss.str());  
           }
         }
         catch(const json::json_error& e)
@@ -169,14 +174,14 @@ void config::_parse_configure(std::string source, std::string confstr, configura
           std::stringstream ss;
           ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
           ss << e.message( jsonbeg, jsonend );
-          throw config_error(ss.str());
+          throw std::domain_error(ss.str());
         }
         catch(const std::exception& e)
         {
           std::stringstream ss;
           ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
           ss << e.what();
-          throw config_error(ss.str());
+          throw std::domain_error(ss.str());
         }
       }
       else
@@ -184,7 +189,7 @@ void config::_parse_configure(std::string source, std::string confstr, configura
         std::stringstream ss;
         ss << "Invalid json configuration from '" << source << "':" << std::endl;
         ss << "Module '" << mconf.first << "' not found"; 
-        throw config_error(ss.str());
+        throw std::domain_error(ss.str());
       }
     }
   //}
@@ -200,26 +205,47 @@ std::string config::get_config(std::string name)
   return itr->second;
 }
 
-std::string config::generate(std::string type, std::string path)
+std::string config::generate_and_write(std::string type, std::string path)
 {
   std::string confstr;
   configuration mainconf;
 
-  _global->registry.for_each<imodule>("module", [&mainconf, &type](const std::string& name, std::shared_ptr<imodule> module)
+  if ( type.empty() )
   {
-    if (module!=nullptr)
-      mainconf[name] = module->generate(type);
-  });
-  
-  configuration_json::serializer()(mainconf, std::back_inserter(confstr));
+    if ( auto g = this->global() )
+    {
+      g->registry.for_each<iobject>("object", [&mainconf, &type](const std::string& name, std::shared_ptr<iobject> module)
+      {
+        if (module!=nullptr)
+          mainconf[name] = module->generate(type);
+      });
+    }
+    
+    configuration_json::serializer()(mainconf, std::back_inserter(confstr));
 
-  if ( path.empty() )
-    path = "generate.conf";
-  
-   _save_to_file(path, confstr);
-
-  std::clog << "generated '"<< type << "' type to " << path << std::endl;
-  std::clog << "For JSON format: cat "<< path << " | python -mjson.tool" << std::endl;
+    if ( !path.empty() )
+    {
+      _save_to_file(path, confstr);
+      std::clog << "generated '"<< type << "' type to " << path << std::endl;
+      std::clog << "For JSON format: cat "<< path << " | python -mjson.tool" << std::endl;
+    }
+    else
+    {
+      std::clog << confstr << std::endl;
+    }
+  }
+  else if (auto g = this->global())
+  {
+    if ( auto obj = g->registry.get<iobject>("object", type) )
+    {
+      auto strobj = obj->generate("");
+      std::clog << strobj << std::endl;
+    }
+    else
+    {
+      std::clog << "Generate Fail! object "<< type << " not found" << std::endl;
+    }
+  }
 
   return confstr;
 }

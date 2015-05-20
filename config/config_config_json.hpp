@@ -1,8 +1,7 @@
 #pragma once
 
 #include "config_config.hpp"
-#include <wfc/json/json.hpp>
-#include <wfc/json/name.hpp>
+#include <wfc/json.hpp>
 
 namespace wfc{
 
@@ -21,7 +20,8 @@ struct config_config_json
   > type; 
   
   typedef type::target target;
-  typedef type::serializer serializer; 
+  typedef type::serializer serializer;
+  typedef type::member_list member_list; 
 
 };
 
