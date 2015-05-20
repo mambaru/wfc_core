@@ -1,5 +1,5 @@
 #pragma once
-#include <wfc/module/domain_object.hpp>
+#include <wfc/domain_object.hpp>
 #include <wfc/module/iobject.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/core/global.hpp>
