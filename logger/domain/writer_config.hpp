@@ -6,18 +6,16 @@
 
 #pragma once
 
-#include <wfc/module/module.hpp>
+#include <string>
 
 namespace wfc{
 
-class logger_module_impl;
-
-class logger_module
-  : public ::wfc::module
+struct writer_config
 {
-public:
-  logger_module();
+  size_t limit = 0;
+  std::string path = "";
+  std::string stdout = "clog";
+  std::string syslog = "";
 };
 
 }
-

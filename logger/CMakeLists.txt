@@ -14,12 +14,12 @@ SET(
   logger_package.cpp
   logger_module.cpp
   logger_object.cpp
-  logger.cpp
-  logger_writer.cpp
+  domain/logger_domain.cpp
+  domain/logger_writer.cpp
 )
 
 add_library(
-  wfc_logger SHARED
+  wfc_logger
   ${wfc_logger_source_list}
 )
 

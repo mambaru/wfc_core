@@ -6,18 +6,15 @@
 
 #pragma once
 
-#include <wfc/module/module.hpp>
+#include <string>
+#include "writer_config.hpp"
 
 namespace wfc{
 
-class logger_module_impl;
-
-class logger_module
-  : public ::wfc::module
+struct logger_config
+  : writer_config
 {
-public:
-  logger_module();
+  bool single = true;
 };
 
 }
-

@@ -1,3 +1,9 @@
+//
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2015
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+
 #pragma once
 
 #include <wfc/domain_object.hpp>
@@ -10,9 +16,9 @@ namespace wfc{
 
 class logger_writer;
 
-class logger
+class logger_domain
   : public domain_object<iinterface, logger_config>
-  , public std::enable_shared_from_this<logger>
+  , public std::enable_shared_from_this<logger_domain>
 {
 public:
   
@@ -33,6 +39,7 @@ private:
   std::shared_ptr<logger_writer> _domain_log;
   std::shared_ptr<logger_writer> _common_log;
   std::shared_ptr<logger_writer> _debug_log;
+  std::shared_ptr<logger_writer> _syslog_log;
 };
 
 }
