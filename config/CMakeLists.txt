@@ -17,7 +17,7 @@ SET(
 )
 
 add_library(
-  wfc_config SHARED
+  wfc_config
   ${wfc_config_source_list}
 )
 
