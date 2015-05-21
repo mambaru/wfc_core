@@ -1,3 +1,8 @@
+//
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2015
+//
+// Copyright: See COPYING file that comes with this distribution
+//
 
 #include "startup_package.hpp"
 #include "startup_module.hpp"

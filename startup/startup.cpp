@@ -1,74 +1,33 @@
+//
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2015
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+
 #include "startup.hpp"
 #include "detail/po.hpp"
-//#include <wfc/inet/epoller.hpp>
-#include <wfc/core/global.hpp>
-#include <wfc/module/imodule.hpp>
-#include <wfc/module/iobject.hpp>
-#include <wfc/module/ipackage.hpp>
+
 #include <wfc/core/iconfig.hpp>
+#include <wfc/module/imodule.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
-#include <wfc/memory.hpp>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <algorithm>
-#include <syslog.h>
-#include <boost/asio.hpp>
 
+#include <syslog.h>
 
 namespace wfc{
 
-/*
-
-namespace {
-
-static void signal_sigint_handler(int)
-{
-  if ( auto g = global::static_global.lock() )
-    if ( auto c = g->core.lock() )
-      c->stop();
-  exit(0);
-}
-
-} // namespace
-*/
-
-
-startup_impl::~startup_impl()
+startup_domain::~startup_domain()
 {
   
 }
 
-/*
-startup_impl::startup_impl(std::weak_ptr<global> g )
-  : _global(g)
+bool startup_domain::startup( int argc, char* argv[])
 {
-  
-}
-*/
-
-/*
-void startup_impl::reconfigure()
-{
-}
-*/
-bool startup_impl::startup( int argc, char* argv[])
-{
-  return this->_startup(argc, argv);
+  return this->startup_(argc, argv);
 }
 
-/*
-void startup_impl::configure(const startup_config& conf)
-{
-  CONFIG_LOG_MESSAGE("startup module configured")
-  this->_conf = conf;
-}
-*/
 
-
-bool startup_impl::_startup(int argc, char** argv)
+bool startup_domain::startup_(int argc, char** argv)
 {
   detail::po p = detail::po::parse(argc, argv);
 
@@ -80,21 +39,21 @@ bool startup_impl::_startup(int argc, char** argv)
   this->global()->options = p.module_options;
   
   if (p.usage)
-    this->_show_usage();
+    this->show_usage_();
   
   if (p.help)
-    this->_show_help();
+    this->show_help_();
 
   if (p.info)
   {
     if ( p.info_name.empty() )
-      this->_show_info();
-    this->_show_module_info(p.info_name);
+      this->show_info_();
+    this->show_module_info_(p.info_name);
   }
 
   if (p.generate)
   {
-    this->_generate(p.generate_name, p.config_path);
+    this->generate_(p.generate_name, p.config_path);
   }
 
   if ( p.usage || p.help || p.info || p.generate )
@@ -102,7 +61,6 @@ bool startup_impl::_startup(int argc, char** argv)
     return false;
   }
 
-  //if ( auto c = this->_global->config )
   if ( auto c = this->global()->registry.get<iconfig>("config") )
     c->load_and_parse(p.config_path);
 
@@ -137,15 +95,7 @@ bool startup_impl::_startup(int argc, char** argv)
 
   if ( p.coredump )
     ::wfc::dumpable();
-
-  
-  /*
-  signal(SIGPIPE,  SIG_IGN);
-  signal(SIGPOLL,  SIG_IGN);
-  signal(SIGINT,   signal_sigint_handler);
-  signal(SIGTERM,  signal_sigint_handler);
-  */
-  
+ 
   return true;
 }
 
@@ -154,7 +104,7 @@ bool startup_impl::_startup(int argc, char** argv)
 /// help
 ///
 
-void startup_impl::_show_usage()
+void startup_domain::show_usage_()
 {
   std::cout <<  "Usage" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " -h" << std::endl;
@@ -164,9 +114,9 @@ void startup_impl::_show_usage()
 }
 
 
-void startup_impl::_show_help()
+void startup_domain::show_help_()
 {
-  this->_show_usage();
+  this->show_usage_();
   std::cout <<  "Options" << std::endl;
   std::cout
      << "  -h [ --help ]             produce help message                    " << std::endl
@@ -189,7 +139,7 @@ void startup_impl::_show_help()
   //}
 }
 
-void startup_impl::_show_info()
+void startup_domain::show_info_()
 {
   std::cout << this->global()->program_name << " version:" << std::endl;
   std::cout << this->global()->program_version << std::endl;
@@ -201,7 +151,7 @@ void startup_impl::_show_info()
 
 
 
-void startup_impl::_show_module_info(const std::string& module_name)
+void startup_domain::show_module_info_(const std::string& module_name)
 {
   /*if (auto gm = _global->modules )
   {*/
@@ -219,7 +169,7 @@ void startup_impl::_show_module_info(const std::string& module_name)
     {
       this->global()->registry.for_each<imodule>("module", [this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
       {
-        this->_show_module_info(name);
+        this->show_module_info_(name);
       });
     }
   // }
@@ -229,7 +179,7 @@ void startup_impl::_show_module_info(const std::string& module_name)
 /// generate
 ///
 
-void startup_impl::_generate( const std::string& type, const std::string& path )
+void startup_domain::generate_( const std::string& type, const std::string& path )
 {
   //if ( auto c = _global->config )
   if ( auto c = this->global()->registry.get<iconfig>("config") )

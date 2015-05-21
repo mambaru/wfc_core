@@ -16,7 +16,7 @@ SET(
 )
 
 add_library(
-  wfc_startup SHARED
+  wfc_startup
   ${wfc_startup_source_list}
 )
 

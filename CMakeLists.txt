@@ -4,10 +4,9 @@ project(wfc_startup)
 
 if ( NOT CMAKE_MODULE_PATH )
   set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+  include(Wfc)
   include_directories(wfc)
 endif()
-
-include(Wfc)
 
 add_subdirectory(startup)
 
