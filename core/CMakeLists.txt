@@ -12,7 +12,7 @@ SET(
 )
 
 add_library(
-  wfc_core SHARED
+  wfc_core 
   ${wfc_core_source_list}
 )
 

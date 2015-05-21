@@ -113,7 +113,7 @@ void core::reconfigure()
 
 void core::_idle()
 {
-  std::cout << "DEBUG IDLE" << std::endl;
+  // std::cout << "DEBUG IDLE" << std::endl;
   if ( _stop_flag )
   {
     DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
@@ -183,6 +183,8 @@ void core::_sunrise()
   
   CONFIG_LOG_MESSAGE("-------------- starting ---------------")
   this->_start(modules);
+  
+  SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
 }
 
 void core::_configure(const module_vector& modules)
@@ -250,11 +252,36 @@ void core::_initialize(const module_vector& modules)
   if ( g == nullptr)
     return;
 
+  /*
   g->registry.for_each<iinstance>("instance", [g](const std::string& name, std::shared_ptr<iinstance> obj)
   {
     CONFIG_LOG_BEGIN("core::initialize: instance '" << name << "'...")
     obj->initialize();
     CONFIG_LOG_END("core::initialize: module '" << name << "'...Done!")
+    g->io_service.poll();
+    g->io_service.reset();
+  });
+  */
+
+  
+  typedef std::shared_ptr<iinstance> instance_ptr;
+  typedef std::vector<instance_ptr> instance_list;
+  instance_list instances;
+  instances.reserve(100);
+  g->registry.for_each<iinstance>("instance", [&instances](const std::string& name, std::shared_ptr<iinstance> obj)
+  {
+    instances.push_back(obj);
+  });
+
+  std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool {
+    return left->startup_priority() < right->startup_priority();
+  } );
+  
+  std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
+  {
+    CONFIG_LOG_BEGIN("core::initialize: instance '" << m->name() << "'...")
+    m->initialize();
+    CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...Done!")
     g->io_service.poll();
     g->io_service.reset();
   });
