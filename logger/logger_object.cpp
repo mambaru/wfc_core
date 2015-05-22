@@ -13,12 +13,12 @@
 #include <wfc/name.hpp>
 
 namespace wfc{
-  
+
 WFC_NAME2(logger_object_name, "logger")
 
 class logger_object_impl: public ::wfc::singleton<
   logger_object_name,
-  wfc::instance<logger_domain>,
+  ::wfc::instance<logger_domain>,
   logger_config_json
 >
 {  

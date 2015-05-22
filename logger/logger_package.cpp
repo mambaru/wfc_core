@@ -11,7 +11,7 @@
 #include <wfc/name.hpp>
 
 namespace wfc{
-  
+
 WFC_NAME2(logger_package_name, "logger")
 
 class logger_package_impl: public ::wfc::module_list<

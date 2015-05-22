@@ -10,14 +10,14 @@
 #include <wfc/name.hpp>
 
 namespace wfc{
-  
+
 WFC_NAME2(logger_module_name, "logger")
 
 class logger_module_impl: public ::wfc::object_list<
   logger_module_name,
   logger_object
 >
-{  
+{
 };
 
 logger_module::logger_module()
