@@ -9,6 +9,7 @@
 
 #include <wfc/core/iconfig.hpp>
 #include <wfc/module/imodule.hpp>
+#include <wfc/module/ipackage.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 
@@ -148,31 +149,32 @@ void startup_domain::show_info_()
   std::cout << this->global()->wfc_version << std::endl;
 }
 
-
-
-
 void startup_domain::show_module_info_(const std::string& module_name)
 {
-  /*if (auto gm = _global->modules )
-  {*/
+  if (auto g = this->global() )
+  {
     if (!module_name.empty())
     {
-      if ( auto m = this->global()->registry.get<imodule>("module", module_name) )
+      if ( auto m = g->registry.get<ipackage>("package", module_name) )
       {
         std::cout << "----------------------------------------------" << std::endl;
         std::cout << module_name << " module version:" << std::endl;
-        std::cout << m->name() << std::endl;
+        std::cout << m->build_info() << std::endl;
         std::cout << m->description() << std::endl;
+      }
+      else
+      {
+        std::cout << "ERROR: Package '" << module_name << "' not found" << std::endl;
       }
     }
     else
     {
-      this->global()->registry.for_each<imodule>("module", [this](const std::string& name, std::shared_ptr<imodule> /*mod*/)
+      g->registry.for_each<imodule>("package", [this](const std::string& name, std::shared_ptr<imodule> )
       {
         this->show_module_info_(name);
       });
     }
-  // }
+  }
 }
 
 ///
