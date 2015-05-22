@@ -20,14 +20,8 @@ struct po
   std::string instance_name;
   std::string config_path;
   std::string generate_name;
-  
+
   ::wfc::module_options::module_options_map module_options;
-  /*typedef std::map<std::string, std::string> options_map;
-  typedef std::map<std::string, options_map> module_options_map;
-  
-  module_options_map module_options;
-  */
-  
 
   po()
     : usage(false)
@@ -43,6 +37,29 @@ struct po
   static po parse(int argc, char** argv);
 };
 
- 
+struct po2
+{
+  bool help = false;
+  bool usage = false;
+  bool generate = false;
+  bool info = false;
+  
+  bool daemonize = false;
+  bool coredump = false;
+  bool autoup = false;
+  time_t autoup_timeout = 0;
+  
+  std::string program_name;
+  std::string instance_name;
+  std::string config_path;
+
+  std::vector<std::string> genparams;
+  std::vector<std::string> packages;
+  
+  std::string helpstring;
+  ::wfc::module_options::module_options_map module_options;
+
+  static po2 parse(int argc, char** argv);
+};
 
 }}

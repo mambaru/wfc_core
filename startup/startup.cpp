@@ -30,6 +30,10 @@ bool startup_domain::startup( int argc, char* argv[])
 
 bool startup_domain::startup_(int argc, char** argv)
 {
+  detail::po2 p2 = detail::po2::parse(argc, argv);
+  std::cout << "----po----" << std::endl;
+  std::cout << "P2 ready" << std::endl;
+  std::cout << "----po----" << std::endl;
   detail::po p = detail::po::parse(argc, argv);
 
   this->global()->program_name = p.program_name;
@@ -143,10 +147,10 @@ void startup_domain::show_help_()
 void startup_domain::show_info_()
 {
   std::cout << this->global()->program_name << " version:" << std::endl;
-  std::cout << this->global()->program_version << std::endl;
+  //std::cout << this->global()->program_version << std::endl;
   std::cout << "----------------------------------------------" << std::endl;
   std::cout << "wfc version:" << std::endl;
-  std::cout << this->global()->wfc_version << std::endl;
+  //std::cout << this->global()->wfc_version << std::endl;
 }
 
 void startup_domain::show_module_info_(const std::string& module_name)

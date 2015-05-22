@@ -107,5 +107,71 @@ po po::parse(int argc, char** argv)
   }
   return po_info;
 }
+}}
+
+#include <boost/program_options.hpp>
+
+namespace wfc{ namespace detail{
+  
+
+po2 po2::parse(int argc, char** argv)
+{
+  using namespace boost::program_options;
+  po2 po_info;
+
+  options_description desc("Allowed options");
+  desc.add_options()
+    ("help", value<bool>(&po_info.help)->zero_tokens(), "produce help message")
+    ("info,i", value< std::vector<std::string> >(&po_info.packages)->default_value( std::vector<std::string>(), "" ), "show build info [package-list]")
+    ("generate,G", value< std::vector<std::string> >(&po_info.genparams)->default_value( std::vector<std::string>(), "" ), "generate configuration [object-name [arg]]. Use -C option for write to file.");
+
+  options_description desc1("Startup options");
+  desc1.add_options()
+    ("daemonize,d", value<bool>(&po_info.daemonize)->zero_tokens(), "run as daemon")
+    ("coredump,c", value<bool>(&po_info.coredump)->zero_tokens(), "allow core dump")
+    ("autoup,a", value<time_t>(&po_info.autoup_timeout)->default_value(0), "auto restart daemon [timeout in sec]")
+    ("name,n", value<std::string>(&po_info.instance_name), "unique daemon instance name")
+    ("config,C", value<std::string>(&po_info.config_path), "path to the configuration file")
+    ("<<instance>>-<<key>> [arg]", "custom option for instance object");
+
+  desc.add(desc1);
+  variables_map vm;
+  parsed_options parsed = command_line_parser(argc, argv).options(desc).allow_unregistered().run();
+  std::vector<std::string> to_pass_further = collect_unrecognized(parsed.options, exclude_positional);
+  if ( !to_pass_further.empty() )
+  {
+    for ( auto s: to_pass_further )
+    {
+      std::cout << s << std::endl;
+    }
+    //basic_command_line_parser<char> basic(to_pass_further);
+   
+    for (const auto& o : parsed.options) 
+    {
+      if ( !o.unregistered )
+        continue;
+      if (vm.find(o.string_key) == vm.end()) 
+      {
+        // an unknown option
+        std::cout << "------> " << o.string_key << "-=-" ;
+        std::cout << o.value[0];//std::string(o.value.begin(), o.value.end() );
+        std::cout << std::endl;
+      }
+    }
+  }
+
+  store(parsed, vm);
+  notify(vm);
+  po_info.info = vm.count("info");
+  po_info.generate = vm.count("generate");
+  po_info.autoup = vm.count("autoup");
+  if ( po_info.help )
+  {
+    std::stringstream ss;
+    ss << desc;
+    po_info.helpstring = ss.str();
+  }
+  return po_info;
+}
 
 }}
