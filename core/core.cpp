@@ -13,7 +13,7 @@
 //#include <boost/asio.hpp>
 #include <boost/asio/deadline_timer.hpp>
 
-
+#include <sys/resource.h>
 
 namespace wfc{
 
@@ -90,6 +90,7 @@ void core::reconfigure()
   auto opt = this->options();
   if ( opt.rlimit_as_mb != 0 )
   {
+    // TODO: в system.hpp и прочие системные штуки
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
     rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};
     if ( 0 == getrlimit( RLIMIT_AS, &rlim ) )
