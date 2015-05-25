@@ -5,6 +5,7 @@
 //
 
 #include "startup.hpp"
+#include "domain/parse_arguments.hpp"
 #include "detail/po.hpp"
 
 #include <wfc/core/iconfig.hpp>
@@ -19,7 +20,6 @@ namespace wfc{
 
 startup_domain::~startup_domain()
 {
-  
 }
 
 bool startup_domain::startup( int argc, char* argv[])
@@ -30,12 +30,20 @@ bool startup_domain::startup( int argc, char* argv[])
 
 bool startup_domain::startup_(int argc, char** argv)
 {
+  std::cout << "BEGIN program_arguments" << std::endl;
+  program_arguments pa;
+  parse_arguments( pa, argc, argv);
+  std::cout << "END program_arguments" << std::endl;
+  return false;
+  /*
   detail::po2 p2 = detail::po2::parse(argc, argv);
   std::cout << "----po----" << std::endl;
   std::cout << "P2 ready" << std::endl;
   std::cout << "----po----" << std::endl;
+  */
   detail::po p = detail::po::parse(argc, argv);
 
+  
   this->global()->program_name = p.program_name;
   this->global()->instance_name = p.instance_name.empty()
                                  ? p.instance_name
@@ -74,7 +82,7 @@ bool startup_domain::startup_(int argc, char** argv)
 
   if ( p.daemonize && p.autoup )
   {
-    ::wfc::autoup(p.autoup_timeout, [p](bool restart, int status)
+    ::wfc::autoup(p.autoup_timeout, [p](bool restart, int status, time_t /*worktime*/)->bool
     {
       ::openlog( (p.instance_name+"(wfc_startup)").c_str(), 0, LOG_USER);
       std::stringstream ss;
@@ -83,7 +91,7 @@ bool startup_domain::startup_(int argc, char** argv)
         ss << "Restarting...";
       else
         ss << "Do not restarted.";
-      
+
       if ( status!= 0 )
       {
         DOMAIN_LOG_FATAL( ss.str() )
@@ -95,6 +103,7 @@ bool startup_domain::startup_(int argc, char** argv)
         
       ::syslog(LOG_ERR, ss.str().c_str());
       ::closelog();
+      return restart;
     });
   }
 
