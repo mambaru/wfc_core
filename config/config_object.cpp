@@ -2,13 +2,13 @@
 #include "config_object.hpp"
 #include <wfc/module/singleton.hpp>
 #include <wfc/module/instance.hpp>
-#include <wfc/json.hpp>
+#include <wfc/name.hpp>
 #include "config.hpp"
 #include "config_config_json.hpp"
 
 namespace wfc{
   
-JSON_NAME2(config_object_name, "config")
+WFC_NAME2(config_object_name, "config")
 
 class config_object_impl: public ::wfc::singleton<
   config_object_name,

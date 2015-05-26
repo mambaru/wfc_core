@@ -19,7 +19,8 @@ public:
   virtual void reload_and_reconfigure();
   virtual void load_and_parse(std::string path);
   virtual std::string get_config(std::string name);
-  virtual std::string generate_and_write(std::string type, std::string path);
+  std::string generate_and_write_del(std::string type, std::string path);
+  virtual bool generate_config( const generate_options& go, std::string& result);
 
   // core_module
   //void configure(const config_config& conf);
@@ -28,7 +29,7 @@ public:
 private:
   void _parse_configure(std::string source, std::string strconf, configuration& mainconf);
   std::string _load_from_file(const std::string& path);
-  void _save_to_file(const std::string& path, const std::string& strconf);
+  void _save_to_file_del(const std::string& path, const std::string& strconf);
   
   void _init_timer();
 private:

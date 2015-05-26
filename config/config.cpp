@@ -205,7 +205,87 @@ std::string config::get_config(std::string name)
   return itr->second;
 }
 
-std::string config::generate_and_write(std::string type, std::string path)
+bool config::generate_config( const generate_options& go, std::string& result)
+{
+  auto g = this->global();
+  if ( g == nullptr )
+  {
+    result = "the system is not initialized";
+    return false;
+  }
+
+  configuration mainconf;
+  if ( go.empty() )
+  {
+    g->registry.for_each<iobject>("object", [&mainconf](const std::string& name, std::shared_ptr<iobject> obj)
+    {
+      if (obj!=nullptr)
+      {
+        std::cout << "DEBUG: gen " << name << std::endl;
+        mainconf[name] = obj->generate("");
+      }
+    });
+  }
+  else
+  {
+    for ( const auto& opt: go )
+    {
+      if ( auto obj = g->registry.get<iobject>("object", opt.first) )
+      {
+        mainconf[opt.first] = obj->generate(opt.second);
+      }
+      else
+      {
+        std::stringstream ss;
+        ss << "WFC generate error! object '"<< opt.first << "' not found";
+        result=ss.str();
+        return false;
+      }
+    }
+  }
+  configuration_json::serializer()(mainconf, std::back_inserter(result));
+  return true;
+  /*
+  bool fail = false;
+  configuration mainconf;
+  g->registry.for_each<iobject>("object", [&mainconf, &go, &result, &fail](const std::string& name, std::shared_ptr<iobject> obj)
+  {
+    if (fail) return;
+
+    if (obj!=nullptr)
+    {
+      if ( go.empty() )
+      {
+        mainconf[name] = obj->generate("");
+      }
+      else
+      {
+        auto itr = go.find(name);
+        if ( itr!=go.end() )
+        {
+          mainconf[name] = obj->generate(itr->second);
+        }
+        else
+        {
+          std::stringstream ss;
+          ss << "WFC generate error! object "<< name << " not found";
+          result=ss.str();
+          fail = true;
+        }
+      }
+    }
+  });
+
+  if (!fail)
+  {
+    configuration_json::serializer()(mainconf, std::back_inserter(result));
+  }
+  return !fail;
+  */
+}
+
+
+std::string config::generate_and_write_del(std::string type, std::string path)
 {
   std::string confstr;
   configuration mainconf;
@@ -225,7 +305,7 @@ std::string config::generate_and_write(std::string type, std::string path)
 
     if ( !path.empty() )
     {
-      _save_to_file(path, confstr);
+      _save_to_file_del(path, confstr);
       std::clog << "generated '"<< type << "' type to " << path << std::endl;
       std::clog << "For JSON format: cat "<< path << " | python -mjson.tool" << std::endl;
     }
@@ -250,6 +330,7 @@ std::string config::generate_and_write(std::string type, std::string path)
   return confstr;
 }
 
+
 std::string config::_load_from_file(const std::string& path)
 {
   std::string confstr;
@@ -262,7 +343,7 @@ std::string config::_load_from_file(const std::string& path)
   return confstr;
 }
 
-void config::_save_to_file(const std::string& path, const std::string& strconf)
+void config::_save_to_file_del(const std::string& path, const std::string& strconf)
 {
   std::ofstream fconf(path);
   std::copy(
