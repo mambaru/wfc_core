@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "domain/program_arguments.hpp"
 #include "startup_config.hpp"
 #include <wfc/core/istartup.hpp>
 #include <wfc/domain_object.hpp>
@@ -23,6 +24,7 @@ public:
   virtual bool startup( int argc, char* argv[] );
 private:
   bool startup_( int argc, char** argv);
+  bool generate_(const program_arguments& pa);
   void generate_( const std::string& type, const std::string& path );
   void show_usage_();
   void show_help_();

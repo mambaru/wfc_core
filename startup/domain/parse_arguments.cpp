@@ -1,6 +1,10 @@
 #include "parse_arguments.hpp"
 #include <boost/program_options.hpp>
 
+
+
+
+#include <iostream>
 namespace wfc
 {
 
@@ -15,8 +19,8 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
 
   // TODO: ->multitoken()
   desc.add_options()
-    ("help", value<bool>(&pa.help)->zero_tokens(), "produce help message")
-    ("info,i", value< vstrings >(&pa.info_packages)->multitoken()->zero_tokens(), "show build info [package-list]")
+    ("help,h", value<bool>(&pa.help)->zero_tokens(), "produce help message")
+    ("info,i", value< vstrings >(&pa.info_options)->multitoken(), "show build info [package-list]")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "generate configuration [object-name [arg]]. Use -C option for write to file.")
     ;
 
@@ -28,11 +32,25 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
     ("config,C", value<std::string>(&pa.config_path), "path to the configuration file")
     ("<<instance>>-<<key>> [arg]", "custom option for instance object");
 
-  desc.add(desc_startup);
+  //desc.add(desc_startup);
 
   variables_map vm;
   parsed_options parsed = command_line_parser(argc, argv).options(desc).run();
+  store(parsed, vm);
+  notify(vm);
+  
+//  pa.help = vm.count("help");
+  pa.generate = vm.count("generate");
 
+  for ( const auto& g : generate_options )
+  {
+    size_t pos = g.find(':');
+    if ( pos == std::string::npos )
+    {
+      pa.generate_options[g] = "";
+      std::cout << "aaa" << std::endl;
+    }
+  }
 }
 
 }

@@ -14,7 +14,9 @@
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 
+#include <fstream>
 #include <syslog.h>
+
 
 namespace wfc{
 
@@ -30,10 +32,25 @@ bool startup_domain::startup( int argc, char* argv[])
 
 bool startup_domain::startup_(int argc, char** argv)
 {
-  std::cout << "BEGIN program_arguments" << std::endl;
   program_arguments pa;
   parse_arguments( pa, argc, argv);
-  std::cout << "END program_arguments" << std::endl;
+  std::cout << "startup_" << pa.help << std::endl;
+  if ( pa.help )
+  {
+    std::cout << pa.helpstring << std::endl;
+  }
+  else if ( pa.info )
+  {
+    std::cout << "TODO: info" << std::endl;
+  }
+  else if ( pa.generate )
+  {
+    std::cout << "TODO: bbbb" << std::endl;
+    if ( !this->generate_(pa) )
+    {
+      std::cerr << "the system is not initialized";
+    }
+  }
   return false;
   /*
   detail::po2 p2 = detail::po2::parse(argc, argv);
@@ -194,9 +211,47 @@ void startup_domain::show_module_info_(const std::string& module_name)
 /// generate
 ///
 
-void startup_domain::generate_( const std::string& type, const std::string& path )
+/// @return false - модуль не найден
+bool startup_domain::generate_(const program_arguments& pa)
 {
+  auto g = this->global();
+  if ( g==nullptr )
+    return false;
+
+  auto c = g->registry.get<iconfig>("config");
+  if ( c==nullptr )
+    return false;
+
+  std::string genstr;
+  if ( c->generate_config(pa.generate_options, genstr) )
+  {
+    if ( pa.config_path.empty() )
+    {
+      std::cout << genstr << std::endl;
+    }
+    else
+    {
+      std::ofstream fconf(pa.config_path);
+      std::copy(
+        genstr.begin(),
+        genstr.end(),
+        std::ostreambuf_iterator<char>(fconf)
+      );
+      std::cout << "TODO: help for formating" << std::endl;
+    }
+  }
+  else
+  {
+    std::cerr << genstr << std::endl;
+  }
+  return true;
+}
+
+void startup_domain::generate_( const std::string& /*type*/, const std::string& /*path*/ )
+{
+  //TODO: Удалить
   //if ( auto c = _global->config )
+  /*
   if ( auto c = this->global()->registry.get<iconfig>("config") )
   {
     c->generate_and_write(type, path);
@@ -205,6 +260,7 @@ void startup_domain::generate_( const std::string& type, const std::string& path
   {
     std::cerr << "Config module not set" << std::endl;
   }
+  */
 }
 
 }
