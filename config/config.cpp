@@ -205,7 +205,7 @@ std::string config::get_config(std::string name)
   return itr->second;
 }
 
-bool config::generate_config( const generate_options& go, std::string& result)
+bool config::generate_config( const generate_options& go, const std::string& path, std::string& result)
 {
   auto g = this->global();
   if ( g == nullptr )
@@ -244,6 +244,7 @@ bool config::generate_config( const generate_options& go, std::string& result)
     }
   }
   configuration_json::serializer()(mainconf, std::back_inserter(result));
+  this->save_to_file_( path, result);
   return true;
   /*
   bool fail = false;
@@ -305,7 +306,7 @@ std::string config::generate_and_write_del(std::string type, std::string path)
 
     if ( !path.empty() )
     {
-      _save_to_file_del(path, confstr);
+      this->save_to_file_(path, confstr);
       std::clog << "generated '"<< type << "' type to " << path << std::endl;
       std::clog << "For JSON format: cat "<< path << " | python -mjson.tool" << std::endl;
     }
@@ -343,14 +344,17 @@ std::string config::_load_from_file(const std::string& path)
   return confstr;
 }
 
-void config::_save_to_file_del(const std::string& path, const std::string& strconf)
+void config::save_to_file_(const std::string& path, const std::string& strconf)
 {
-  std::ofstream fconf(path);
-  std::copy(
-    strconf.begin(),
-    strconf.end(),
-    std::ostreambuf_iterator<char>(fconf)
-  );
+  if ( !path.empty() )
+  {
+    std::ofstream fconf(path);
+    std::copy(
+      strconf.begin(),
+      strconf.end(),
+      std::ostreambuf_iterator<char>(fconf)
+    );
+  }
 }
 
 }

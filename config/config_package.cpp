@@ -1,4 +1,5 @@
 
+#include "config_build_info.h"
 #include "config_package.hpp"
 #include "config_module.hpp"
 #include <wfc/module/module_list.hpp>
@@ -6,10 +7,8 @@
 
 namespace wfc{
   
-JSON_NAME2(config_package_name, "config")
-
 class config_package_impl: public ::wfc::module_list<
-  config_package_name,
+  config_build_info,
   config_module
 >
 {  
