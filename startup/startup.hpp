@@ -18,19 +18,23 @@ class idle_timer;
   
 class startup_domain
   : public ::wfc::domain_object<istartup, startup_config>
+  , public std::enable_shared_from_this<startup_domain>
 {
 public:
   virtual ~startup_domain();
   virtual bool startup( int argc, char* argv[] );
 private:
   bool startup_( int argc, char** argv);
-  bool generate_(const program_arguments& pa);
+  void perform_start_();
+  bool generate_();
   void generate_( const std::string& type, const std::string& path );
   void show_usage_();
   void show_help_();
-  void show_info_();
+  void show_info_(const std::string& name);
+  void show_build_info_(std::shared_ptr<ibuild_info> b, bool shortinfo);
   void show_module_info_(const std::string& module_name);
 private:
+  program_arguments _pa;
 };
 
 }

@@ -10,6 +10,12 @@ namespace wfc
 
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
 {
+  pa.program_name = argv[0];
+  pa.usage = ( argc == 1 );
+  if ( pa.usage )
+    return;
+
+  
   using namespace boost::program_options;
   typedef std::vector<std::string> vstrings;
   vstrings generate_options;
@@ -20,7 +26,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
   // TODO: ->multitoken()
   desc.add_options()
     ("help,h", value<bool>(&pa.help)->zero_tokens(), "produce help message")
-    ("info,i", value< vstrings >(&pa.info_options)->multitoken(), "show build info [package-list]")
+    ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "show build info [package-list]")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "generate configuration [object-name [arg]]. Use -C option for write to file.")
     ;
 
@@ -32,7 +38,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
     ("config,C", value<std::string>(&pa.config_path), "path to the configuration file")
     ("<<instance>>-<<key>> [arg]", "custom option for instance object");
 
-  //desc.add(desc_startup);
+  desc.add(desc_startup);
 
   variables_map vm;
   parsed_options parsed = command_line_parser(argc, argv).options(desc).run();
@@ -41,6 +47,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
   
 //  pa.help = vm.count("help");
   pa.generate = vm.count("generate");
+  pa.info = vm.count("info");
 
   for ( const auto& g : generate_options )
   {
@@ -48,7 +55,6 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
     if ( pos == std::string::npos )
     {
       pa.generate_options[g] = "";
-      std::cout << "aaa" << std::endl;
     }
   }
 }

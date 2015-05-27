@@ -4,6 +4,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
+#include "startup_build_info.h"
 #include "startup_package.hpp"
 #include "startup_module.hpp"
 #include <wfc/module/module_list.hpp>
@@ -11,10 +12,8 @@
 
 namespace wfc{
   
-JSON_NAME2(startup_package_name, "startup")
-
 class startup_package_impl: public ::wfc::module_list<
-  startup_package_name,
+  startup_build_info,
   startup_module
 >
 {  
