@@ -1,4 +1,5 @@
 
+#include "core_build_info.h"
 #include "core_package.hpp"
 #include "core_module.hpp"
 #include <wfc/module/module_list.hpp>
@@ -6,10 +7,8 @@
 
 namespace wfc{
   
-JSON_NAME2(core_package_name, "core")
-
 class core_package_impl: public ::wfc::module_list<
-  core_package_name,
+  core_build_info,
   core_module
 >
 {  
