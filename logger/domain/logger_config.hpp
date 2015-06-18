@@ -6,8 +6,9 @@
 
 #pragma once
 
-#include <string>
 #include "writer_config.hpp"
+#include <string>
+#include <vector>
 
 namespace wfc{
 
@@ -15,6 +16,7 @@ struct logger_config
   : writer_config
 {
   bool single = true;
+  std::vector<std::string> disabled;
 };
 
 }

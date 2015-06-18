@@ -74,10 +74,11 @@ void logger_domain::create_single_()
 
   _domain_log = std::make_shared<logger_writer>();
   _domain_log->initialize(wconf);
-  _config_log = _domain_log;
-  _common_log = _domain_log;
-  _debug_log  = _domain_log;
-  _syslog_log = _domain_log;
+  _config_log  = _domain_log;
+  _common_log  = _domain_log;
+  _debug_log   = _domain_log;
+  _jsonrpc_log = _domain_log;
+  _syslog_log  = _domain_log;
 }
 
 void logger_domain::create_multi_()
@@ -103,6 +104,11 @@ void logger_domain::create_multi_()
   _debug_log = std::make_shared<logger_writer>();
   _debug_log->initialize(wconf);
 
+  if ( !emptypath ) wconf.path = path + ".jsonrpc.log";
+  _jsonrpc_log = std::make_shared<logger_writer>();
+  _jsonrpc_log->initialize(wconf);
+
+  
    if ( !emptypath ) wconf.path = path + ".syslog.log";
   _syslog_log = std::make_shared<logger_writer>();
   _syslog_log->initialize(wconf);
@@ -112,11 +118,12 @@ void logger_domain::reg_loggers_()
 {
   if ( auto g = this->global() )
   {
-    g->registry.set("logger", "domain", _domain_log);
-    g->registry.set("logger", "config", _config_log);
-    g->registry.set("logger", "common", _common_log);
-    g->registry.set("logger", "debug",  _debug_log );
-    g->registry.set("logger", "syslog", _syslog_log );
+    g->registry.set("logger", "domain",   _domain_log);
+    g->registry.set("logger", "config",   _config_log);
+    g->registry.set("logger", "common",   _common_log);
+    g->registry.set("logger", "debug",    _debug_log );
+    g->registry.set("logger", "jsonrpc",  _jsonrpc_log );
+    g->registry.set("logger", "syslog",   _syslog_log );
   }
 }
 
@@ -128,6 +135,7 @@ void logger_domain::unreg_loggers_()
     g->registry.erase("logger", "config");
     g->registry.erase("logger", "common");
     g->registry.erase("logger", "debug");
+    g->registry.erase("logger", "jsonrpc");
     g->registry.erase("logger", "syslog");
   }
 }

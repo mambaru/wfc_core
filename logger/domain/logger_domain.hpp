@@ -39,6 +39,7 @@ private:
   std::shared_ptr<logger_writer> _domain_log;
   std::shared_ptr<logger_writer> _common_log;
   std::shared_ptr<logger_writer> _debug_log;
+  std::shared_ptr<logger_writer> _jsonrpc_log;
   std::shared_ptr<logger_writer> _syslog_log;
 };
 
