@@ -10,9 +10,6 @@
 #include <sstream>
 #include <algorithm>
 #include <syslog.h>
-//#include <boost/asio.hpp>
-#include <boost/asio/deadline_timer.hpp>
-
 #include <sys/resource.h>
 
 namespace wfc{
@@ -34,12 +31,8 @@ static void signal_sigint_handler(int)
 
 } // namespace
 
-
-//typedef boost::asio::deadline_timer idle_timer;
-
 core::~core()
 {
-  
 }
 
 core::core()
@@ -53,10 +46,8 @@ void core::core_reconfigure()
   _reconfigure_flag = true;
 }
 
-int core::run( /*std::shared_ptr<wfcglobal> gl*/ )
+int core::run()
 {
-  //_global = gl;
-    
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
   signal(SIGINT,   signal_sigint_handler);
@@ -84,13 +75,11 @@ void core::core_stop( )
   _stop_flag = true;
 }
 
-//void core::configure(const core_config& conf)
 void core::reconfigure()
 {
   auto opt = this->options();
   if ( opt.rlimit_as_mb != 0 )
   {
-    // TODO: в system.hpp и прочие системные штуки
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
     rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};
     if ( 0 == getrlimit( RLIMIT_AS, &rlim ) )
@@ -114,7 +103,6 @@ void core::reconfigure()
 
 void core::_idle()
 {
-  // std::cout << "DEBUG IDLE" << std::endl;
   if ( _stop_flag )
   {
     DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
@@ -155,40 +143,25 @@ int core::_main_loop()
   return 0;
 }
 
-
 ///
 /// sunrise
 ///
 
-void core::_prepare(module_vector& mv)
-{
-  this->global()->registry.for_each<iobject>("object",  [&mv](const std::string& name, std::shared_ptr<iobject> m){
-    mv.push_back( module_pair( name, m) );
-  });
-}
-
 void core::_sunrise()
 {
-  module_vector modules;
-  /*this->_prepare(modules);
-  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
-    return left.second->startup_priority() < right.second->startup_priority();
-  } );
-  */
-
   CONFIG_LOG_MESSAGE("----------- configuration -------------")
-  this->_configure(modules);
+  this->_configure();
   
   CONFIG_LOG_MESSAGE("----------- initialization ------------")
-  this->_initialize(modules);
+  this->_initialize();
   
   CONFIG_LOG_MESSAGE("-------------- starting ---------------")
-  this->_start(modules);
+  this->_start();
   
   SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
 }
 
-void core::_configure(const module_vector& modules)
+void core::_configure()
 {
   auto g = this->global();
 
@@ -216,60 +189,20 @@ void core::_configure(const module_vector& modules)
   {
     DOMAIN_LOG_WARNING("Configure module is not set")
   }
-  
-  /*
-  if (!_global)
-    return;
-  
-  //if ( auto config = global->config )
-  if ( auto config = _global->registry.get<iconfig>("config") )
-  {
-    std::for_each(modules.begin(), modules.end(), [config](const module_pair& m)
-    {
-      std::string confstr = config->get_config(m.first);
-      if ( !confstr.empty() )
-      {
-        CONFIG_LOG_BEGIN("core::configure: module '" << m.first << "'...")
-        m.second->configure(confstr, std::string() );
-        CONFIG_LOG_END("core::configure: module '" << m.first << "'...Done!")
-      }
-      else
-      {
-        CONFIG_LOG_ERROR("core::configure: configuration for '" << m.first << "' not found!")
-      }
-    });
-  }
-  else
-  {
-    DOMAIN_LOG_WARNING("Configure module is not set")
-  }
-  */
 }
 
-void core::_initialize(const module_vector& modules)
+void core::_initialize()
 {
   auto g = this->global();
 
   if ( g == nullptr)
     return;
 
-  /*
-  g->registry.for_each<iinstance>("instance", [g](const std::string& name, std::shared_ptr<iinstance> obj)
-  {
-    CONFIG_LOG_BEGIN("core::initialize: instance '" << name << "'...")
-    obj->initialize();
-    CONFIG_LOG_END("core::initialize: module '" << name << "'...Done!")
-    g->io_service.poll();
-    g->io_service.reset();
-  });
-  */
-
-  
   typedef std::shared_ptr<iinstance> instance_ptr;
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
   instances.reserve(100);
-  g->registry.for_each<iinstance>("instance", [&instances](const std::string& name, std::shared_ptr<iinstance> obj)
+  g->registry.for_each<iinstance>("instance", [&instances](const std::string& /*name*/, std::shared_ptr<iinstance> obj)
   {
     instances.push_back(obj);
   });
@@ -286,23 +219,9 @@ void core::_initialize(const module_vector& modules)
     g->io_service.poll();
     g->io_service.reset();
   });
-
-
-  
-  /*
-  auto& io = _global->io_service;
-  std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
-  {
-    CONFIG_LOG_BEGIN("core::initialize: module '" << m.first << "'...")
-    m.second->initialize(std::string());
-    CONFIG_LOG_END("core::initialize: module '" << m.first << "'...Done!")
-    io.poll();
-    io.reset();
-  });
-  */
 }
 
-void core::_start(const module_vector& modules)
+void core::_start()
 {
   auto g = this->global();
 
@@ -313,14 +232,15 @@ void core::_start(const module_vector& modules)
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
   instances.reserve(100);
-  g->registry.for_each<iinstance>("instance", [&instances](const std::string& name, std::shared_ptr<iinstance> obj)
+  g->registry.for_each<iinstance>("instance", [&instances](const std::string& /*name*/, std::shared_ptr<iinstance> obj)
   {
     instances.push_back(obj);
   });
 
-  std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool {
+  std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool
+  {
     return left->startup_priority() < right->startup_priority();
-  } );
+  });
   
   std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
   {
@@ -330,24 +250,14 @@ void core::_start(const module_vector& modules)
     g->io_service.poll();
     g->io_service.reset();
   });
-
-  /*
-  auto& io = _global->io_service;
-  std::for_each(modules.begin(), modules.end(), [&io](const module_pair& m)
-  {
-    CONFIG_LOG_BEGIN("core::start: module '" << m.first << "'...")
-    m.second->start(std::string());
-    CONFIG_LOG_END("core::start: module '" << m.first << "'...Done!")
-    io.poll();
-    io.reset();
-  });
-  */
 }
 
 void core::_stop()
 {
   if ( _idle_timer!=nullptr )
+  {
     _idle_timer->cancel();
+  }
   
   auto g = this->global();
 
@@ -367,7 +277,7 @@ void core::_stop()
   instance_list instances;
   instances.reserve(100);
 
-  g->registry.for_each<iinstance>("instance", [&instances](const std::string& name, std::shared_ptr<iinstance> obj)
+  g->registry.for_each<iinstance>("instance", [&instances](const std::string& /*name*/, std::shared_ptr<iinstance> obj)
   {
     instances.push_back(obj);
   });
@@ -389,30 +299,6 @@ void core::_stop()
 
   DOMAIN_LOG_END("stop '" << g->instance_name << "'...Done!")
   DOMAIN_LOG_MESSAGE("=======================================")
-
-
-  /*
-  module_vector modules;
-  this->_prepare(modules);
-  std::sort(modules.begin(), modules.end(), [](const module_pair& left, const module_pair& right)->bool {
-    return left.second->shutdown_priority() > right.second->shutdown_priority();
-  } );
-  
-  std::for_each(modules.begin(), modules.end(), [](module_pair& m)
-  {
-    CONFIG_LOG_BEGIN("core::stop: module '" << m.first << "'...")
-    m.second->stop(std::string());
-    CONFIG_LOG_END("core::stop: module '" << m.first << "'...Done!")
-  });
-  
-  DOMAIN_LOG_BEGIN("after stop handlers")
-  this->global()->after_stop.fire();
-  DOMAIN_LOG_END("after stop handlers")
-
-  DOMAIN_LOG_END("stop '" << _global->instance_name << "'...Done!")
-  DOMAIN_LOG_MESSAGE("=======================================")
-  */
 }
-
 
 }
