@@ -41,20 +41,16 @@ bool startup_domain::startup_(int argc, char** argv)
                                  : _pa.instance_name;
   }
   
-  std::cout << "PATH: " << _pa.config_path << std::endl;
   if ( _pa.usage )
   {
-    std::cout << "-1-" << std::endl;
     this->show_usage_();
   }
   else if ( _pa.help )
   {
-    std::cout << "-2-" << std::endl;
     std::cout << _pa.helpstring << std::endl;
   }
   else if ( _pa.info )
   {
-    std::cout << "-3-" << std::endl;
     if ( _pa.info_options.empty() )
     {
       this->show_info_("");
@@ -69,7 +65,6 @@ bool startup_domain::startup_(int argc, char** argv)
   }
   else if ( _pa.generate )
   {
-    std::cout << "-4-" << std::endl;
     if ( !this->generate_() )
     {
       std::cerr << "the system is not initialized";
@@ -77,24 +72,15 @@ bool startup_domain::startup_(int argc, char** argv)
   }
   else if ( !_pa.config_path.empty() )
   {
-    std::cout << "-5-" << std::endl;
     this->perform_start_();
     return true;
   }
   else
   {
-    std::cout << "-6-" << std::endl;
   }
   return false;
-  /*
-  detail::po2 p2 = detail::po2::parse(argc, argv);
-  std::cout << "----po----" << std::endl;
-  std::cout << "P2 ready" << std::endl;
-  std::cout << "----po----" << std::endl;
-  */
   detail::po p = detail::po::parse(argc, argv);
 
-  
   this->global()->program_name = p.program_name;
   this->global()->instance_name = p.instance_name.empty()
                                  ? p.instance_name
@@ -166,7 +152,6 @@ bool startup_domain::startup_(int argc, char** argv)
 
 void startup_domain::perform_start_( )
 {
-  std::cout << "void startup_domain::perform_start_( )" << std::endl;
   if ( auto g = this->global() )
   {
     if ( auto c = g->registry.get<iconfig>("config") )
@@ -246,13 +231,10 @@ void startup_domain::show_help_()
      << "  --NAME-KEY=[VALUE]        module defined options                  " << std::endl;
   std::cout<< std::endl;
 
-  /*if ( auto m = _global->modules)*/
-  //{
   std::cout << "modules:" << std::endl;
   this->global()->registry.for_each<imodule>("module", []( const std::string& name, std::shared_ptr<imodule> /*m*/){
     std::cout << "  " << name <<  std::endl;
   });
-  //}
 }
 
 void startup_domain::show_info_(const std::string& name)
@@ -274,7 +256,7 @@ void startup_domain::show_info_(const std::string& name)
           auto objects = m->objects();
           for( auto o: objects ) 
           {
-              std::cout << "\t\t\t" << m->name() << "[" << o->interface_name() << "]. " << m->description() << std::endl;
+              std::cout << "\t\t\t" << o->name() << "[" << o->interface_name() << "]. " << m->description() << std::endl;
           }
       }
     }
