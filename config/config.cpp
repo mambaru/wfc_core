@@ -221,7 +221,6 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     {
       if (obj!=nullptr)
       {
-        std::cout << "DEBUG: gen " << name << std::endl;
         mainconf[name] = obj->generate("");
       }
     });
@@ -246,45 +245,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   configuration_json::serializer()(mainconf, std::back_inserter(result));
   this->save_to_file_( path, result);
   return true;
-  /*
-  bool fail = false;
-  configuration mainconf;
-  g->registry.for_each<iobject>("object", [&mainconf, &go, &result, &fail](const std::string& name, std::shared_ptr<iobject> obj)
-  {
-    if (fail) return;
-
-    if (obj!=nullptr)
-    {
-      if ( go.empty() )
-      {
-        mainconf[name] = obj->generate("");
-      }
-      else
-      {
-        auto itr = go.find(name);
-        if ( itr!=go.end() )
-        {
-          mainconf[name] = obj->generate(itr->second);
-        }
-        else
-        {
-          std::stringstream ss;
-          ss << "WFC generate error! object "<< name << " not found";
-          result=ss.str();
-          fail = true;
-        }
-      }
-    }
-  });
-
-  if (!fail)
-  {
-    configuration_json::serializer()(mainconf, std::back_inserter(result));
-  }
-  return !fail;
-  */
 }
-
 
 std::string config::generate_and_write_del(std::string type, std::string path)
 {
