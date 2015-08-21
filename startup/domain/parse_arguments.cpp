@@ -45,7 +45,8 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
   store(parsed, vm);
   notify(vm);
   
-//  pa.help = vm.count("help");
+  
+  pa.help = vm.count("help");
   pa.generate = vm.count("generate");
   pa.info = vm.count("info");
 
@@ -57,6 +58,14 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
       pa.generate_options[g] = "";
     }
   }
+  
+  if ( pa.help )
+  {
+    std::stringstream ss;
+    desc.print(ss);
+    pa.helpstring = ss.str();
+  }
+    
 }
 
 }
