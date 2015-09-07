@@ -78,6 +78,7 @@ void logger_domain::create_single_()
   _common_log  = _domain_log;
   _debug_log   = _domain_log;
   _jsonrpc_log = _domain_log;
+  _iow_log     = _domain_log;
   _syslog_log  = _domain_log;
 }
 
@@ -108,6 +109,10 @@ void logger_domain::create_multi_()
   _jsonrpc_log = std::make_shared<logger_writer>();
   _jsonrpc_log->initialize(wconf);
 
+  if ( !emptypath ) wconf.path = path + ".iow.log";
+  _iow_log = std::make_shared<logger_writer>();
+  _iow_log->initialize(wconf);
+
   
    if ( !emptypath ) wconf.path = path + ".syslog.log";
   _syslog_log = std::make_shared<logger_writer>();
@@ -123,6 +128,7 @@ void logger_domain::reg_loggers_()
     g->registry.set("logger", "common",   _common_log);
     g->registry.set("logger", "debug",    _debug_log );
     g->registry.set("logger", "jsonrpc",  _jsonrpc_log );
+    g->registry.set("logger", "iow",      _iow_log );
     g->registry.set("logger", "syslog",   _syslog_log );
   }
 }
