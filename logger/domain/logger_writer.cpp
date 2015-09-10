@@ -13,16 +13,17 @@
 #include <sstream>
 #include <cstdlib>
 #include <ctime>
+#include <cctype>
 #include <syslog.h>
 
 
 namespace wfc{
-  
-namespace 
+
+namespace
 {
   void prepare( std::string& str, size_t width)
   {
-    std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+    std::transform(str.begin(), str.end(), str.begin(), [](char ch)->char{ return std::toupper(ch);} );
     if ( width > str.size() )
       std::fill_n( std::back_inserter(str), width - str.size(), ' ' );
   }
@@ -73,8 +74,22 @@ void logger_writer::initialize(const writer_config& conf)
   _conf = conf;
 }
 
-void logger_writer::write(const std::string& name, const std::string& ident,  const std::string& str)
+namespace {
+
+inline bool replace(std::string& str, const std::string& from, const std::string& to) 
 {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+}
+
+void logger_writer::write(const std::string& name, const std::string& ident,  std::string str)
+{
+  while ( replace(str, "\r\n", "\\r\\n") );
+
   std::lock_guard<mutex_type> lk(_mutex);
   
   if ( !_conf.path.empty() )

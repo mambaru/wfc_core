@@ -20,7 +20,7 @@ public:
 
   void initialize( const writer_config& conf );
   
-  virtual void write(const std::string& name, const std::string& ident,  const std::string& str);  
+  virtual void write(const std::string& name, const std::string& ident, std::string str);
   
 private:
   void write_to_file_(const std::string& name, const std::string& ident,  const std::string& str);
