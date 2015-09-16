@@ -247,9 +247,14 @@ void core::_start()
     CONFIG_LOG_BEGIN("core::start: module '" << m->name() << "'...")
     m->start(std::string());
     CONFIG_LOG_END("core::start: module '" <<  m->name() << "'...Done!")
-    g->io_service.poll();
+    CONFIG_LOG_DEBUG("-0- start")
+    g->io_service.run_one();
+    CONFIG_LOG_DEBUG("-1- start")
     g->io_service.reset();
+    CONFIG_LOG_DEBUG("-2- start")
   });
+  CONFIG_LOG_DEBUG("-3- start")
+  
 }
 
 void core::_stop()
