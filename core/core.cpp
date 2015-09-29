@@ -120,7 +120,7 @@ void core::_idle()
   
   _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds( this->options().idle_timeout_ms));
   _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
-    this->_idle();  
+    this->_idle();
   });
 }
 
