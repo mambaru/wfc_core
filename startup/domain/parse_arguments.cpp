@@ -33,7 +33,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
   desc_startup.add_options()
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "run as daemon")
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "allow core dump")
-    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(0), "auto restart daemon [timeout in sec]")
+    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [timeout in sec]")
     ("name,n", value<std::string>(&pa.instance_name), "unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path), "path to the configuration file")
     ("<<instance>>-<<key>> [arg]", "custom option for instance object");
@@ -49,6 +49,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
   pa.help = vm.count("help");
   pa.generate = vm.count("generate");
   pa.info = vm.count("info");
+  pa.autoup = ( pa.autoup_timeout!=-1 );
 
   for ( const auto& g : generate_options )
   {

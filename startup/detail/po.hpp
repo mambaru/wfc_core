@@ -1,3 +1,5 @@
+
+/*
 #include <string>
 #include <map>
 
@@ -63,3 +65,4 @@ struct po2
 };
 
 }}
+*/

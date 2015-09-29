@@ -79,75 +79,6 @@ bool startup_domain::startup_(int argc, char** argv)
   {
   }
   return false;
-  detail::po p = detail::po::parse(argc, argv);
-
-  this->global()->program_name = p.program_name;
-  this->global()->instance_name = p.instance_name.empty()
-                                 ? p.instance_name
-                                 : p.program_name;
-  
-  this->global()->options = p.module_options;
-  
-  if (p.usage)
-    this->show_usage_();
-  
-  if (p.help)
-    this->show_help_();
-
-  if (p.info)
-  {
-    if ( p.info_name.empty() )
-      /*this->show_info_()*/{};
-    this->show_module_info_(p.info_name);
-  }
-
-  if (p.generate)
-  {
-    this->generate_(p.generate_name, p.config_path);
-  }
-
-  if ( p.usage || p.help || p.info || p.generate )
-  {
-    return false;
-  }
-
-  if ( auto c = this->global()->registry.get<iconfig>("config") )
-    c->load_and_parse(p.config_path);
-
-  if ( p.daemonize )
-    ::wfc::daemonize();
-
-  if ( p.daemonize && p.autoup )
-  {
-    ::wfc::autoup(p.autoup_timeout, [p](bool restart, int status, time_t)->bool
-    {
-      ::openlog( (p.instance_name+"(wfc_startup)").c_str(), 0, LOG_USER);
-      std::stringstream ss;
-      ss << "Daemon stop with status: " << status << ". ";
-      if ( restart )
-        ss << "Restarting...";
-      else
-        ss << "Do not restarted.";
-
-      if ( status!= 0 )
-      {
-        DOMAIN_LOG_FATAL( ss.str() )
-      }
-      else
-      {
-        DOMAIN_LOG_MESSAGE( ss.str() )
-      }
-        
-      ::syslog(LOG_ERR, ss.str().c_str());
-      ::closelog();
-      return restart;
-    });
-  }
-
-  if ( p.coredump )
-    ::wfc::dumpable();
- 
-  return true;
 }
 
 void startup_domain::perform_start_( )
@@ -166,13 +97,12 @@ void startup_domain::perform_start_( )
   if ( _pa.daemonize && _pa.autoup )
   {
     std::weak_ptr<startup_domain> wthis = this->shared_from_this();
-    ::wfc::autoup(_pa.autoup_timeout, [wthis](bool restart, int status, time_t)->bool
+    ::wfc::autoup(_pa.autoup_timeout, [wthis](bool restart, int status, time_t work_time)->bool
     {
       if ( auto pthis = wthis.lock() )
       {
-        //::openlog( (_pa.instance_name+"(wfc_startup)").c_str(), 0, LOG_USER);
         std::stringstream ss;
-        ss << "Daemon stop with status: " << status << ". ";
+        ss << "Daemon stop with status: " << status << " after work time " << work_time << "sec. " ;
         if ( restart )
           ss << "Restarting...";
         else
@@ -188,8 +118,6 @@ void startup_domain::perform_start_( )
         }
         
         SYSLOG_LOG_MESSAGE( ss.str() )
-        // ::syslog(LOG_ERR, ss.str().c_str());
-        // ::closelog();
         return restart;
       }
       return false;
@@ -248,6 +176,7 @@ void startup_domain::show_info_(const std::string& name)
   {
     if ( auto p = g->registry.get<ipackage>("package", name) )
     {
+      std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
       auto modules = p->modules();
       for( auto m: modules ) 
@@ -263,8 +192,11 @@ void startup_domain::show_info_(const std::string& name)
   }
   else
   {
+    std::cout << "About Program:" << std::endl;
     this->show_build_info_(g->program_build_info, false);
+    std::cout << "About WFC:" << std::endl;
     this->show_build_info_(g->wfc_build_info, false);
+    std::cout << "Package List:" << std::endl;
     g->registry.for_each<ipackage>("package", [this](const std::string& /*name*/, std::shared_ptr<ipackage> p)
     {
       this->show_build_info_(p->build_info(), true);
@@ -302,6 +234,7 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
   }
 }
 
+/*
 void startup_domain::show_module_info_(const std::string& module_name)
 {
   if (auto g = this->global() )
@@ -329,7 +262,7 @@ void startup_domain::show_module_info_(const std::string& module_name)
     }
   }
 }
-
+*/
 ///
 /// generate
 ///
