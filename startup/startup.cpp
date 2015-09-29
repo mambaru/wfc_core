@@ -6,7 +6,6 @@
 
 #include "startup.hpp"
 #include "domain/parse_arguments.hpp"
-#include "detail/po.hpp"
 
 #include <wfc/core/iconfig.hpp>
 #include <wfc/module/imodule.hpp>
