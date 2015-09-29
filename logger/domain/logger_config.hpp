@@ -16,7 +16,7 @@ struct logger_config
   : writer_config
 {
   bool single = true;
-  std::vector<std::string> disabled;
+  std::vector<std::string> reject;
 };
 
 }

@@ -104,7 +104,7 @@ void logger_writer::write(const std::string& name, const std::string& ident,  st
   
   if ( !_conf.syslog.empty() && name == "syslog")
   {
-    this->write_to_syslog_(/*name,*/ ident, str);
+    this->write_to_syslog_(ident, str);
   }
 }
 
@@ -126,7 +126,7 @@ void logger_writer::write_to_file_(const std::string& name, const std::string& i
             << " ----------------" << std::endl;
     }
   }
-    
+
   write_to_stream(oflog, name, ident, str);
 }
 

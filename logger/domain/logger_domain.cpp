@@ -28,12 +28,16 @@ void logger_domain::stop(const std::string& )
 void logger_domain::reconfigure()
 {
   auto opt = this->options();
+
+  _reject.clear();
+  _reject.insert(opt.reject.begin(), opt.reject.end());
+
   opt.single
     ? this->create_single_()
     : this->create_multi_();
+
   this->reg_loggers_();
-  
-  // TODO: Перенести в create
+
   if ( !::iow::log_status() )
   {
     std::weak_ptr<logger_domain> wthis = this->shared_from_this();
@@ -60,7 +64,6 @@ void logger_domain::reconfigure()
       }
       return false;
     };
-    
     ::iow::init_log(logfun);
   }
 
@@ -113,14 +116,33 @@ void logger_domain::create_multi_()
   _iow_log = std::make_shared<logger_writer>();
   _iow_log->initialize(wconf);
 
-  
    if ( !emptypath ) wconf.path = path + ".syslog.log";
   _syslog_log = std::make_shared<logger_writer>();
   _syslog_log->initialize(wconf);
 }
 
+void logger_domain::reg_log_(std::string name, writer_ptr writer)
+{
+  if ( auto g = this->global() )
+  {
+    if ( _reject.count(name) == 0)
+    {
+      g->registry.set("logger", name,  writer);
+    }
+  }
+}
+
 void logger_domain::reg_loggers_()
 {
+  this->reg_log_("domain",   _domain_log);
+  this->reg_log_("config",   _config_log);
+  this->reg_log_("common",   _common_log);
+  this->reg_log_("debug",    _debug_log );
+  this->reg_log_("jsonrpc",  _jsonrpc_log );
+  this->reg_log_("iow",      _iow_log );
+  this->reg_log_("syslog",   _syslog_log );
+
+  /*
   if ( auto g = this->global() )
   {
     g->registry.set("logger", "domain",   _domain_log);
@@ -131,6 +153,7 @@ void logger_domain::reg_loggers_()
     g->registry.set("logger", "iow",      _iow_log );
     g->registry.set("logger", "syslog",   _syslog_log );
   }
+  */
 }
 
 void logger_domain::unreg_loggers_()
@@ -142,6 +165,7 @@ void logger_domain::unreg_loggers_()
     g->registry.erase("logger", "common");
     g->registry.erase("logger", "debug");
     g->registry.erase("logger", "jsonrpc");
+    g->registry.erase("logger", "iow");
     g->registry.erase("logger", "syslog");
   }
 }

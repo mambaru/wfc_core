@@ -17,6 +17,7 @@ struct logger_config_json
   JSON_NAME(syslog)
   JSON_NAME(stdout)
   JSON_NAME(path)
+  JSON_NAME(reject)
 
   typedef json::object<
     logger_config,
@@ -25,7 +26,10 @@ struct logger_config_json
       json::member<n_limit,    writer_config, size_t,      &writer_config::limit>,
       json::member<n_stdout,   writer_config, std::string, &writer_config::stdout>,
       json::member<n_path,     writer_config, std::string, &writer_config::path>,
-      json::member<n_syslog,   writer_config, std::string, &writer_config::syslog>
+      json::member<n_syslog,   writer_config, std::string, &writer_config::syslog>,
+      json::member<n_reject,   logger_config, std::vector<std::string>, &logger_config::reject,
+        json::array<std::vector< json::value<std::string> > >
+      >
     >::type
   > type;
   

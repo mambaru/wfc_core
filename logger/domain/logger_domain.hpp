@@ -10,7 +10,7 @@
 #include "logger_config.hpp"
 #include <memory>
 #include <string>
-
+#include <set>
 
 namespace wfc{
 
@@ -20,8 +20,10 @@ class logger_domain
   : public domain_object<iinterface, logger_config>
   , public std::enable_shared_from_this<logger_domain>
 {
-public:
+  typedef std::shared_ptr<logger_writer> writer_ptr;
   
+public:
+
   virtual void reconfigure();
   virtual void stop(const std::string& );
   virtual void start(const std::string& );
@@ -32,16 +34,18 @@ private:
   void create_multi_();
   void reg_loggers_();
   void unreg_loggers_();
-  
+  void reg_log_(std::string name, writer_ptr writer);
+
 private:
-  
-  std::shared_ptr<logger_writer> _config_log;
-  std::shared_ptr<logger_writer> _domain_log;
-  std::shared_ptr<logger_writer> _common_log;
-  std::shared_ptr<logger_writer> _debug_log;
-  std::shared_ptr<logger_writer> _jsonrpc_log;
-  std::shared_ptr<logger_writer> _iow_log;
-  std::shared_ptr<logger_writer> _syslog_log;
+  std::set<std::string> _reject;
+
+  writer_ptr _config_log;
+  writer_ptr _domain_log;
+  writer_ptr _common_log;
+  writer_ptr _debug_log;
+  writer_ptr _jsonrpc_log;
+  writer_ptr _iow_log;
+  writer_ptr _syslog_log;
 };
 
 }
