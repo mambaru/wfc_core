@@ -22,15 +22,15 @@
 - SYSLOG
 - DEBUG
 * Тип
-- ERROR
-- WARNING
-- MESSAGE
-- FATAL
-- BEGIN
-- END
-- DEBUG
-- TRACE
-- PROGRESS
+  - ERROR
+  - WARNING
+  - MESSAGE
+  - FATAL
+  - BEGIN
+  - END
+  - DEBUG
+  - TRACE
+  - PROGRESS
 * Сообщение
 
 
