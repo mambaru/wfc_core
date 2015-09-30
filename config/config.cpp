@@ -49,11 +49,6 @@ config::~config()
   
 }
 
-void config::_init_timer()
-{
-
-}
-
 config::config()
   : _config_changed(0)
 {
@@ -61,12 +56,12 @@ config::config()
 
 void config::start(const std::string& /*arg*/)
 {
-  // TODO: Опционально
   if ( this->options().reload_sighup )
   {
     signal(SIGHUP, signal_sighup_handler);
   }
   
+  this->_config_changed = get_modify_time(this->_path);
   if ( auto g = this->global() )
   {
     g->idle.push_back( [this]()
@@ -82,24 +77,14 @@ void config::start(const std::string& /*arg*/)
   }
 }
 
-/*
-void config::configure(const config_config& conf)
-{
-  _conf = conf;
-  signal(SIGHUP, signal_sighup_handler);
-  if ( _conf.reload_changed )
-    _config_changed = get_modify_time(_path);
-  _init_timer();
-}
-*/
 void config::reload_and_reconfigure()
 {
-  CONFIG_LOG_MESSAGE("config::reconfigure()")
-  std::string confstr = _load_from_file(_path);
+  CONFIG_LOG_BEGIN("Reload Configuration And Reconfigure")
+  std::string confstr = load_from_file_(_path);
   configuration mainconf;
   try
   {
-    _parse_configure(_path, confstr, mainconf);
+    parse_configure_(_path, confstr, mainconf);
   }
   catch(const std::domain_error& e)
   {
@@ -110,17 +95,17 @@ void config::reload_and_reconfigure()
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
     c->core_reconfigure();
-  _init_timer();
+  CONFIG_LOG_END("Reload Configuration And Reconfigure")
 }
 
 
 void config::load_and_parse(std::string path)
 {
-  std::string confstr = _load_from_file(path);
+  std::string confstr = load_from_file_(path);
   configuration mainconf;
   try
   {
-    _parse_configure(path, confstr, mainconf);
+    parse_configure_(path, confstr, mainconf);
   }
   catch(const std::domain_error& e)
   {
@@ -132,7 +117,7 @@ void config::load_and_parse(std::string path)
   _path = path;
 }
 
-void config::_parse_configure(std::string source, std::string confstr, configuration& mainconf)
+void config::parse_configure_(std::string source, std::string confstr, configuration& mainconf)
 {
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
@@ -293,7 +278,7 @@ std::string config::generate_and_write_del(std::string type, std::string path)
 }
 
 
-std::string config::_load_from_file(const std::string& path)
+std::string config::load_from_file_(const std::string& path)
 {
   std::string confstr;
   std::ifstream fconf(path);
