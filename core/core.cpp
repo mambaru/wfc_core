@@ -246,7 +246,8 @@ void core::_start()
     CONFIG_LOG_BEGIN("core::start: module '" << m->name() << "'...")
     m->start(std::string());
     CONFIG_LOG_END("core::start: module '" <<  m->name() << "'...Done!")
-    g->io_service.run_one();
+    //g->io_service.run_one();
+    g->io_service.poll();
     g->io_service.reset();
   });
 }
