@@ -4,9 +4,9 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-#include "logger_domain.hpp"
-#include "logger_writer.hpp"
-#include "writer_config.hpp"
+#include "logger.hpp"
+#include "writer.hpp"
+#include "writer_options.hpp"
 #include <iow/logger/global_log.hpp>
 #include <wfc/logger.hpp>
 #include <iostream>
@@ -15,17 +15,17 @@
 
 namespace wfc{
 
-void logger_domain::start(const std::string& )
+void logger::start(const std::string& )
 {
 }
 
-void logger_domain::stop(const std::string& )
+void logger::stop(const std::string& )
 {
   this->unreg_loggers_();
   iow::init_log(nullptr);
 }
 
-void logger_domain::reconfigure()
+void logger::reconfigure()
 {
   auto opt = this->options();
 
@@ -42,7 +42,7 @@ void logger_domain::reconfigure()
 
   if ( !::iow::log_status() )
   {
-    std::weak_ptr<logger_domain> wthis = this->shared_from_this();
+    std::weak_ptr<logger> wthis = this->shared_from_this();
     
     ::iow::log_writer logfun = [wthis](  
         const std::string& name, 
@@ -78,12 +78,12 @@ void logger_domain::reconfigure()
 }
 
 
-bool logger_domain::is_deny_(const std::string& some) const
+bool logger::is_deny_(const std::string& some) const
 {
   return _deny.find(some) != _deny.end();
 }
 
-auto logger_domain::get_or_create_(const std::string& name, const std::string& type) -> ilogger_ptr
+auto logger::get_or_create_(const std::string& name, const std::string& type) -> ilogger_ptr
 {
   if ( is_deny_(name) || is_deny_(type) )
     return nullptr;
@@ -95,7 +95,7 @@ auto logger_domain::get_or_create_(const std::string& name, const std::string& t
   return find_or_create_(name);
 }
 
-auto logger_domain::find_or_create_(const std::string& name) -> ilogger_ptr
+auto logger::find_or_create_(const std::string& name) -> ilogger_ptr
 {
   if ( auto g = this->global() )
   {
@@ -108,11 +108,11 @@ auto logger_domain::find_or_create_(const std::string& name) -> ilogger_ptr
 }
 
 
-auto logger_domain::create_(const std::string& name) -> ilogger_ptr
+auto logger::create_(const std::string& name) -> ilogger_ptr
 {
   logger_config opt = this->options();
-  writer_ptr pwriter = std::make_shared<logger_writer>();
-  writer_config wopt = static_cast<writer_config>(opt);
+  writer_ptr pwriter = std::make_shared<writer>();
+  writer_options wopt = static_cast<writer_options>(opt);
   if (opt.single)
   {
     wopt.path = wopt.path+ ".log";
@@ -150,27 +150,30 @@ auto logger_domain::create_(const std::string& name) -> ilogger_ptr
   return pwriter;
 }
 
-void logger_domain::customize_(const std::string& name, writer_config& wopt) const
+void logger::customize_(const std::string& name, writer_options& wopt) const
 {
   const logger_config& opt = this->options();
 
   auto itr = opt.custom.find(name);
   if ( itr != opt.custom.end() )
   {
-    writer_config cstm= itr->second;
+    writer_options cstm= itr->second;
+    
     if (cstm.limit!=0)
       wopt.limit = cstm.limit;
+    
     if (!cstm.path.empty())
       wopt.path = cstm.path;
     
     if (!cstm.syslog.empty())
       wopt.syslog = cstm.syslog;
+    
     wopt.stdout = cstm.stdout;
     wopt.deny = cstm.deny;
   }
 }
 
-void logger_domain::unreg_loggers_()
+void logger::unreg_loggers_()
 {
   if ( auto g = this->global() )
   {
@@ -184,7 +187,7 @@ void logger_domain::unreg_loggers_()
 
 /*
 
-void logger_domain::create_single_()
+void logger::create_single_()
 {
   writer_config wconf = static_cast<writer_config>( this->options() );
   if ( !wconf.path.empty() && wconf.path!="disabled")
@@ -201,7 +204,7 @@ void logger_domain::create_single_()
 }
 
 
-void logger_domain::create_multi_()
+void logger::create_multi_()
 {
   writer_config wconf = static_cast<writer_config>( this->options() );
   
@@ -239,7 +242,7 @@ void logger_domain::create_multi_()
 
 
 
-void logger_domain::reg_log_(std::string name, writer_ptr writer)
+void logger::reg_log_(std::string name, writer_ptr writer)
 {
   if ( auto g = this->global() )
   {
@@ -250,7 +253,7 @@ void logger_domain::reg_log_(std::string name, writer_ptr writer)
   }
 }
 
-void logger_domain::reg_loggers_()
+void logger::reg_loggers_()
 {
   this->reg_log_("domain",   _domain_log);
   this->reg_log_("config",   _config_log);
@@ -261,7 +264,7 @@ void logger_domain::reg_loggers_()
   this->reg_log_("syslog",   _syslog_log );
 }
 
-void logger_domain::unreg_loggers_()
+void logger::unreg_loggers_()
 {
   if ( auto g = this->global() )
   {

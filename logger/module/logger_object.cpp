@@ -5,7 +5,7 @@
 //
 
 #include "logger_object.hpp"
-#include "domain/logger_domain.hpp"
+#include "../logger/logger.hpp"
 #include "logger_config_json.hpp"
 
 #include <wfc/module/singleton.hpp>
@@ -18,7 +18,7 @@ WFC_NAME2(logger_object_name, "logger")
 
 class logger_object_impl: public ::wfc::singleton<
   logger_object_name,
-  ::wfc::instance<logger_domain>,
+  ::wfc::instance<logger>,
   logger_config_json
 >
 {  

@@ -7,7 +7,7 @@
 
 #include "logger_build_info.h"
 #include "logger_package.hpp"
-#include "logger_module.hpp"
+#include "module/logger_module.hpp"
 #include <wfc/module/module_list.hpp>
 #include <wfc/name.hpp>
 

@@ -11,12 +11,14 @@ include(BuildInfo)
 
 SET(
   wfc_logger_source_list
+  logger/writer.cpp
+  logger/logger.cpp
+  module/logger_object.cpp
+  module/logger_module.cpp
   logger_package.cpp
-  logger_module.cpp
-  logger_object.cpp
-  domain/logger_domain.cpp
-  domain/logger_writer.cpp
 )
+
+include_directories(.)
 
 add_library(
   wfc_logger

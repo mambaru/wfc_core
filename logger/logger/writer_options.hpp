@@ -10,7 +10,7 @@
 
 namespace wfc{
 
-struct writer_config
+struct writer_options
 {
   size_t limit = 0;
   std::string path = "";

@@ -7,18 +7,18 @@
 #pragma once
 
 #include <wfc/logger/ilogger.hpp>
-#include "writer_config.hpp"
+#include "writer_options.hpp"
 #include <mutex>
 
 namespace wfc{
 
-class logger_writer
+class writer
   : public ilogger
 {
 public:
-  logger_writer();
+  writer();
 
-  void initialize( const writer_config& conf );
+  void initialize( const writer_options& conf );
   
   virtual void write(const std::string& name, const std::string& ident, std::string str);
   
@@ -31,7 +31,7 @@ private:
   typedef std::recursive_mutex mutex_type;
   mutex_type _mutex;
   std::string _filename;
-  writer_config _conf;
+  writer_options _conf;
   size_t _summary;
   std::string _starttime;
  

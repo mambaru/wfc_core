@@ -4,7 +4,7 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-#include "logger_writer.hpp"
+#include "writer.hpp"
 
 #include <string>
 #include <algorithm>
@@ -73,25 +73,25 @@ namespace
 } // namespace
 
 
-logger_writer::logger_writer()
+writer::writer()
   : _summary(0)
   , _starttime(mkdate())
 {
 }
 
-void logger_writer::initialize(const writer_config& conf)
+void writer::initialize(const writer_options& conf)
 {
   std::lock_guard<mutex_type> lk(_mutex);
   _conf = conf;
   std::sort( _conf.deny.begin(), _conf.deny.end() );
 }
 
-bool logger_writer::is_deny_(const std::string& some) const
+bool writer::is_deny_(const std::string& some) const
 {
   return std::find( _conf.deny.begin(), _conf.deny.end(), some ) != _conf.deny.end();
 }
 
-void logger_writer::write(const std::string& name, const std::string& ident,  std::string str)
+void writer::write(const std::string& name, const std::string& ident,  std::string str)
 {
   if (is_deny_(name) || is_deny_(ident))
     return;
@@ -116,7 +116,7 @@ void logger_writer::write(const std::string& name, const std::string& ident,  st
   }
 }
 
-void logger_writer::write_to_file_(const std::string& name, const std::string& ident,  const std::string& str)
+void writer::write_to_file_(const std::string& name, const std::string& ident,  const std::string& str)
 {
   std::ofstream oflog( _conf.path, std::ios_base::app );
    
@@ -138,7 +138,7 @@ void logger_writer::write_to_file_(const std::string& name, const std::string& i
   write_to_stream(oflog, name, ident, str);
 }
 
-void logger_writer::write_to_stdout_(const std::string& name, const std::string& ident,  const std::string& str)
+void writer::write_to_stdout_(const std::string& name, const std::string& ident,  const std::string& str)
 {
   std::ostream *p = nullptr;
   if (_conf.stdout=="cout")
@@ -152,7 +152,7 @@ void logger_writer::write_to_stdout_(const std::string& name, const std::string&
     write_to_stream(*p, name, ident, str);
 }
 
-void logger_writer::write_to_syslog_(const std::string& ident, const std::string& str)
+void writer::write_to_syslog_(const std::string& ident, const std::string& str)
 {
   ::openlog( _conf.syslog.c_str(), 0, LOG_USER);
   ::syslog(name2pri(ident), str.c_str());
