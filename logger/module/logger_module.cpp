@@ -5,7 +5,8 @@
 //
 
 #include "logger_module.hpp"
-#include "logger_object.hpp"
+#include "logger_singleton.hpp"
+
 #include <wfc/module/object_list.hpp>
 #include <wfc/name.hpp>
 
@@ -15,7 +16,7 @@ WFC_NAME2(logger_module_name, "logger")
 
 class logger_module_impl: public ::wfc::object_list<
   logger_module_name,
-  logger_object
+  logger_singleton
 >
 {
 };

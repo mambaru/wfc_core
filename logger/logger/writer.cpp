@@ -5,7 +5,10 @@
 //
 
 #include "writer.hpp"
+#include "logger.hpp"
 
+#include <chrono>
+#include <iomanip>
 #include <string>
 #include <algorithm>
 #include <iostream>
@@ -17,9 +20,11 @@
 #include <syslog.h>
 #include <boost/concept_check.hpp>
 
+#include "aux.hpp"
 
 namespace wfc{
 
+  /*
 namespace
 {
   void prepare( std::string& str, size_t width)
@@ -39,11 +44,23 @@ namespace
     return std::string(buf,sz);
   }
   
-  void write_to_stream(std::ostream& os, std::string name, std::string ident,  const std::string& str)
+  std::string mkms(bool enable)
+  {
+    if (!enable) return std::string();
+    
+    auto duration = std::chrono::high_resolution_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    auto secround = (millis/1000) * 1000;
+    std::stringstream ss;
+    ss << "." << std::setfill('0') << std::setw(3)<< millis - secround;
+    return ss.str();
+  }
+  
+  void write_to_stream(std::ostream& os, std::string name, std::string ident,  const std::string& str, bool milliseconds )
   {
     prepare(name, 6);
     prepare(ident, 9);
-    os << mkdate() << " " << name << " " << ident << " " << str;
+    os << mkdate() << mkms(milliseconds) << " " << name << " " << ident << " " << str;
   }
 
   
@@ -71,17 +88,15 @@ namespace
   }
 
 } // namespace
+*/
 
-
-writer::writer()
-  : _summary(0)
-  , _starttime(mkdate())
+writer::writer(std::shared_ptr<logger> logger)
+  : _logger(logger)
 {
 }
 
 void writer::initialize(const writer_options& conf)
 {
-  std::lock_guard<mutex_type> lk(_mutex);
   _conf = conf;
   std::sort( _conf.deny.begin(), _conf.deny.end() );
 }
@@ -96,9 +111,9 @@ void writer::write(const std::string& name, const std::string& ident,  std::stri
   if (is_deny_(name) || is_deny_(ident))
     return;
   
-  while ( replace(str, "\r\n", "\\r\\n") );
+  while ( aux::replace(str, "\r\n", "\\r\\n") );
 
-  std::lock_guard<mutex_type> lk(_mutex);
+  std::lock_guard<mutex_type> lk( _logger->_mutex);
   
   if ( !_conf.path.empty() )
   {
@@ -125,17 +140,17 @@ void writer::write_to_file_(const std::string& name, const std::string& ident,  
     size_t size = oflog.tellp();
     if ( size > _conf.limit )
     {
-      _summary += size;
+      _logger->_summary += size;
       oflog.close();
       oflog.open(_conf.path);
       oflog << "---------------- truncate with " << size 
-            << " summary size " << _summary 
-            << " ( start time: " << _starttime << ")"
+            << " summary size " << _logger->_summary 
+            << " ( start time: " << _logger->_starttime << ")"
             << " ----------------" << std::endl;
     }
   }
 
-  write_to_stream(oflog, name, ident, str);
+  aux::write_to_stream(oflog, name, ident, str, _conf.milliseconds);
 }
 
 void writer::write_to_stdout_(const std::string& name, const std::string& ident,  const std::string& str)
@@ -149,13 +164,13 @@ void writer::write_to_stdout_(const std::string& name, const std::string& ident,
     p = &std::cerr;
   
   if (p)
-    write_to_stream(*p, name, ident, str);
+    aux::write_to_stream(*p, name, ident, str, _conf.milliseconds);
 }
 
 void writer::write_to_syslog_(const std::string& ident, const std::string& str)
 {
   ::openlog( _conf.syslog.c_str(), 0, LOG_USER);
-  ::syslog(name2pri(ident), str.c_str());
+  ::syslog( aux::name2pri(ident), str.c_str());
   ::closelog();
 }
 

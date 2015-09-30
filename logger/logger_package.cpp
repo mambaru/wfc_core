@@ -4,7 +4,6 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-
 #include "logger_build_info.h"
 #include "logger_package.hpp"
 #include "module/logger_module.hpp"

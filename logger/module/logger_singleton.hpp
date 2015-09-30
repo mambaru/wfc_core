@@ -10,13 +10,12 @@
 
 namespace wfc{
 
-class logger_object_impl;
-
-class logger_object
+class logger_singleton
   : public ::wfc::object
 {
+  class impl;
 public:
-  logger_object();
+  logger_singleton();
 };
 
 }

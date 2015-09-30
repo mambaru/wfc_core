@@ -4,28 +4,27 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-#include "logger_object.hpp"
-#include "../logger/logger.hpp"
+#include "logger_singleton.hpp"
 #include "logger_config_json.hpp"
-
+#include "../logger/logger.hpp"
 #include <wfc/module/singleton.hpp>
 #include <wfc/module/instance.hpp>
 #include <wfc/name.hpp>
 
 namespace wfc{
 
-WFC_NAME2(logger_object_name, "logger")
+WFC_NAME2(logger_singleton_name, "logger")
 
-class logger_object_impl: public ::wfc::singleton<
-  logger_object_name,
+class logger_singleton::impl: public ::wfc::singleton<
+  logger_singleton_name,
   ::wfc::instance<logger>,
   logger_config_json
 >
 {  
 };
 
-logger_object::logger_object()
-  : object( std::make_shared<logger_object_impl>() )
+logger_singleton::logger_singleton()
+  : object( std::make_shared<logger_singleton::impl>() )
 {
 }
 

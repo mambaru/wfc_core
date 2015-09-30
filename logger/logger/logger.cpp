@@ -6,6 +6,7 @@
 
 #include "logger.hpp"
 #include "writer.hpp"
+#include "aux.hpp"
 #include "writer_options.hpp"
 #include <iow/logger/global_log.hpp>
 #include <wfc/logger.hpp>
@@ -15,65 +16,63 @@
 
 namespace wfc{
 
+logger::~logger()
+{
+  this->unreg_loggers_();
+}
+  
 void logger::start(const std::string& )
 {
+  DEBUG_LOG_MESSAGE("------------ void logger::start(const std::string& ) -----------------------")
+  _summary = 0;
+  _starttime = aux::mkdate();
 }
 
 void logger::stop(const std::string& )
 {
+  std::lock_guard<mutex_type> lk(_mutex);
   this->unreg_loggers_();
   iow::init_log(nullptr);
 }
 
 void logger::reconfigure()
 {
+  std::lock_guard<mutex_type> lk(_mutex);
+  
   auto opt = this->options();
 
   _deny.clear();
   _deny.insert(opt.deny.begin(), opt.deny.end());
 
-  /*
-  opt.single
-    ? this->create_single_()
-    : this->create_multi_();
-
-  this->reg_loggers_();
-  */
-
   if ( !::iow::log_status() )
   {
     std::weak_ptr<logger> wthis = this->shared_from_this();
     
-    ::iow::log_writer logfun = [wthis](  
+    ::iow::log_writer logfun = this->wrap([wthis](  
         const std::string& name, 
         const std::string& type, 
         const std::string& str) -> bool
     {
       if ( auto pthis = wthis.lock() )
       {
-        if (auto log = pthis->get_or_create_( name, type) )
+        if (auto log = pthis->get_or_create( name, type) )
         {
           log->write(name, type, str);
           return true;
         }
-        /*
-        if ( auto g = pthis->global() )
-        {
-          if ( auto l = g->registry.get<ilogger>("logger", name) )
-          {
-            l->write(name, type, str);
-            return true;
-          }
-          else
-          {
-            std::cerr << "LOGGER ERROR: logger '" << name << "' not found" << std::endl;
-          }
-        }
-        */
       }
       return false;
-    };
+    }); // wrap
     ::iow::init_log(logfun);
+  }
+  else
+  {
+    for ( const auto& w : _writers  )
+    {
+      writer_options wopt = static_cast<writer_options>(opt);
+      this->customize_(w.first, wopt);
+      w.second->initialize(wopt);
+    }
   }
 }
 
@@ -83,8 +82,10 @@ bool logger::is_deny_(const std::string& some) const
   return _deny.find(some) != _deny.end();
 }
 
-auto logger::get_or_create_(const std::string& name, const std::string& type) -> ilogger_ptr
+auto logger::get_or_create(const std::string& name, const std::string& type) -> ilogger_ptr
 {
+  std::lock_guard<mutex_type> lk(_mutex);
+  
   if ( is_deny_(name) || is_deny_(type) )
     return nullptr;
   
@@ -111,33 +112,10 @@ auto logger::find_or_create_(const std::string& name) -> ilogger_ptr
 auto logger::create_(const std::string& name) -> ilogger_ptr
 {
   logger_config opt = this->options();
-  writer_ptr pwriter = std::make_shared<writer>();
+  writer_ptr pwriter = std::make_shared<writer>( /*_summary, _mutex*/ this->shared_from_this());
   writer_options wopt = static_cast<writer_options>(opt);
-  if (opt.single)
-  {
-    wopt.path = wopt.path+ ".log";
-  }
-  else
-  {
-    wopt.path = wopt.path + "-" + name+ ".log";
-  }
   
   this->customize_(name, wopt);
-  /*
-  auto itr = opt.custom.find(name);
-  if ( itr != opt.custom.end() )
-  {
-    writer_config cstm= itr->second;
-    if (cstm.limit!=0)
-      wopt.limit = cstm.limit;
-    if (!cstm.path.empty())
-      wopt.path = cstm.path;
-    if (!cstm.syslog.empty())
-      wopt.syslog = cstm.syslog;
-    wopt.stdout = cstm.stdout;
-    wopt.deny = cstm.deny;
-  }
-  */
 
   pwriter->initialize(wopt);
   _writers[name] = pwriter;
@@ -154,6 +132,16 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
 {
   const logger_config& opt = this->options();
 
+  if (opt.single)
+  {
+    wopt.path = wopt.path+ ".log";
+  }
+  else
+  {
+    wopt.path = wopt.path + "-" + name+ ".log";
+  }
+
+  
   auto itr = opt.custom.find(name);
   if ( itr != opt.custom.end() )
   {
@@ -168,6 +156,7 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
     if (!cstm.syslog.empty())
       wopt.syslog = cstm.syslog;
     
+    wopt.milliseconds = cstm.milliseconds;
     wopt.stdout = cstm.stdout;
     wopt.deny = cstm.deny;
   }

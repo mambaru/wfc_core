@@ -12,6 +12,7 @@ namespace wfc{
 
 struct writer_options
 {
+  bool milliseconds = false;
   size_t limit = 0;
   std::string path = "";
   std::string stdout = "clog";
