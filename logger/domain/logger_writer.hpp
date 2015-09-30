@@ -23,9 +23,10 @@ public:
   virtual void write(const std::string& name, const std::string& ident, std::string str);
   
 private:
+  bool is_deny_(const std::string& some) const;
   void write_to_file_(const std::string& name, const std::string& ident,  const std::string& str);
   void write_to_stdout_(const std::string& name, const std::string& ident,  const std::string& str);
-  void write_to_syslog_(/*const std::string& name,*/ const std::string& ident,  const std::string& str);
+  void write_to_syslog_( const std::string& ident,  const std::string& str);
 private:
   typedef std::recursive_mutex mutex_type;
   mutex_type _mutex;
@@ -33,6 +34,7 @@ private:
   writer_config _conf;
   size_t _summary;
   std::string _starttime;
+ 
 };
 
 }

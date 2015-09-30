@@ -9,14 +9,15 @@
 #include "writer_config.hpp"
 #include <string>
 #include <vector>
-
+#include <unordered_map>
 namespace wfc{
 
 struct logger_config
   : writer_config
 {
+  typedef std::unordered_map<std::string, writer_config> custom_map;
   bool single = true;
-  std::vector<std::string> reject;
+  custom_map custom;
 };
 
 }

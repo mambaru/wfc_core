@@ -15,6 +15,7 @@
 #include <ctime>
 #include <cctype>
 #include <syslog.h>
+#include <boost/concept_check.hpp>
 
 
 namespace wfc{
@@ -59,6 +60,16 @@ namespace
     if (name=="PROGRESS") return LOG_INFO;
     return LOG_ERR;
   }
+  
+  inline bool replace(std::string& str, const std::string& from, const std::string& to) 
+  {
+    size_t start_pos = str.find(from);
+    if(start_pos == std::string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+  }
+
 } // namespace
 
 
@@ -72,22 +83,19 @@ void logger_writer::initialize(const writer_config& conf)
 {
   std::lock_guard<mutex_type> lk(_mutex);
   _conf = conf;
+  std::sort( _conf.deny.begin(), _conf.deny.end() );
 }
 
-namespace {
-
-inline bool replace(std::string& str, const std::string& from, const std::string& to) 
+bool logger_writer::is_deny_(const std::string& some) const
 {
-    size_t start_pos = str.find(from);
-    if(start_pos == std::string::npos)
-        return false;
-    str.replace(start_pos, from.length(), to);
-    return true;
-}
+  return std::find( _conf.deny.begin(), _conf.deny.end(), some ) != _conf.deny.end();
 }
 
 void logger_writer::write(const std::string& name, const std::string& ident,  std::string str)
 {
+  if (is_deny_(name) || is_deny_(ident))
+    return;
+  
   while ( replace(str, "\r\n", "\\r\\n") );
 
   std::lock_guard<mutex_type> lk(_mutex);

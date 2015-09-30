@@ -12,23 +12,35 @@ namespace wfc{
 
 struct logger_config_json
 {
-  JSON_NAME(single)
   JSON_NAME(limit)
   JSON_NAME(syslog)
   JSON_NAME(stdout)
   JSON_NAME(path)
-  JSON_NAME(reject)
+  JSON_NAME(deny)
 
   typedef json::object<
-    logger_config,
+    writer_config,
     fas::type_list_n<
-      json::member<n_single,   logger_config, bool,        &logger_config::single>,
       json::member<n_limit,    writer_config, size_t,      &writer_config::limit>,
       json::member<n_stdout,   writer_config, std::string, &writer_config::stdout>,
       json::member<n_path,     writer_config, std::string, &writer_config::path>,
       json::member<n_syslog,   writer_config, std::string, &writer_config::syslog>,
-      json::member<n_reject,   logger_config, std::vector<std::string>, &logger_config::reject,
+      json::member<n_deny,   writer_config, std::vector<std::string>, &writer_config::deny,
         json::array<std::vector< json::value<std::string> > >
+      >
+    >::type
+  > writer_json;
+  
+  JSON_NAME(single)
+  JSON_NAME(custom)
+  
+  typedef json::object<
+    logger_config,
+    fas::type_list_n<
+      json::base<writer_json>,
+      json::member<n_single,   logger_config, bool,        &logger_config::single>,
+      json::member<n_custom,   logger_config, logger_config::custom_map, &logger_config::custom,
+        json::array< std::unordered_map< json::value<std::string>, writer_json > >
       >
     >::type
   > type;

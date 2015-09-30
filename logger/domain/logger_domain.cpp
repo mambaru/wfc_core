@@ -29,14 +29,16 @@ void logger_domain::reconfigure()
 {
   auto opt = this->options();
 
-  _reject.clear();
-  _reject.insert(opt.reject.begin(), opt.reject.end());
+  _deny.clear();
+  _deny.insert(opt.deny.begin(), opt.deny.end());
 
+  /*
   opt.single
     ? this->create_single_()
     : this->create_multi_();
 
   this->reg_loggers_();
+  */
 
   if ( !::iow::log_status() )
   {
@@ -49,6 +51,12 @@ void logger_domain::reconfigure()
     {
       if ( auto pthis = wthis.lock() )
       {
+        if (auto log = pthis->get_or_create_( name, type) )
+        {
+          log->write(name, type, str);
+          return true;
+        }
+        /*
         if ( auto g = pthis->global() )
         {
           if ( auto l = g->registry.get<ilogger>("logger", name) )
@@ -61,13 +69,120 @@ void logger_domain::reconfigure()
             std::cerr << "LOGGER ERROR: logger '" << name << "' not found" << std::endl;
           }
         }
+        */
       }
       return false;
     };
     ::iow::init_log(logfun);
   }
-
 }
+
+
+bool logger_domain::is_deny_(const std::string& some) const
+{
+  return _deny.find(some) != _deny.end();
+}
+
+auto logger_domain::get_or_create_(const std::string& name, const std::string& type) -> ilogger_ptr
+{
+  if ( is_deny_(name) || is_deny_(type) )
+    return nullptr;
+  
+  auto itr = _writers.find(name);
+  if ( itr != _writers.end() )
+    return itr->second;
+  
+  return find_or_create_(name);
+}
+
+auto logger_domain::find_or_create_(const std::string& name) -> ilogger_ptr
+{
+  if ( auto g = this->global() )
+  {
+    if ( auto l = g->registry.get<ilogger>("logger", name) )
+    {
+      return l;
+    }
+  }
+  return create_(name);
+}
+
+
+auto logger_domain::create_(const std::string& name) -> ilogger_ptr
+{
+  logger_config opt = this->options();
+  writer_ptr pwriter = std::make_shared<logger_writer>();
+  writer_config wopt = static_cast<writer_config>(opt);
+  if (opt.single)
+  {
+    wopt.path = wopt.path+ ".log";
+  }
+  else
+  {
+    wopt.path = wopt.path + "-" + name+ ".log";
+  }
+  
+  this->customize_(name, wopt);
+  /*
+  auto itr = opt.custom.find(name);
+  if ( itr != opt.custom.end() )
+  {
+    writer_config cstm= itr->second;
+    if (cstm.limit!=0)
+      wopt.limit = cstm.limit;
+    if (!cstm.path.empty())
+      wopt.path = cstm.path;
+    if (!cstm.syslog.empty())
+      wopt.syslog = cstm.syslog;
+    wopt.stdout = cstm.stdout;
+    wopt.deny = cstm.deny;
+  }
+  */
+
+  pwriter->initialize(wopt);
+  _writers[name] = pwriter;
+  
+  if ( auto g = this->global() )
+  {
+    g->registry.set("logger", name,  pwriter);
+  }
+  
+  return pwriter;
+}
+
+void logger_domain::customize_(const std::string& name, writer_config& wopt) const
+{
+  const logger_config& opt = this->options();
+
+  auto itr = opt.custom.find(name);
+  if ( itr != opt.custom.end() )
+  {
+    writer_config cstm= itr->second;
+    if (cstm.limit!=0)
+      wopt.limit = cstm.limit;
+    if (!cstm.path.empty())
+      wopt.path = cstm.path;
+    
+    if (!cstm.syslog.empty())
+      wopt.syslog = cstm.syslog;
+    wopt.stdout = cstm.stdout;
+    wopt.deny = cstm.deny;
+  }
+}
+
+void logger_domain::unreg_loggers_()
+{
+  if ( auto g = this->global() )
+  {
+    for ( const auto& m : _writers )
+    {
+      g->registry.erase("logger", m.first);
+    }
+  }
+}
+
+
+/*
 
 void logger_domain::create_single_()
 {
@@ -84,6 +199,7 @@ void logger_domain::create_single_()
   _iow_log     = _domain_log;
   _syslog_log  = _domain_log;
 }
+
 
 void logger_domain::create_multi_()
 {
@@ -121,11 +237,13 @@ void logger_domain::create_multi_()
   _syslog_log->initialize(wconf);
 }
 
+
+
 void logger_domain::reg_log_(std::string name, writer_ptr writer)
 {
   if ( auto g = this->global() )
   {
-    if ( _reject.count(name) == 0)
+    if ( _deny.count(name) == 0)
     {
       g->registry.set("logger", name,  writer);
     }
@@ -141,19 +259,6 @@ void logger_domain::reg_loggers_()
   this->reg_log_("jsonrpc",  _jsonrpc_log );
   this->reg_log_("iow",      _iow_log );
   this->reg_log_("syslog",   _syslog_log );
-
-  /*
-  if ( auto g = this->global() )
-  {
-    g->registry.set("logger", "domain",   _domain_log);
-    g->registry.set("logger", "config",   _config_log);
-    g->registry.set("logger", "common",   _common_log);
-    g->registry.set("logger", "debug",    _debug_log );
-    g->registry.set("logger", "jsonrpc",  _jsonrpc_log );
-    g->registry.set("logger", "iow",      _iow_log );
-    g->registry.set("logger", "syslog",   _syslog_log );
-  }
-  */
 }
 
 void logger_domain::unreg_loggers_()
@@ -169,5 +274,6 @@ void logger_domain::unreg_loggers_()
     g->registry.erase("logger", "syslog");
   }
 }
+*/
 
 }

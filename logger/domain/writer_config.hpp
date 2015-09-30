@@ -16,6 +16,8 @@ struct writer_config
   std::string path = "";
   std::string stdout = "clog";
   std::string syslog = "";
+  // запрещеные логи и типы
+  std::vector< std::string > deny;
 };
 
 }
