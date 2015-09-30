@@ -146,19 +146,17 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
   if ( itr != opt.custom.end() )
   {
     writer_options cstm= itr->second;
-    
-    if (cstm.limit!=0)
-      wopt.limit = cstm.limit;
-    
+
     if (!cstm.path.empty())
       wopt.path = cstm.path;
-    
-    if (!cstm.syslog.empty())
-      wopt.syslog = cstm.syslog;
-    
+
+    /*
+    wopt.limit = cstm.limit;
+    wopt.syslog = cstm.syslog;
     wopt.milliseconds = cstm.milliseconds;
     wopt.stdout = cstm.stdout;
     wopt.deny = cstm.deny;
+    */
   }
 }
 
