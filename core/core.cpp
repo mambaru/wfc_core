@@ -68,6 +68,14 @@ int core::run()
   return this->_main_loop();
 }
 
+
+void core::stop( const std::string &) 
+{
+  _same = this->shared_from_this();
+  DOMAIN_LOG_MESSAGE("************* void core::stop( const std::string &)  *****************")
+  _stop_flag = true;
+}
+
 void core::core_stop( )
 {
   std::cout << "core stop" << std::endl;
@@ -106,6 +114,7 @@ void core::_idle()
   {
     DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
     this->global()->io_service.stop();
+    _same = nullptr;
     return;
   }
   

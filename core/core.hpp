@@ -14,6 +14,7 @@ namespace wfc{
 
 class core
   : public ::wfc::domain_object<icore, core_config>
+  , public std::enable_shared_from_this<core>
 {
 public:
 
@@ -21,12 +22,14 @@ public:
   core();
   
   /// icore
-  virtual int run();
-  virtual void core_reconfigure();
-  virtual void core_stop( );
+  virtual int run() override;
+  virtual void core_reconfigure() override;
+  virtual void core_stop( ) override;
   
   /// domain_object
   virtual void reconfigure();
+  virtual void stop( const std::string &) override;
+
   
 private:
   
@@ -47,6 +50,7 @@ private:
   std::atomic<bool> _reconfigure_flag;
   std::atomic<bool> _stop_flag;
   std::unique_ptr<idle_timer> _idle_timer;
+  std::shared_ptr<core> _same;
 };
 
 }
