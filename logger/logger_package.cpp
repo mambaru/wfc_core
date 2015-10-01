@@ -14,7 +14,7 @@ namespace wfc{
 
 WFC_NAME2(logger_package_name, "logger")
 
-class logger_package_impl: public ::wfc::module_list<
+class logger_package::impl: public ::wfc::module_list<
   logger_build_info,
   logger_module
 >
@@ -22,7 +22,7 @@ class logger_package_impl: public ::wfc::module_list<
 };
 
 logger_package::logger_package()
-  : package( std::make_shared<logger_package_impl>() )
+  : package( std::make_shared<logger_package::impl>() )
 {
 }
 

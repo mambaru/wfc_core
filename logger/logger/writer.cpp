@@ -6,21 +6,12 @@
 
 #include "writer.hpp"
 #include "logger.hpp"
+#include "aux.hpp"
 
-
-#include <chrono>
-#include <iomanip>
 #include <string>
-#include <algorithm>
+#include <memory>
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <cstdlib>
-#include <ctime>
-#include <cctype>
-#include <syslog.h>
-
-#include "aux.hpp"
 
 namespace wfc{
 
@@ -38,11 +29,6 @@ void writer::initialize(const writer_options& conf)
 {
   _conf = conf;
   std::sort( _conf.deny.begin(), _conf.deny.end() );
-}
-
-bool writer::is_deny_(const std::string& some) const
-{
-  return std::find( _conf.deny.begin(), _conf.deny.end(), some ) != _conf.deny.end();
 }
 
 void writer::write(const std::string& name, const std::string& ident,  std::string str)
@@ -68,6 +54,11 @@ void writer::write(const std::string& name, const std::string& ident,  std::stri
   {
     this->write_to_syslog_(ident, str);
   }
+}
+
+bool writer::is_deny_(const std::string& some) const
+{
+  return std::find( _conf.deny.begin(), _conf.deny.end(), some ) != _conf.deny.end();
 }
 
 void writer::write_to_file_(const std::string& name, const std::string& ident,  const std::string& str)
@@ -109,12 +100,6 @@ void writer::write_to_stdout_(const std::string& name, const std::string& ident,
 void writer::write_to_syslog_(const std::string& ident, const std::string& str)
 {
   aux::syslog_write(_conf.syslog, ident, str);
-  
-  /**
-  ::openlog( _conf.syslog.c_str(), 0, LOG_USER);
-  ::syslog( aux::name2pri(ident), str.c_str());
-  ::closelog();
-  */
 }
 
 }

@@ -20,6 +20,12 @@ namespace wfc{
 
 class writer;
 
+/**
+ * \brief logger
+ * \ingroup logger_module
+ * 
+ * \see writer
+ */
 class logger
   : public domain_object<iinterface, logger_config>
   , public std::enable_shared_from_this<logger>

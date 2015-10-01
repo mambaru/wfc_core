@@ -4,21 +4,12 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-#include "writer.hpp"
-
 #include <chrono>
-#include <iomanip>
 #include <string>
 #include <algorithm>
-#include <iostream>
-#include <fstream>
 #include <sstream>
-#include <cstdlib>
-#include <ctime>
-#include <cctype>
+#include <iomanip>
 #include <syslog.h>
-#include <boost/concept_check.hpp>
-
 
 namespace wfc{ namespace aux {
 
@@ -59,14 +50,14 @@ namespace wfc{ namespace aux {
 
   } // noname
 
-  std::string mkdate()
+  std::string mkdate(bool ms)
   {
     time_t ts = time(0);
     struct tm t1;
     localtime_r(&ts, &t1);
     char buf[100];
     int sz = strftime(buf,sizeof(buf), "%Y-%m-%d %H:%M:%S",&t1);
-    return std::string(buf,sz);
+    return std::string(buf,sz) + mkms(ms);
   }
   
   
@@ -74,13 +65,13 @@ namespace wfc{ namespace aux {
   {
     prepare(name, 6);
     prepare(ident, 9);
-    os << mkdate() << mkms(milliseconds) << " " << name << " " << ident << " " << str;
+    os << mkdate(milliseconds) << " " << name << " " << ident << " " << str;
   }
 
   bool replace(std::string& str, const std::string& from, const std::string& to) 
   {
     size_t start_pos = str.find(from);
-    if(start_pos == std::string::npos)
+    if( start_pos == std::string::npos )
         return false;
     str.replace(start_pos, from.length(), to);
     return true;

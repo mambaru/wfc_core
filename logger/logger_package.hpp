@@ -10,11 +10,23 @@
 
 namespace wfc{
 
-class logger_package_impl;
+/**
+ * \defgroup logger_package Пакет модулей логгирования
+ * \ingroup wfcroot
+ */
 
+/**
+ * \brief Включает модули логгировния 
+ * \ingroup wfcroot
+ * 
+ * Состоит из одного одного модуля logger_module
+ * 
+ * \see logger_module
+ */
 class logger_package
   : public ::wfc::package
 {
+  class impl;
 public:
   logger_package();
 };

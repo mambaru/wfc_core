@@ -14,7 +14,7 @@ namespace wfc{
 
 WFC_NAME2(logger_module_name, "logger")
 
-class logger_module_impl: public ::wfc::object_list<
+class logger_module::impl: public ::wfc::object_list<
   logger_module_name,
   logger_singleton
 >
@@ -22,7 +22,7 @@ class logger_module_impl: public ::wfc::object_list<
 };
 
 logger_module::logger_module()
-  : module( std::make_shared<logger_module_impl>() )
+  : module( std::make_shared<logger_module::impl>() )
 {
 }
 
