@@ -10,6 +10,7 @@
 #include "writer_options.hpp"
 #include <iow/logger/global_log.hpp>
 #include <wfc/logger.hpp>
+#include <wfc/memory.hpp>
 #include <iostream>
 #include <memory>
 
@@ -23,7 +24,6 @@ logger::~logger()
   
 void logger::start(const std::string& )
 {
-  DEBUG_LOG_MESSAGE("------------ void logger::start(const std::string& ) -----------------------")
   _summary = 0;
   _starttime = aux::mkdate();
 }
@@ -74,6 +74,113 @@ void logger::reconfigure()
       w.second->initialize(wopt);
     }
   }
+}
+
+void logger::perform_io(data_ptr d, io_id_t /*io_id*/, outgoing_handler_t callback)
+{
+
+  std::stringstream ss;
+  ss << d;
+  std::string cmd;
+  std::string result;
+  ss >> cmd;
+  if ( cmd=="exit" )
+  {
+    if (callback!=nullptr) callback(nullptr);
+    return;
+  }
+
+  if ( cmd=="help" )
+  {
+    result = "help!!!";
+  }
+  else if ( cmd=="allow" )
+  {
+    std::string value;
+    ss >> value;
+    _deny.erase(value);
+  }
+  else if ( cmd=="deny" )
+  {
+    std::string value;
+    ss >> value;
+    _deny.insert(value);
+  }
+  else
+  {
+      auto itr = _writers.find(cmd);
+      if ( itr==_writers.end() || itr->second==nullptr )
+      {
+        result = std::string("ERROR: log '") + cmd + "' not found";
+      }
+      else
+      {
+        bool ready = true;
+        auto pwrite = itr->second;
+        auto opt = pwrite->options();
+        std::sort(opt.deny.begin(), opt.deny.end());
+        std::string field;
+        ss >> field;
+        if (field == "milliseconds")
+        {
+          bool value;
+          ss >> std::boolalpha >> value;
+          opt.milliseconds = value;
+        }
+        else if (field == "limit")
+        {
+          size_t value;
+          ss >> value;
+          opt.limit = value;
+        }
+        else if (field == "stdout")
+        {
+          std::string value;
+          ss >> value;
+          opt.stdout = value;
+        }
+        else if (field == "syslog")
+        {
+          std::string value;
+          ss >> value;
+          opt.syslog = value;
+        }
+        else if (field == "path")
+        {
+          std::string value;
+          ss >> value;
+          opt.path = value;
+        }
+        else if (field == "deny")
+        {
+          std::string value;
+          ss >> value;
+          auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
+          if (itr==opt.deny.end())
+            opt.deny.push_back(value);
+        }
+        else if (field == "allow")
+        {
+          std::string value;
+          ss >> value;
+          auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
+          if (itr!=opt.deny.end())
+            opt.deny.erase(itr);
+        }
+        else
+        {
+          ready = false;
+          result = std::string("ERROR: unkown field: ") + field; 
+        }
+
+        if ( ready )
+        {
+          pwrite->initialize(opt);
+          result="Done";
+        }
+    }
+  }
+  callback(std::make_unique<data_type>(result.begin(), result.end()) );
 }
 
 
@@ -141,7 +248,6 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
     wopt.path = wopt.path + "-" + name+ ".log";
   }
 
-  
   auto itr = opt.custom.find(name);
   if ( itr != opt.custom.end() )
   {
@@ -149,14 +255,6 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
 
     if (!cstm.path.empty())
       wopt.path = cstm.path;
-
-    /*
-    wopt.limit = cstm.limit;
-    wopt.syslog = cstm.syslog;
-    wopt.milliseconds = cstm.milliseconds;
-    wopt.stdout = cstm.stdout;
-    wopt.deny = cstm.deny;
-    */
   }
 }
 
@@ -171,99 +269,5 @@ void logger::unreg_loggers_()
   }
 }
 
-
-/*
-
-void logger::create_single_()
-{
-  writer_config wconf = static_cast<writer_config>( this->options() );
-  if ( !wconf.path.empty() && wconf.path!="disabled")
-    wconf.path = wconf.path+ ".log";
-
-  _domain_log = std::make_shared<logger_writer>();
-  _domain_log->initialize(wconf);
-  _config_log  = _domain_log;
-  _common_log  = _domain_log;
-  _debug_log   = _domain_log;
-  _jsonrpc_log = _domain_log;
-  _iow_log     = _domain_log;
-  _syslog_log  = _domain_log;
-}
-
-
-void logger::create_multi_()
-{
-  writer_config wconf = static_cast<writer_config>( this->options() );
-  
-  std::string path = wconf.path;
-  bool emptypath = path.empty() || path=="disabled";
-
-  if ( !emptypath ) wconf.path = path + ".domain.log";
-  _domain_log = std::make_shared<logger_writer>();
-  _domain_log->initialize(wconf);
-
-  if ( !emptypath ) wconf.path = path +  ".config.log";
-  _config_log = std::make_shared<logger_writer>();
-  _config_log->initialize(wconf);
-
-  if ( !emptypath ) wconf.path = path + ".common.log";
-  _common_log = std::make_shared<logger_writer>();
-  _common_log->initialize(wconf);
-
-  if ( !emptypath ) wconf.path = path + ".debug.log";
-  _debug_log = std::make_shared<logger_writer>();
-  _debug_log->initialize(wconf);
-
-  if ( !emptypath ) wconf.path = path + ".jsonrpc.log";
-  _jsonrpc_log = std::make_shared<logger_writer>();
-  _jsonrpc_log->initialize(wconf);
-
-  if ( !emptypath ) wconf.path = path + ".iow.log";
-  _iow_log = std::make_shared<logger_writer>();
-  _iow_log->initialize(wconf);
-
-   if ( !emptypath ) wconf.path = path + ".syslog.log";
-  _syslog_log = std::make_shared<logger_writer>();
-  _syslog_log->initialize(wconf);
-}
-
-
-
-void logger::reg_log_(std::string name, writer_ptr writer)
-{
-  if ( auto g = this->global() )
-  {
-    if ( _deny.count(name) == 0)
-    {
-      g->registry.set("logger", name,  writer);
-    }
-  }
-}
-
-void logger::reg_loggers_()
-{
-  this->reg_log_("domain",   _domain_log);
-  this->reg_log_("config",   _config_log);
-  this->reg_log_("common",   _common_log);
-  this->reg_log_("debug",    _debug_log );
-  this->reg_log_("jsonrpc",  _jsonrpc_log );
-  this->reg_log_("iow",      _iow_log );
-  this->reg_log_("syslog",   _syslog_log );
-}
-
-void logger::unreg_loggers_()
-{
-  if ( auto g = this->global() )
-  {
-    g->registry.erase("logger", "domain");
-    g->registry.erase("logger", "config");
-    g->registry.erase("logger", "common");
-    g->registry.erase("logger", "debug");
-    g->registry.erase("logger", "jsonrpc");
-    g->registry.erase("logger", "iow");
-    g->registry.erase("logger", "syslog");
-  }
-}
-*/
 
 }

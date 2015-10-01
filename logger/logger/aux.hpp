@@ -22,16 +22,18 @@
 
 namespace wfc{ namespace aux{
 
-  void prepare( std::string& str, size_t width);
+  //void prepare( std::string& str, size_t width);
 
   std::string mkdate();
   
-  std::string mkms(bool enable);
+  // std::string mkms(bool enable);
   
   void write_to_stream(std::ostream& os, std::string name, std::string ident,  const std::string& str, bool milliseconds );
   
-  size_t name2pri(const std::string& name);
+  // size_t type2pri(const std::string& name);
   
   bool replace(std::string& str, const std::string& from, const std::string& to);
 
+  void syslog_write(const std::string& sysname, const std::string& type, const std::string& str);
+  
 }} // namespace

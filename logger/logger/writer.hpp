@@ -22,6 +22,7 @@ public:
   writer(std::shared_ptr<logger> logger);
   void initialize( const writer_options& conf );
   virtual void write(const std::string& name, const std::string& ident, std::string str);
+  writer_options options() const;
 private:
   bool is_deny_(const std::string& some) const;
   void write_to_file_(const std::string& name, const std::string& ident,  const std::string& str);

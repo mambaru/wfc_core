@@ -32,9 +32,14 @@ public:
   typedef std::map<std::string, writer_ptr> writer_map;
 
   virtual ~logger();
-  virtual void reconfigure();
-  virtual void stop(const std::string& );
-  virtual void start(const std::string& );
+  
+  // domain_object
+  virtual void reconfigure() override;
+  virtual void stop(const std::string& ) override;
+  virtual void start(const std::string& ) override;
+  
+  //iinterface
+  virtual void perform_io(data_ptr d, io_id_t io_id, outgoing_handler_t callback);
   
 private:
   ilogger_ptr get_or_create(const std::string& name, const std::string& type);
