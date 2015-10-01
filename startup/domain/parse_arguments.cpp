@@ -33,7 +33,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "allow core dump")
     ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [timeout in sec]")
     ("name,n", value<std::string>(&pa.instance_name), "unique daemon instance name")
-    ("config,C", value<std::string>(&pa.config_path)->default_value("."), "path to the configuration file")
+    ("config,C", value<std::string>(&pa.config_path)->default_value(""), "path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "directory for pid file")
     ("<<instance>>-<<key>> [arg]", "custom option for instance object");
 
