@@ -24,8 +24,10 @@ struct program_arguments
   std::string program_name;
   std::string instance_name;
   std::string config_path;
-  std::string configex_path; // для модуля wfc-config (откуда брать плейсхолдеры для основного конфига)
-  std::string ini_path; // Текущая конфигурация в ini-файле (по умолчанию "имя проекта".ini)
+  std::string pid_dir;
+  // TODO:
+  // std::string configex_path; // для модуля wfc-config (откуда брать плейсхолдеры для основного конфига)
+  // std::string ini_path; // Текущая конфигурация в ini-файле (по умолчанию "имя проекта".ini)
 
   typedef std::map<std::string, std::string> map1;
   typedef std::map<std::string, map1> map2;

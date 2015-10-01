@@ -12,9 +12,13 @@
 #include <wfc/module/ipackage.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
+#include <wfc/asio.hpp>
 
 #include <fstream>
 #include <syslog.h>
+
+#include <sys/file.h>
+#include <errno.h>
 
 
 namespace wfc{
@@ -35,11 +39,9 @@ bool startup_domain::startup_(int argc, char** argv)
   if ( auto g = this->global() )
   {
     g->program_name  = _pa.program_name;
-    g->instance_name = _pa.instance_name.empty()
-                                 ? _pa.program_name
-                                 : _pa.instance_name;
+    g->instance_name  = _pa.instance_name;
   }
-  
+
   if ( _pa.usage )
   {
     this->show_usage_();
@@ -71,8 +73,7 @@ bool startup_domain::startup_(int argc, char** argv)
   }
   else if ( !_pa.config_path.empty() )
   {
-    this->perform_start_();
-    return true;
+    return this->perform_start_();
   }
   else
   {
@@ -80,14 +81,55 @@ bool startup_domain::startup_(int argc, char** argv)
   return false;
 }
 
-void startup_domain::perform_start_( )
+namespace {
+
+  bool loc_file_pid( std::string path, std::string name)
+  {
+    if ( !path.empty() && path.back()!='/' )
+      path += '/';
+
+    std::string fname = path + name + ".pid";
+    int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);
+    if ( pid_file == -1)
+    {
+      std::cout << fname << " open error: " << strerror(errno) << std::endl;
+      return false;
+    }
+    int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
+    if (rc) 
+    {
+      if( EWOULDBLOCK == errno)
+      {
+        std::cout << fname << " blocked another instance" << std::endl;
+        std::cout << "FAIL :  another instance '"<< name <<"' is running" << std::endl;
+        return false; // another instance is running
+      }
+      std::cout << fname << " blocked error: " << strerror(errno) << std::endl;
+    }
+    else 
+    {
+      std::cout << fname << " blocked this instance" << std::endl;
+    }
+    return true;
+  }
+}
+
+bool startup_domain::perform_start_( )
 {
   if ( auto g = this->global() )
   {
+    std::cout << "Program name: " << g->program_name << std::endl;
+    std::cout << "Instance name: " << g->instance_name << std::endl;
+    if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )
+    {
+      return false;
+    }
+
     if ( auto c = g->registry.get<iconfig>("config") )
     {
       c->load_and_parse(_pa.config_path);
     }
+
   }
 
   if ( _pa.daemonize )
@@ -125,6 +167,7 @@ void startup_domain::perform_start_( )
 
   if ( _pa.coredump )
     ::wfc::dumpable();
+  return true;
 
 }
 

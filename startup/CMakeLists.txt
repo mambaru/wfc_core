@@ -9,11 +9,6 @@ SET(
   startup_module.cpp
   startup_package.cpp
   domain/parse_arguments.cpp
-  #detail/po.cpp
-  #detail/po.cpp  
-  
-  #startup_module.cpp
-  #startup.cpp
 )
 
 add_library(

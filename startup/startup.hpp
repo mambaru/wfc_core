@@ -25,7 +25,7 @@ public:
   virtual bool startup( int argc, char* argv[] );
 private:
   bool startup_( int argc, char** argv);
-  void perform_start_();
+  bool perform_start_();
   bool generate_();
   void generate_( const std::string& type, const std::string& path );
   void show_usage_();
