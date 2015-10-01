@@ -94,7 +94,14 @@ void config::reload_and_reconfigure()
   }
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
+  {
+    CONFIG_LOG_DEBUG("core_reconfigure")
     c->core_reconfigure();
+  }
+  else
+  {
+    CONFIG_LOG_ERROR("Core module not found")
+  }
   CONFIG_LOG_END("Reload Configuration And Reconfigure")
 }
 
