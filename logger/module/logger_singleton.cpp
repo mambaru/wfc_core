@@ -15,7 +15,7 @@ namespace wfc{
 
 WFC_NAME2(logger_singleton_name, "logger")
 
-class logger_singleton::impl: public ::wfc::singleton<
+class logger_singleton_impl: public ::wfc::singleton<
   logger_singleton_name,
   ::wfc::instance<logger>,
   logger_config_json
@@ -24,7 +24,7 @@ class logger_singleton::impl: public ::wfc::singleton<
 };
 
 logger_singleton::logger_singleton()
-  : object( std::make_shared<logger_singleton::impl>() )
+  : component( std::make_shared<logger_singleton_impl>() )
 {
 }
 

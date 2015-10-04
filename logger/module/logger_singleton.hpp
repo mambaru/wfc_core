@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <wfc/module/object.hpp>
+#include <wfc/module/component.hpp>
 
 namespace wfc{
 
@@ -19,9 +19,8 @@ namespace wfc{
  * \see logger
  */
 class logger_singleton
-  : public ::wfc::object
+  : public ::wfc::component
 {
-  class impl;
 public:
   logger_singleton();
 };

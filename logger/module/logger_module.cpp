@@ -7,14 +7,14 @@
 #include "logger_module.hpp"
 #include "logger_singleton.hpp"
 
-#include <wfc/module/object_list.hpp>
+#include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
 namespace wfc{
 
 WFC_NAME2(logger_module_name, "logger")
 
-class logger_module::impl: public ::wfc::object_list<
+class logger_module::impl: public ::wfc::component_list<
   logger_module_name,
   logger_singleton
 >
