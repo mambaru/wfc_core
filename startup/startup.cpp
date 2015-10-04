@@ -224,8 +224,8 @@ void startup_domain::show_info_(const std::string& name)
       for( auto m: modules ) 
       {
           std::cout << "\t\t" << m->name() << ". " << m->description() << std::endl;
-          auto objects = m->objects();
-          for( auto o: objects ) 
+          auto components = m->components();
+          for( auto o: components ) 
           {
               std::cout << "\t\t\t" << o->name() << "[" << o->interface_name() << "]. " << m->description() << std::endl;
           }

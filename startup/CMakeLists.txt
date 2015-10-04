@@ -5,7 +5,7 @@ include(BuildInfo)
 SET(
   wfc_startup_source_list
   startup.cpp
-  startup_object.cpp
+  startup_singleton.cpp
   startup_module.cpp
   startup_package.cpp
   domain/parse_arguments.cpp

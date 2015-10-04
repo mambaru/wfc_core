@@ -5,17 +5,17 @@
 //
 
 #include "startup_module.hpp"
-#include "startup_object.hpp"
-#include <wfc/module/object_list.hpp>
+#include "startup_singleton.hpp"
+#include <wfc/module/component_list.hpp>
 #include <wfc/json.hpp>
 
 namespace wfc{
   
 JSON_NAME2(startup_module_name, "startup")
 
-class startup_module_impl: public ::wfc::object_list<
+class startup_module_impl: public ::wfc::component_list<
   startup_module_name,
-  startup_object
+  startup_singleton
 >
 {  
 };

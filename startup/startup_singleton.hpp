@@ -6,17 +6,17 @@
 
 #pragma once
 
-#include <wfc/module/object.hpp>
+#include <wfc/module/component.hpp>
 
 namespace wfc{
 
-class startup_object_impl;
+class startup_singleton_impl;
 
-class startup_object
-  : public ::wfc::object
+class startup_singleton
+  : public ::wfc::component
 {
 public:
-  startup_object();
+  startup_singleton();
 };
 
 }
