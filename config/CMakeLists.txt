@@ -12,7 +12,7 @@ SET(
   wfc_config_source_list
   config_package.cpp
   config_module.cpp
-  config_object.cpp
+  config_singleton.cpp
   config.cpp
 )
 

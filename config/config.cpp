@@ -6,7 +6,7 @@
 #include <wfc/core/icore.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
-#include <wfc/module/iobject.hpp>
+#include <wfc/module/icomponent.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -146,7 +146,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
   {*/
     for ( auto& mconf : mainconf)
     {
-      if ( auto m = this->global()->registry.get<iobject>("object", mconf.first) )
+      if ( auto m = this->global()->registry.get<icomponent>("component", mconf.first) )
       {
         jsonbeg = mconf.second.begin();
         jsonend = mconf.second.end();
@@ -209,7 +209,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   configuration mainconf;
   if ( go.empty() )
   {
-    g->registry.for_each<iobject>("object", [&mainconf](const std::string& name, std::shared_ptr<iobject> obj)
+    g->registry.for_each<icomponent>("component", [&mainconf](const std::string& name, std::shared_ptr<icomponent> obj)
     {
       if (obj!=nullptr)
       {
@@ -221,7 +221,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   {
     for ( const auto& opt: go )
     {
-      if ( auto obj = g->registry.get<iobject>("object", opt.first) )
+      if ( auto obj = g->registry.get<icomponent>("component", opt.first) )
       {
         mainconf[opt.first] = obj->generate(opt.second);
       }
@@ -248,7 +248,7 @@ std::string config::generate_and_write_del(std::string type, std::string path)
   {
     if ( auto g = this->global() )
     {
-      g->registry.for_each<iobject>("object", [&mainconf, &type](const std::string& name, std::shared_ptr<iobject> module)
+      g->registry.for_each<icomponent>("component", [&mainconf, &type](const std::string& name, std::shared_ptr<icomponent> module)
       {
         if (module!=nullptr)
           mainconf[name] = module->generate(type);
@@ -270,14 +270,14 @@ std::string config::generate_and_write_del(std::string type, std::string path)
   }
   else if (auto g = this->global())
   {
-    if ( auto obj = g->registry.get<iobject>("object", type) )
+    if ( auto obj = g->registry.get<icomponent>("component", type) )
     {
       auto strobj = obj->generate("");
       std::clog << strobj << std::endl;
     }
     else
     {
-      std::clog << "Generate Fail! object "<< type << " not found" << std::endl;
+      std::clog << "Generate Fail! component "<< type << " not found" << std::endl;
     }
   }
 
