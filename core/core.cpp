@@ -178,14 +178,14 @@ void core::_configure()
   
   if ( auto conf = g->registry.get<iconfig>("config") )
   {
-    g->registry.for_each<iobject>("object", [conf](const std::string& name, std::shared_ptr<iobject> obj)
+    g->registry.for_each<icomponent>("component", [conf](const std::string& name, std::shared_ptr<icomponent> obj)
     {
       std::string confstr = conf->get_config(name);
       if ( !confstr.empty() )
       {
-        CONFIG_LOG_BEGIN("core::configure: object '" << name << "'...")
+        CONFIG_LOG_BEGIN("core::configure: component '" << name << "'...")
         obj->configure(confstr, std::string() );
-        CONFIG_LOG_END("core::configure: object '" << name << "'...Done!")
+        CONFIG_LOG_END("core::configure: component '" << name << "'...Done!")
       }
       else
       {

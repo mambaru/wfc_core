@@ -1,6 +1,6 @@
 #pragma once
 #include <wfc/domain_object.hpp>
-#include <wfc/module/iobject.hpp>
+#include <wfc/module/icomponent.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/core/global.hpp>
 
