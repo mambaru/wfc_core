@@ -227,7 +227,8 @@ void startup_domain::show_info_(const std::string& name)
           auto components = m->components();
           for( auto o: components ) 
           {
-              std::cout << "\t\t\t" << o->name() << "[" << o->interface_name() << "]. " << m->description() << std::endl;
+              std::cout << "\t\t\t" << o->name() << " [" << o->interface_name() 
+                        << "]. " << o->description() << std::endl;
           }
       }
     }
