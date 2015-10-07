@@ -264,11 +264,12 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
   }
   else
   {
-    std::cout << "\tName: " << b->name() << std::endl;
+    std::cout << "\tName: "    << b->name() << std::endl;
     std::cout << "\tEnabled: " << b->enabled() << std::endl;
     std::cout << "\tVersion: " << b->version() << std::endl;
-    std::cout << "\tBranch: " << b->branch() << std::endl;
-    std::cout << "\tCommit: " << b->commit() << std::endl;
+    std::cout << "\tBuild: "   << b->build() << std::endl;
+    std::cout << "\tBranch: "  << b->branch() << std::endl;
+    std::cout << "\tCommit: "  << b->commit() << std::endl;
     std::cout << "\tCommit author: " << b->author() << std::endl;
     std::cout << "\tCommit message: " << b->message() << std::endl;
     std::cout << "\tDate: " << b->date() << std::endl;
