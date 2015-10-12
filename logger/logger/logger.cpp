@@ -21,7 +21,7 @@ logger::~logger()
 {
   this->unreg_loggers_();
 }
-  
+
 void logger::start(const std::string& )
 {
   _summary = 0;
@@ -33,21 +33,21 @@ void logger::stop(const std::string& )
   std::lock_guard<mutex_type> lk(_mutex);
   this->unreg_loggers_();
   iow::init_log(nullptr);
+  _writers.clear();
 }
 
 void logger::reconfigure()
 {
   std::lock_guard<mutex_type> lk(_mutex);
-  
-  auto opt = this->options();
 
+  auto opt = this->options();
   _deny.clear();
   _deny.insert(opt.deny.begin(), opt.deny.end());
 
   if ( !::iow::log_status() )
   {
     std::weak_ptr<logger> wthis = this->shared_from_this();
-    
+
     ::iow::log_writer logfun = this->wrap([wthis](  
         const std::string& name, 
         const std::string& type, 
@@ -245,7 +245,7 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
   }
   else
   {
-    wopt.path = wopt.path + "-" + name+ ".log";
+    wopt.path = wopt.path + "-" + name + ".log";
   }
 
   auto itr = opt.custom.find(name);
