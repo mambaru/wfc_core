@@ -114,7 +114,6 @@ void core::_idle()
   {
     DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
     this->global()->io_service.stop();
-    _same = nullptr;
     return;
   }
   
@@ -294,19 +293,20 @@ void core::_stop()
   std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool {
     return left->shutdown_priority() < right->shutdown_priority();
   } );
-  
+
   std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
   {
     CONFIG_LOG_BEGIN("core::stop: module '" << m->name() << "'...")
     m->stop(std::string());
     CONFIG_LOG_END("core::stop: module '" <<  m->name() << "'...Done!")
   });
-  
+
   DOMAIN_LOG_BEGIN("after stop handlers")
   g->after_stop.fire();
   DOMAIN_LOG_END("after stop handlers")
 
   DOMAIN_LOG_END("stop '" << g->instance_name << "'...Done!")
+  _same = nullptr;
   DOMAIN_LOG_MESSAGE("=======================================")
 }
 
