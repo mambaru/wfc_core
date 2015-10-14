@@ -25,7 +25,7 @@ void parse_arguments(program_arguments& pa, int argc, char* argv[])
   desc.add_options()
     ("help,h", value<bool>(&pa.help)->zero_tokens(), "produce help message")
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "show build info [package-list]")
-    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "generate configuration [object-name [arg]]. Use -C option for write to file.")
+    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "generate configuration [object-name [arg]]. Use -C option for write to file. Use formatter: python -mjson.tool")
     ;
 
   desc_startup.add_options()
