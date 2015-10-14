@@ -239,6 +239,18 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
 {
   const logger_config& opt = this->options();
 
+  auto itr = opt.custom.find(name);
+  if ( itr != opt.custom.end() )
+  {
+    wopt = itr->second;
+    /*
+    writer_options cstm = itr->second;
+
+    if (!cstm.path.empty())
+      wopt.path = cstm.path;
+    */
+  }
+
   if (opt.single)
   {
     wopt.path = wopt.path+ ".log";
@@ -248,14 +260,6 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
     wopt.path = wopt.path + "-" + name + ".log";
   }
 
-  auto itr = opt.custom.find(name);
-  if ( itr != opt.custom.end() )
-  {
-    writer_options cstm= itr->second;
-
-    if (!cstm.path.empty())
-      wopt.path = cstm.path;
-  }
 }
 
 void logger::unreg_loggers_()

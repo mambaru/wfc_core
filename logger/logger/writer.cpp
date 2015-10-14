@@ -81,6 +81,7 @@ void writer::write_to_file_(const std::string& name, const std::string& ident,  
   }
 
   aux::write_to_stream(oflog, name, ident, str, _conf.milliseconds);
+  oflog.close();
 }
 
 void writer::write_to_stdout_(const std::string& name, const std::string& ident,  const std::string& str)
@@ -94,7 +95,10 @@ void writer::write_to_stdout_(const std::string& name, const std::string& ident,
     p = &std::cerr;
   
   if (p)
+  {
     aux::write_to_stream(*p, name, ident, str, _conf.milliseconds);
+    p->flush();
+  }
 }
 
 void writer::write_to_syslog_(const std::string& ident, const std::string& str)
