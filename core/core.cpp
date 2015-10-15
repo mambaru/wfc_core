@@ -15,10 +15,14 @@
 namespace wfc{
 
 namespace {
+  
+static std::atomic<bool> gs_stop_signal;
 
 static void signal_sigint_handler(int)
 {
   std::clog << "Stop signal handler" << std::endl;
+  gs_stop_signal = true;
+  /*
   if ( auto g = wfcglobal::static_global )
   {
     if ( auto c = g->registry.get<icore>("core") )
@@ -26,6 +30,7 @@ static void signal_sigint_handler(int)
       c->core_stop();
     }
   }
+  */
 }
 
 } // namespace
@@ -38,6 +43,7 @@ core::core()
   : _reconfigure_flag(false)
   , _stop_flag(false)
 {
+  gs_stop_signal = false;
 }
 
 void core::core_reconfigure()
@@ -47,6 +53,8 @@ void core::core_reconfigure()
 
 int core::run()
 {
+  gs_stop_signal = false;
+  
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
   signal(SIGINT,   signal_sigint_handler);
@@ -110,6 +118,11 @@ void core::reconfigure()
 
 void core::_idle()
 {
+  if ( gs_stop_signal )
+  {
+    _stop_flag = true;
+  }
+  
   if ( _stop_flag )
   {
     DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
