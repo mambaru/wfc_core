@@ -15,22 +15,13 @@
 namespace wfc{
 
 namespace {
-  
+
 static std::atomic<bool> gs_stop_signal;
 
 static void signal_sigint_handler(int)
 {
   std::clog << "Stop signal handler" << std::endl;
   gs_stop_signal = true;
-  /*
-  if ( auto g = wfcglobal::static_global )
-  {
-    if ( auto c = g->registry.get<icore>("core") )
-    {
-      c->core_stop();
-    }
-  }
-  */
 }
 
 } // namespace
@@ -54,25 +45,24 @@ void core::core_reconfigure()
 int core::run()
 {
   gs_stop_signal = false;
-  
+
   signal(SIGPIPE,  SIG_IGN);
   signal(SIGPOLL,  SIG_IGN);
   signal(SIGINT,   signal_sigint_handler);
   signal(SIGTERM,  signal_sigint_handler);
 
   CONFIG_LOG_MESSAGE("core::run: sunrise!")
-  
-  this->_sunrise();  
-  
+
+  this->_sunrise();
+
   DOMAIN_LOG_BEGIN("after start handlers")
   this->global()->after_start.fire();
   DOMAIN_LOG_BEGIN("after start handlers")
 
-
   DOMAIN_LOG_MESSAGE("***************************************")
   DOMAIN_LOG_MESSAGE("************* started *****************")
   DOMAIN_LOG_MESSAGE("instance name: " << this->global()->instance_name << std::endl)
-  
+
   return this->_main_loop();
 }
 
@@ -101,7 +91,7 @@ void core::reconfigure()
     {
       CONFIG_LOG_MESSAGE("current RLIMIT_DATA: " << rlim.rlim_cur << ", " << rlim.rlim_max)
       CONFIG_LOG_MESSAGE("rlimit_as_mb: " << opt.rlimit_as_mb << "Mb")
-      
+
       rlim.rlim_cur = limit;
       if ( 0 != setrlimit( RLIMIT_AS, &rlim ) )
       {
@@ -122,14 +112,14 @@ void core::_idle()
   {
     _stop_flag = true;
   }
-  
+
   if ( _stop_flag )
   {
     DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
     this->global()->io_service.stop();
     return;
   }
-  
+
   this->global()->idle.fire();
 
   if ( _reconfigure_flag )
@@ -138,7 +128,7 @@ void core::_idle()
     this->_sunrise();
     DOMAIN_LOG_MESSAGE("Daemon reconfigured!")
   }
-  
+
   _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds( this->options().idle_timeout_ms));
   _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
     this->_idle();
@@ -154,11 +144,11 @@ int core::_main_loop()
 
   _idle_timer->async_wait([this](const boost::system::error_code& )
   {
-    this->_idle();  
+    this->_idle();
   });
   this->global()->io_service.run();
   this->global()->io_service.reset();
-  
+
   this->_stop();
   return 0;
 }
@@ -187,7 +177,7 @@ void core::_configure()
 
   if ( g == nullptr)
     return;
-  
+
   if ( auto conf = g->registry.get<iconfig>("config") )
   {
     g->registry.for_each<icomponent>("component", [conf](const std::string& name, std::shared_ptr<icomponent> obj)
@@ -227,10 +217,11 @@ void core::_initialize()
     instances.push_back(obj);
   });
 
-  std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool {
+  std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool
+  {
     return left->startup_priority() < right->startup_priority();
   } );
-  
+
   std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
   {
     CONFIG_LOG_BEGIN("core::initialize: instance '" << m->name() << "'...")
@@ -247,7 +238,7 @@ void core::_start()
 
   if ( g == nullptr)
     return;
-  
+
   typedef std::shared_ptr<iinstance> instance_ptr;
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
@@ -261,7 +252,7 @@ void core::_start()
   {
     return left->startup_priority() < right->startup_priority();
   });
-  
+
   std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
   {
     CONFIG_LOG_BEGIN("core::start: module '" << m->name() << "'...")
