@@ -1,4 +1,3 @@
-message(STATUS "MODULE PATH: ${CMAKE_MODULE_PATH}")
 
 include(BuildInfo)
 

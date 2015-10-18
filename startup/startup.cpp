@@ -260,22 +260,28 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
   
   if ( shortinfo )
   {
-    std::cout << '\t' << b->name() << "(" << b->version() << ", " << b->commit_date() << ") " << b->project_author() << std::endl;
+    std::cout << '\t' << b->name() << "\t" << b->version() << " " << b->project_author() << std::endl;
   }
   else
   {
-    std::cout << "\tName: "    << b->name() << std::endl;
     std::cout << "\tEnabled: " << b->enabled() << std::endl;
-    std::cout << "\tVersion: " << b->version() << std::endl;
+    std::cout << "\tName: "    << b->name() << std::endl;
+    std::cout << "\tVersion: " << b->version();
+    if ( !b->verex().empty() )
+      std::cout << "[" << b->verex() << "]";
+    std::cout << "-" << b->build_count() << std::endl;
+
     std::cout << "\tBuild Type: " << b->build_type() << std::endl;
     std::cout << "\tBuild Date: " << b->build_date() << std::endl;
     std::cout << "\tBranch: "  << b->branch() << std::endl;
+    std::cout << "\tBuild Flags: " << b->build_flags() << std::endl;
     std::cout << "\tCommit: "  << b->commit() << std::endl;
     std::cout << "\tCommit Date: " << b->commit_date() << std::endl;
     std::cout << "\tCommit Author: " << b->commit_author() << std::endl;
     std::cout << "\tCommit Message: " << b->commit_message() << std::endl;
     std::cout << "\tProject Author: " << b->project_author() << std::endl;
     std::cout << "\tAll Authors: " << b->all_authors() << std::endl;
+    std::cout << std::endl;
   }
 }
 
