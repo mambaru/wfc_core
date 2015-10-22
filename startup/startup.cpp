@@ -260,60 +260,31 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
   
   if ( shortinfo )
   {
-    std::cout << '\t' << b->name() << "\t" << b->version() << " " << b->project_author() << std::endl;
+    std::cout << '\t' << b->name() << "\t" << b->version() << " " << b->initial_author() << std::endl;
   }
   else
   {
-    std::cout << "\tEnabled: " << b->enabled() << std::endl;
-    std::cout << "\tName: "    << b->name() << std::endl;
+    std::cout << "\tEnabled: " << b->enabled()  << std::endl;
+    std::cout << "\tName: "    << b->name()     << std::endl;
     std::cout << "\tVersion: " << b->version();
     if ( !b->verex().empty() )
       std::cout << "[" << b->verex() << "]";
     std::cout << "-" << b->build_count() << std::endl;
 
-    std::cout << "\tBuild Type: " << b->build_type() << std::endl;
-    std::cout << "\tBuild Date: " << b->build_date() << std::endl;
-    std::cout << "\tBranch: "  << b->branch() << std::endl;
-    std::cout << "\tBuild Flags: " << b->build_flags() << std::endl;
-    std::cout << "\tCommit: "  << b->commit() << std::endl;
-    std::cout << "\tCommit Date: " << b->commit_date() << std::endl;
-    std::cout << "\tCommit Author: " << b->commit_author() << std::endl;
+    std::cout << "\tBuild Type: "     << b->build_type()     << std::endl;
+    std::cout << "\tBuild Date: "     << b->build_date()     << std::endl;
+    std::cout << "\tBranch: "         << b->branch()         << std::endl;
+    std::cout << "\tBuild Flags: "    << b->build_flags()    << std::endl;
+    std::cout << "\tCommit: "         << b->commit()         << std::endl;
+    std::cout << "\tCommit Date: "    << b->commit_date()    << std::endl;
+    std::cout << "\tCommit Author: "  << b->commit_author()  << std::endl;
     std::cout << "\tCommit Message: " << b->commit_message() << std::endl;
-    std::cout << "\tProject Author: " << b->project_author() << std::endl;
-    std::cout << "\tAll Authors: " << b->all_authors() << std::endl;
+    std::cout << "\tAll Authors: "    << b->all_authors()    << std::endl;
+    std::cout << "\tInitial Author: " << b->initial_author() << std::endl;
     std::cout << std::endl;
   }
 }
 
-/*
-void startup_domain::show_module_info_(const std::string& module_name)
-{
-  if (auto g = this->global() )
-  {
-    if (!module_name.empty())
-    {
-      if ( auto m = g->registry.get<ipackage>("package", module_name) )
-      {
-        std::cout << "----------------------------------------------" << std::endl;
-        std::cout << module_name << " module version:" << std::endl;
-        std::cout << m->build_info() << std::endl;
-        std::cout << m->description() << std::endl;
-      }
-      else
-      {
-        std::cout << "ERROR: Package '" << module_name << "' not found" << std::endl;
-      }
-    }
-    else
-    {
-      g->registry.for_each<imodule>("package", [this](const std::string& name, std::shared_ptr<imodule> )
-      {
-        this->show_module_info_(name);
-      });
-    }
-  }
-}
-*/
 ///
 /// generate
 ///
