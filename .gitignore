@@ -4,6 +4,7 @@
 .cproject
 .project
 *.o
+*.cmake
 */debug
 */release
 */build
@@ -19,4 +20,5 @@ CMakeCache.txt
 *.kate-swp
 *build_info.h
 config.h
-*_build_counter
+Makefile
+*_build.counter
