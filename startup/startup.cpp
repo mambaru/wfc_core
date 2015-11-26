@@ -273,8 +273,8 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
 
     std::cout << "\tBuild Type: "     << b->build_type()     << std::endl;
     std::cout << "\tBuild Date: "     << b->build_date()     << std::endl;
-    std::cout << "\tBranch: "         << b->branch()         << std::endl;
     std::cout << "\tBuild Flags: "    << b->build_flags()    << std::endl;
+    std::cout << "\tBranch: "         << b->branch()         << std::endl;
     std::cout << "\tCommit: "         << b->commit()         << std::endl;
     std::cout << "\tCommit Date: "    << b->commit_date()    << std::endl;
     std::cout << "\tCommit Author: "  << b->commit_author()  << std::endl;
