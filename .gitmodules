@@ -1,3 +1,0 @@
-[submodule "wfc"]
-	path = wfc
-	url = git@gitlab.lan:cpp/wfc.git
