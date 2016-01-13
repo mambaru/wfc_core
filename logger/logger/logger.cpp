@@ -251,6 +251,11 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
     */
   }
 
+  if ( wopt.path.empty() )
+  {
+    wopt.path = std::string("./") + this->global()->instance_name;
+  }
+
   if (opt.single)
   {
     wopt.path = wopt.path+ ".log";
