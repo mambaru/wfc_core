@@ -25,6 +25,7 @@ public:
   virtual int run() override;
   virtual void core_reconfigure() override;
   virtual void core_stop( ) override;
+  virtual void core_abort( std::string message ) override;
   
   /// domain_object
   virtual void reconfigure();
@@ -38,7 +39,7 @@ private:
   void _initialize();
   void _start();
   void _stop();
-  int _main_loop();
+  int  _main_loop();
   void _idle();
   
 private:
@@ -49,6 +50,7 @@ private:
   time_point _idle_time;
   std::atomic<bool> _reconfigure_flag;
   std::atomic<bool> _stop_flag;
+  std::atomic<bool> _abort_flag;
   std::unique_ptr<idle_timer> _idle_timer;
   std::shared_ptr<core> _same;
 };

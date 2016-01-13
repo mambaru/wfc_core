@@ -21,6 +21,7 @@ static std::atomic<bool> gs_stop_signal;
 static void signal_sigint_handler(int)
 {
   std::clog << "Stop signal handler" << std::endl;
+  DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
   gs_stop_signal = true;
 }
 
@@ -33,6 +34,7 @@ core::~core()
 core::core()
   : _reconfigure_flag(false)
   , _stop_flag(false)
+  , _abort_flag(false)
 {
   gs_stop_signal = false;
 }
@@ -55,13 +57,23 @@ int core::run()
 
   this->_sunrise();
 
-  DOMAIN_LOG_BEGIN("after start handlers")
-  this->global()->after_start.fire();
-  DOMAIN_LOG_BEGIN("after start handlers")
+  if ( !_stop_flag )
+  {
+    DOMAIN_LOG_BEGIN("after start handlers")
+    this->global()->after_start.fire();
+    DOMAIN_LOG_BEGIN("after start handlers")
+  }
 
-  DOMAIN_LOG_MESSAGE("***************************************")
-  DOMAIN_LOG_MESSAGE("************* started *****************")
-  DOMAIN_LOG_MESSAGE("instance name: " << this->global()->instance_name << std::endl)
+  if ( !_stop_flag )
+  {
+    DOMAIN_LOG_MESSAGE("***************************************")
+    DOMAIN_LOG_MESSAGE("************* started *****************")
+    DOMAIN_LOG_MESSAGE("instance name: " << this->global()->instance_name << std::endl)
+  }
+  else if ( _abort_flag )
+  {
+    DOMAIN_LOG_FATAL("!!! START ABORTED! Смотрите выше.")
+  }
 
   return this->_main_loop();
 }
@@ -76,8 +88,21 @@ void core::stop( const std::string &)
 
 void core::core_stop( )
 {
-  std::cout << "core stop" << std::endl;
+  DOMAIN_LOG_MESSAGE("wfc_core: stop!")
+  //std::clog << "core stop" << std::endl;
   _stop_flag = true;
+}
+
+void core::core_abort( std::string message ) 
+{
+  DOMAIN_LOG_FATAL("")
+  DOMAIN_LOG_FATAL("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  DOMAIN_LOG_FATAL("!!        АВАРИЙНОЕ ЗАВЕРШЕНИЕ")
+  DOMAIN_LOG_FATAL("!!        " << message )
+  DOMAIN_LOG_FATAL("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  DOMAIN_LOG_FATAL("")
+  _stop_flag = true;
+  _abort_flag = true;
 }
 
 void core::reconfigure()
@@ -115,8 +140,9 @@ void core::_idle()
 
   if ( _stop_flag )
   {
-    DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
+    DOMAIN_LOG_BEGIN("wfc_core: io_service stop...")
     this->global()->io_service.stop();
+    DOMAIN_LOG_END("wfc_core: io_service stop done!")
     return;
   }
 
@@ -162,13 +188,26 @@ void core::_sunrise()
   CONFIG_LOG_MESSAGE("----------- configuration -------------")
   this->_configure();
   
-  CONFIG_LOG_MESSAGE("----------- initialization ------------")
-  this->_initialize();
+  if ( !_abort_flag )
+  {
+    CONFIG_LOG_MESSAGE("----------- initialization ------------")
+    this->_initialize();
+  }
   
-  CONFIG_LOG_MESSAGE("-------------- starting ---------------")
-  this->_start();
+  if ( !_abort_flag )
+  {
+    CONFIG_LOG_MESSAGE("-------------- starting ---------------")
+    this->_start();
+  }
   
-  SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
+  if ( !_abort_flag )
+  {
+    SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
+  }
+  else
+  {
+    SYSLOG_LOG_FATAL("daemon " << this->global()->program_name << " start abort")    
+  }
 }
 
 void core::_configure()
@@ -180,14 +219,21 @@ void core::_configure()
 
   if ( auto conf = g->registry.get<iconfig>("config") )
   {
-    g->registry.for_each<icomponent>("component", [conf](const std::string& name, std::shared_ptr<icomponent> obj)
+    g->registry.for_each<icomponent>("component", [this, conf](const std::string& name, std::shared_ptr<icomponent> obj)
     {
+      if ( this->_abort_flag )
+      {
+        CONFIG_LOG_FATAL("core::configure: component '" << name << "' aborted!")
+        return;
+      }
       std::string confstr = conf->get_config(name);
       if ( !confstr.empty() )
       {
         CONFIG_LOG_BEGIN("core::configure: component '" << name << "'...")
         obj->configure(confstr, std::string() );
-        CONFIG_LOG_END("core::configure: component '" << name << "'...Done!")
+        
+        if ( !this->_abort_flag ) { CONFIG_LOG_END("core::configure: component '" << name << "'...Done!") }
+        else { CONFIG_LOG_END("core::configure: component '" << name << "'...aborted!") }
       }
       else
       {
@@ -222,11 +268,20 @@ void core::_initialize()
     return left->startup_priority() < right->startup_priority();
   } );
 
-  std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
+  std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr& m)
   {
+    if ( this->_abort_flag )
+    {
+      CONFIG_LOG_FATAL("core::initialize: instance '" << m->name() << "' aborted!")
+      return;
+    }
+
     CONFIG_LOG_BEGIN("core::initialize: instance '" << m->name() << "'...")
     m->initialize();
-    CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...Done!")
+ 
+    if ( !this->_abort_flag ) { CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...Done!") }
+    else { CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...aborted!") }
+
     g->io_service.poll();
     g->io_service.reset();
   });
@@ -253,11 +308,19 @@ void core::_start()
     return left->startup_priority() < right->startup_priority();
   });
 
-  std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
+  std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr& m)
   {
-    CONFIG_LOG_BEGIN("core::start: module '" << m->name() << "'...")
+    if ( this->_abort_flag )
+    {
+      CONFIG_LOG_FATAL("core::start: instance '" << m->name() << "' aborted!")
+      return;
+    }
+
+    CONFIG_LOG_BEGIN("core::start: instance '" << m->name() << "'...")
     m->start(std::string());
-    CONFIG_LOG_END("core::start: module '" <<  m->name() << "'...Done!")
+    if ( !this->_abort_flag ) { CONFIG_LOG_END("core::start: instance '" <<  m->name() << "'...Done!") }
+    else { CONFIG_LOG_END("core::start: instance '" <<  m->name() << "'...aborted!") }
+    
     //g->io_service.run_one();
     g->io_service.poll();
     g->io_service.reset();
@@ -298,9 +361,14 @@ void core::_stop()
     return left->shutdown_priority() < right->shutdown_priority();
   } );
 
-  std::for_each(instances.begin(), instances.end(), [g](const instance_ptr& m)
+  std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr& m)
   {
     CONFIG_LOG_BEGIN("core::stop: module '" << m->name() << "'...")
+    if ( m->name()=="logger" && this->_abort_flag )
+    {
+      DOMAIN_LOG_FATAL("!!! WFC ABORTED! Смотрите выше.")
+    }
+
     m->stop(std::string());
     CONFIG_LOG_END("core::stop: module '" <<  m->name() << "'...Done!")
   });
