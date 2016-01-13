@@ -92,7 +92,7 @@ namespace {
     int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);
     if ( pid_file == -1)
     {
-      std::cout << fname << " open error: " << strerror(errno) << std::endl;
+      std::cerr << fname << " open error: " << strerror(errno) << std::endl;
       return false;
     }
     int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
@@ -100,15 +100,15 @@ namespace {
     {
       if( EWOULDBLOCK == errno)
       {
-        std::cout << fname << " blocked another instance" << std::endl;
-        std::cout << "FAIL :  another instance '"<< name <<"' is running" << std::endl;
+        std::cerr << fname << " blocked for another instance" << std::endl;
+        std::cerr << "FAIL :  another instance '"<< name <<"' is running" << std::endl;
         return false; // another instance is running
       }
-      std::cout << fname << " blocked error: " << strerror(errno) << std::endl;
+      std::cerr << fname << " blocked error: " << strerror(errno) << std::endl;
     }
     else 
     {
-      std::cout << fname << " blocked this instance" << std::endl;
+      std::clog << fname << " blocked for this instance" << std::endl;
     }
     return true;
   }
@@ -118,8 +118,8 @@ bool startup_domain::perform_start_( )
 {
   if ( auto g = this->global() )
   {
-    std::cout << "Program name: " << g->program_name << std::endl;
-    std::cout << "Instance name: " << g->instance_name << std::endl;
+    std::clog << "Program name: " << g->program_name << std::endl;
+    std::clog << "Instance name: " << g->instance_name << std::endl;
     if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )
     {
       return false;
@@ -129,11 +129,21 @@ bool startup_domain::perform_start_( )
     {
       c->load_and_parse(_pa.config_path);
     }
-
   }
 
   if ( _pa.daemonize )
+  {
+    if ( _pa.autoup )
+    {
+      std::clog << "autoup process enabled" << std::endl;
+    }
+    std::clog << "daemonize... see log for startup status" << std::endl;
     ::wfc::daemonize();
+  } 
+  else if ( _pa.autoup )
+  {
+    std::clog << "WARNING: autoup argument ignored. Only with -d worked" << std::endl;
+  }
 
   if ( _pa.daemonize && _pa.autoup )
   {
@@ -182,29 +192,6 @@ void startup_domain::show_usage_()
   std::cout <<  "  " << this->global()->program_name << " [-h] -i [<module name>]" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " -G [<generate name>] [-C <path>]" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
-}
-
-
-void startup_domain::show_help_()
-{
-  this->show_usage_();
-  std::cout <<  "Options" << std::endl;
-  std::cout
-     << "  -h [ --help ]             produce help message                    " << std::endl
-     << "  -i [ --info ] [arg]       show modules info                       " << std::endl
-     << "  -n [ --name ] arg         unique daemon instance name             " << std::endl
-     << "  -d [ --daemonize ]        run as daemon                           " << std::endl
-     << "  -c [ --coredump ]         allow core dump                         " << std::endl
-     << "  -a [ --autoup ] [arg]     auto restart daemon                     " << std::endl
-     << "  -C [ --config-path ] arg  path to the configuration file          " << std::endl
-     << "  -G [ --generate ] [arg]   generate configuration                  " << std::endl
-     << "  --NAME-KEY=[VALUE]        module defined options                  " << std::endl;
-  std::cout<< std::endl;
-
-  std::cout << "modules:" << std::endl;
-  this->global()->registry.for_each<imodule>("module", []( const std::string& name, std::shared_ptr<imodule> /*m*/){
-    std::cout << "  " << name <<  std::endl;
-  });
 }
 
 void startup_domain::show_info_(const std::string& name)
