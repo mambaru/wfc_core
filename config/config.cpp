@@ -239,52 +239,6 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   return true;
 }
 
-std::string config::generate_and_write_del(std::string type, std::string path)
-{
-  std::string confstr;
-  configuration mainconf;
-
-  if ( type.empty() )
-  {
-    if ( auto g = this->global() )
-    {
-      g->registry.for_each<icomponent>("component", [&mainconf, &type](const std::string& name, std::shared_ptr<icomponent> module)
-      {
-        if (module!=nullptr)
-          mainconf[name] = module->generate(type);
-      });
-    }
-    
-    configuration_json::serializer()(mainconf, std::back_inserter(confstr));
-
-    if ( !path.empty() )
-    {
-      this->save_to_file_(path, confstr);
-      std::clog << "generated '"<< type << "' type to " << path << std::endl;
-      std::clog << "For JSON format: cat "<< path << " | python -mjson.tool" << std::endl;
-    }
-    else
-    {
-      std::clog << confstr << std::endl;
-    }
-  }
-  else if (auto g = this->global())
-  {
-    if ( auto obj = g->registry.get<icomponent>("component", type) )
-    {
-      auto strobj = obj->generate("");
-      std::clog << strobj << std::endl;
-    }
-    else
-    {
-      std::clog << "Generate Fail! component "<< type << " not found" << std::endl;
-    }
-  }
-
-  return confstr;
-}
-
-
 std::string config::load_from_file_(const std::string& path)
 {
   std::string confstr;
