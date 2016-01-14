@@ -27,13 +27,7 @@ startup_domain::~startup_domain()
 {
 }
 
-bool startup_domain::startup( int argc, char* argv[])
-{
-  return this->startup_(argc, argv);
-}
-
-
-bool startup_domain::startup_(int argc, char** argv)
+bool startup_domain::startup(int argc, char** argv, std::string helpstring)
 {
   parse_arguments( _pa, argc, argv);
   if ( auto g = this->global() )
@@ -42,13 +36,22 @@ bool startup_domain::startup_(int argc, char** argv)
     g->instance_name  = _pa.instance_name;
   }
 
-  if ( _pa.usage )
+  if ( !_pa.errorstring.empty() )
+  {
+    std::cerr << "*** ERROR ***" << std::endl;
+    std::cerr << _pa.errorstring << std::endl;
+  }
+  else if ( _pa.usage )
   {
     this->show_usage_();
   }
   else if ( _pa.help )
   {
+    if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
     std::cout << _pa.helpstring << std::endl;
+    std::cout << "Для генерации и форматировани конфигурации используете: " << std::endl;
+    std::cout << "  ./prefixdbd -G | python -mjson.tool " << std::endl;
+    std::cout << std::endl;
   }
   else if ( _pa.info )
   {
@@ -77,6 +80,8 @@ bool startup_domain::startup_(int argc, char** argv)
   }
   else
   {
+    std::cerr << "ERROR: для запуска необходимо указать файл конфигурации" << std::endl;
+    this->show_usage_();
   }
   return false;
 }
@@ -187,10 +192,10 @@ bool startup_domain::perform_start_( )
 
 void startup_domain::show_usage_()
 {
-  std::cout <<  "Usage" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " -h" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " [-h] -i [<module name>]" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " -G [<generate name>] [-C <path>]" << std::endl;
+  std::cout <<  "Usage:" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " --help" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " --info [<module name>]" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " -G [<component name>] [-C <path>]" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
 }
 
@@ -305,22 +310,6 @@ bool startup_domain::generate_()
     std::cerr << genstr << std::endl;
   }
   return true;
-}
-
-void startup_domain::generate_( const std::string& /*type*/, const std::string& /*path*/ )
-{
-  //TODO: Удалить
-  //if ( auto c = _global->config )
-  /*
-  if ( auto c = this->global()->registry.get<iconfig>("config") )
-  {
-    c->generate_and_write(type, path);
-  }
-  else
-  {
-    std::cerr << "Config module not set" << std::endl;
-  }
-  */
 }
 
 }

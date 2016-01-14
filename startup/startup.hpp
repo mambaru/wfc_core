@@ -22,12 +22,10 @@ class startup_domain
 {
 public:
   virtual ~startup_domain();
-  virtual bool startup( int argc, char* argv[] );
+  virtual bool startup( int argc, char* argv[], std::string helpstring) override;
 private:
-  bool startup_( int argc, char** argv);
   bool perform_start_();
   bool generate_();
-  void generate_( const std::string& type, const std::string& path );
   void show_usage_();
   void show_info_(const std::string& name);
   void show_build_info_(std::shared_ptr<ibuild_info> b, bool shortinfo);
