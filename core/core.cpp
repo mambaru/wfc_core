@@ -127,8 +127,7 @@ void core::reconfigure()
     {
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
-  }
-  CONFIG_LOG_MESSAGE("core module configured " )
+  }  
 }
 
 void core::_idle()
