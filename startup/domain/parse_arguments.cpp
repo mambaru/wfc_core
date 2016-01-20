@@ -70,10 +70,10 @@ try
     pa.instance_name = pa.program_name + "-" + ::boost::filesystem::path(pa.config_path).filename().native();
   }
 }
-catch( ::boost::program_options::error_with_option_name e)
+/*catch( ::boost::program_options::error_with_option_name e)
 {
   pa.errorstring = e.what();
-}
+}*/
 catch( ::boost::program_options::error e)
 {
   pa.errorstring = e.what();
