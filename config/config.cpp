@@ -64,7 +64,7 @@ void config::start(const std::string& /*arg*/)
   this->_config_changed = get_modify_time(this->_path);
   if ( auto g = this->global() )
   {
-    g->idle.push_back( [this]()
+    g->idle.push_back( [this]()->bool
     {
       if ( this->options().reload_changed && this->_config_changed!=0 )
       {
@@ -73,6 +73,7 @@ void config::start(const std::string& /*arg*/)
           this->reload_and_reconfigure();
         this->_config_changed = t;
       }
+      return true;
     });
   }
 }
