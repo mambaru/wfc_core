@@ -35,7 +35,8 @@ try
     ("name,n", value<std::string>(&pa.instance_name), "unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "directory for pid file")
-    ("<<instance>>-<<key>> [arg]", "custom option for instance object");
+    ("instance-options,O", value< std::vector<std::string> >()->multitoken(), "<<object>> arg [arg...] custom option for instance object");
+    // ("<<instance>>-<<key>> [arg]", "custom option for instance object");
 
   desc.add(desc_startup);
 
@@ -70,10 +71,6 @@ try
     pa.instance_name = pa.program_name + "-" + ::boost::filesystem::path(pa.config_path).filename().native();
   }
 }
-/*catch( ::boost::program_options::error_with_option_name e)
-{
-  pa.errorstring = e.what();
-}*/
 catch( ::boost::program_options::error e)
 {
   pa.errorstring = e.what();
