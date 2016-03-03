@@ -275,7 +275,7 @@ void core::_initialize()
       return;
     }
 
-    CONFIG_LOG_BEGIN("core::initialize: instance '" << m->name() << "'...")
+    CONFIG_LOG_BEGIN("core::initialize: instance '" << m->name() << "'... startup_priority="  << m->startup_priority() )
     m->initialize();
  
     if ( !this->_abort_flag ) { CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...Done!") }
