@@ -4,8 +4,6 @@
 
 namespace wfc{
 
-class config_module_impl;
-
 class config_module
   : public ::wfc::module
 {
