@@ -108,6 +108,7 @@ void core::core_abort( std::string message )
 void core::reconfigure()
 {
   auto opt = this->options();
+  this->global()->workflow.reconfigure(opt.workflow);
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
@@ -154,14 +155,17 @@ void core::_idle()
     DOMAIN_LOG_MESSAGE("Daemon reconfigured!")
   }
 
+  /*
   _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds( this->options().idle_timeout_ms));
-  _idle_timer->async_wait([this](const boost::system::error_code& /*e*/){
+  _idle_timer->async_wait([this](const boost::system::error_code& e){
     this->_idle();
   });
+  */
 }
 
 int core::_main_loop()
 {
+  /*
   _idle_timer = std::make_unique<idle_timer>(
     this->global()->io_service,  
     boost::posix_time::milliseconds(this->options().idle_timeout_ms) 
@@ -171,6 +175,27 @@ int core::_main_loop()
   {
     this->_idle();
   });
+  */
+  
+  this->global()->workflow.start();
+  std::weak_ptr<core> wthis = this->shared_from_this();
+
+  this->global()->workflow.create_timer(
+    std::chrono::milliseconds(this->options().idle_timeout_ms),
+    [wthis]()->bool 
+    {
+      if (auto pthis = wthis.lock() )
+      {
+        if ( pthis->_stop_flag )
+          return false;
+        
+        pthis->_idle();
+        return true;
+      }
+      return false;
+    }
+  );
+  
   this->global()->io_service.run();
   this->global()->io_service.reset();
 
