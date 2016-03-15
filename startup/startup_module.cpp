@@ -7,21 +7,23 @@
 #include "startup_module.hpp"
 #include "startup_singleton.hpp"
 #include <wfc/module/component_list.hpp>
-#include <wfc/json.hpp>
+#include <wfc/name.hpp>
 
 namespace wfc{
   
-JSON_NAME2(startup_module_name, "startup")
+namespace{
+  WFC_NAME2(startup_module_name, "startup")
 
-class startup_module_impl: public ::wfc::component_list<
-  startup_module_name,
-  startup_singleton
->
-{  
-};
+  class impl: public ::wfc::component_list<
+    startup_module_name,
+    startup_singleton
+  >
+  {  
+  };
+}
 
 startup_module::startup_module()
-  : module( std::make_shared<startup_module_impl>() )
+  : module( std::make_shared<impl>() )
 {}
 
 }

@@ -10,8 +10,6 @@
 
 namespace wfc{
 
-class startup_module_impl;
-
 class startup_module
   : public ::wfc::module
 {
