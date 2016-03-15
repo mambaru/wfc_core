@@ -26,7 +26,6 @@ namespace wfc{
 class logger_module
   : public ::wfc::module
 {
-  class impl;
 public:
   logger_module();
 };

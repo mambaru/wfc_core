@@ -12,17 +12,17 @@
 
 namespace wfc{
 
-WFC_NAME2(logger_module_name, "logger")
-
-class logger_module::impl: public ::wfc::component_list<
-  logger_module_name,
-  logger_singleton
->
-{
-};
+namespace {
+  WFC_NAME2(logger_module_name, "logger")
+  class impl: public ::wfc::component_list<
+    logger_module_name,
+    logger_singleton
+  >
+  {};
+}
 
 logger_module::logger_module()
-  : module( std::make_shared<logger_module::impl>() )
+  : module( std::make_shared<impl>() )
 {
 }
 
