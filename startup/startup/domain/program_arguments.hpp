@@ -33,8 +33,9 @@ struct program_arguments
   typedef std::map<std::string, map1> map2;
 
   std::vector<std::string> info_options;
-  map1 generate_options;
-  map2 instance_options; // Если не указан -C то индивидуальный запуск
+  map1 generate_options; // Если не указан -C то индивидуальный запуск
+  map2 instance_options;
+  
 };
 
 }

@@ -5,7 +5,7 @@
 //
 
 #include "startup.hpp"
-#include "domain/parse_arguments.hpp"
+#include "parse_arguments.hpp"
 
 #include <wfc/core/iconfig.hpp>
 #include <wfc/module/imodule.hpp>
@@ -34,6 +34,8 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
   {
     g->program_name  = _pa.program_name;
     g->instance_name  = _pa.instance_name;
+    g->args.insert(_pa.instance_options);
+    //g->args = _pa.instance_options;
   }
 
   if ( !_pa.errorstring.empty() )
@@ -237,12 +239,6 @@ void startup_domain::show_info_(const std::string& name)
       this->show_build_info_(p->build_info(), true);
     });
   }
-  
-  /*
-  std::cout << this->global()->program_name << " version:" << std::endl;
-  std::cout << "----------------------------------------------" << std::endl;
-  std::cout << "wfc version:" << std::endl;
-  */
 }
 
 void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool shortinfo)

@@ -1,13 +1,15 @@
 
 include(BuildInfo)
 
+include_directories(.)
+
 SET(
   wfc_startup_source_list
-  startup.cpp
-  startup_singleton.cpp
-  startup_module.cpp
+  startup/domain/parse_arguments.cpp
+  startup/domain/startup.cpp
+  startup/startup_singleton.cpp
+  startup/startup_module.cpp
   startup_package.cpp
-  domain/parse_arguments.cpp
 )
 
 add_library(

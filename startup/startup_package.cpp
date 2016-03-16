@@ -4,23 +4,27 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-#include "startup_build_info.h"
-#include "startup_package.hpp"
-#include "startup_module.hpp"
 #include <wfc/module/module_list.hpp>
 #include <iow/json/name.hpp>
 
+#include "startup_build_info.h"
+#include "startup_package.hpp"
+#include "startup/startup_module.hpp"
+
 namespace wfc{
   
-class startup_package_impl: public ::wfc::module_list<
-  startup_build_info,
-  startup_module
->
-{  
-};
+namespace 
+{
+  class impl: public ::wfc::module_list<
+    startup_build_info,
+      startup_module
+  >
+  {  
+  };
+}
 
 startup_package::startup_package()
-  : package( std::make_shared<startup_package_impl>() )
+  : package( std::make_shared<impl>() )
 {
 }
 

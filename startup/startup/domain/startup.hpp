@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "domain/program_arguments.hpp"
+#include "program_arguments.hpp"
 #include "startup_config.hpp"
 #include <wfc/core/istartup.hpp>
 #include <wfc/domain_object.hpp>

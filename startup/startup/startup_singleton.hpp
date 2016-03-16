@@ -10,8 +10,6 @@
 
 namespace wfc{
 
-class startup_singleton_impl;
-
 class startup_singleton
   : public ::wfc::component
 {

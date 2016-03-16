@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "startup_config.hpp"
+#include "domain/startup_config.hpp"
 #include <wfc/json.hpp>
 
 namespace wfc{
