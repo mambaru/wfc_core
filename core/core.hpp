@@ -40,7 +40,7 @@ private:
   void _start();
   void _stop();
   int  _main_loop();
-  void _idle();
+  bool _idle();
   
 private:
 

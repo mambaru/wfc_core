@@ -131,7 +131,7 @@ void core::reconfigure()
   }  
 }
 
-void core::_idle()
+bool core::_idle()
 {
   if ( gs_stop_signal )
   {
@@ -143,7 +143,7 @@ void core::_idle()
     DOMAIN_LOG_BEGIN("wfc_core: io_service stop...")
     this->global()->io_service.stop();
     DOMAIN_LOG_END("wfc_core: io_service stop done!")
-    return;
+    return false;
   }
 
   this->global()->idle.fire();
@@ -155,6 +155,7 @@ void core::_idle()
     DOMAIN_LOG_MESSAGE("Daemon reconfigured!")
   }
 
+  return !_stop_flag;
   /*
   _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds( this->options().idle_timeout_ms));
   _idle_timer->async_wait([this](const boost::system::error_code& e){
@@ -186,11 +187,7 @@ int core::_main_loop()
     {
       if (auto pthis = wthis.lock() )
       {
-        if ( pthis->_stop_flag )
-          return false;
-        
-        pthis->_idle();
-        return true;
+        return pthis->_idle();
       }
       return false;
     }
