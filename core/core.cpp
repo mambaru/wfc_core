@@ -107,7 +107,7 @@ void core::core_abort( std::string message )
 void core::reconfigure()
 {
   auto opt = this->options();
-  this->global()->workflow.reconfigure(opt.workflow);
+  this->global()->workflow->reconfigure(opt.workflow);
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
@@ -177,10 +177,10 @@ int core::_main_loop()
   });
   */
   
-  this->global()->workflow.start();
+  this->global()->workflow->start();
   std::weak_ptr<core> wthis = this->shared_from_this();
 
-  this->global()->workflow.create_timer(
+  this->global()->workflow->create_timer(
     std::chrono::milliseconds(this->options().idle_timeout_ms),
     [wthis]()->bool 
     {
