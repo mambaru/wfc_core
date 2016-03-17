@@ -89,7 +89,6 @@ void core::stop( const std::string &)
 void core::core_stop( )
 {
   DOMAIN_LOG_MESSAGE("wfc_core: stop!")
-  //std::clog << "core stop" << std::endl;
   _stop_flag = true;
 }
 
@@ -209,18 +208,21 @@ void core::_sunrise()
   CONFIG_LOG_MESSAGE("----------- configuration -------------")
   this->_configure();
   
+  if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
     CONFIG_LOG_MESSAGE("----------- initialization ------------")
     this->_initialize();
   }
   
+  if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
     CONFIG_LOG_MESSAGE("-------------- starting ---------------")
     this->_start();
   }
   
+  if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
     SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
