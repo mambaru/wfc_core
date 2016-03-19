@@ -3,6 +3,7 @@
 #include <wfc/module/icomponent.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/core/global.hpp>
+#include <wfc/core/workflow.hpp>
 
 #include <vector>
 #include <utility>
@@ -44,15 +45,18 @@ private:
   
 private:
 
+  /*
   typedef std::chrono::steady_clock::time_point time_point;
   typedef boost::asio::deadline_timer idle_timer;
   
   time_point _idle_time;
+  std::unique_ptr<idle_timer> _idle_timer;
+  */
   std::atomic<bool> _reconfigure_flag;
   std::atomic<bool> _stop_flag;
   std::atomic<bool> _abort_flag;
-  std::unique_ptr<idle_timer> _idle_timer;
   std::shared_ptr<core> _same;
+  std::shared_ptr<workflow> _core_timer;
 };
 
 }

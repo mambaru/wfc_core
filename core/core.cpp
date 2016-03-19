@@ -75,6 +75,10 @@ int core::run()
     DOMAIN_LOG_FATAL("!!! START ABORTED! Смотрите выше.")
   }
 
+  ::iow::queue_options qopt;
+  qopt.wrnsize = 10;
+  qopt.maxsize = 100;
+  _core_timer = ::wfc::workflow::create(this->global()->io_service, qopt);
   return this->_main_loop();
 }
 
@@ -145,7 +149,7 @@ bool core::_idle()
     return false;
   }
 
-  this->global()->idle.fire();
+  //this->global()->idle.fire();
 
   if ( _reconfigure_flag )
   {
@@ -155,33 +159,28 @@ bool core::_idle()
   }
 
   return !_stop_flag;
-  /*
-  _idle_timer->expires_at(_idle_timer->expires_at() + boost::posix_time::milliseconds( this->options().idle_timeout_ms));
-  _idle_timer->async_wait([this](const boost::system::error_code& e){
-    this->_idle();
-  });
-  */
 }
 
 int core::_main_loop()
 {
-  /*
-  _idle_timer = std::make_unique<idle_timer>(
-    this->global()->io_service,  
-    boost::posix_time::milliseconds(this->options().idle_timeout_ms) 
-  );
-
-  _idle_timer->async_wait([this](const boost::system::error_code& )
-  {
-    this->_idle();
-  });
-  */
-  
   this->global()->workflow->start();
   std::weak_ptr<core> wthis = this->shared_from_this();
 
-  this->global()->workflow->create_timer(
+  _core_timer->create_timer(
     std::chrono::milliseconds(this->options().idle_timeout_ms),
+    [wthis]()->bool 
+    {
+      if (auto pthis = wthis.lock() )
+      {
+        pthis->global()->idle.fire();
+        return pthis->_stop_flag==false;
+      }
+      return false;
+    }
+  );
+  
+  _core_timer->create_timer(
+    std::chrono::milliseconds(this->options().core_timeout_ms),
     [wthis]()->bool 
     {
       if (auto pthis = wthis.lock() )
@@ -192,6 +191,8 @@ int core::_main_loop()
     }
   );
   
+/*#warning сделать таймер и убрать wrk
+  ::wfc::asio::io_service::work wrk(this->global()->io_service);*/
   this->global()->io_service.run();
   this->global()->io_service.reset();
 
@@ -352,10 +353,10 @@ void core::_start()
 
 void core::_stop()
 {
-  if ( _idle_timer!=nullptr )
+  /*if ( _idle_timer!=nullptr )
   {
     _idle_timer->cancel();
-  }
+  }*/
   
   auto g = this->global();
 
