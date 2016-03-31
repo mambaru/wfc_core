@@ -1,6 +1,7 @@
 #include "parse_arguments.hpp"
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
+
+#include <iow/boost.hpp>
 
 #include <iostream>
 namespace wfc
