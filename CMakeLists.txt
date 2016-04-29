@@ -4,4 +4,4 @@ project(wfc_config)
 
 include_directories(.)
 
-add_subdirectory(config)
+add_subdirectory(package)

@@ -11,9 +11,9 @@ include(BuildInfo)
 SET(
   wfc_config_source_list
   config_package.cpp
-  config_module.cpp
-  config_singleton.cpp
-  config.cpp
+  config/config_module.cpp
+  config/config/config_singleton.cpp
+  config/config/config.cpp
 )
 
 add_library(

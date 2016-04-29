@@ -1,7 +1,7 @@
 
 #include "config_build_info.h"
 #include "config_package.hpp"
-#include "config_module.hpp"
+#include "config/config_module.hpp"
 #include <wfc/module/module_list.hpp>
 #include <iow/json/name.hpp>
 

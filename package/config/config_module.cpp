@@ -1,6 +1,6 @@
 
 #include "config_module.hpp"
-#include "config_singleton.hpp"
+#include "config/config_singleton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/json.hpp>
 
