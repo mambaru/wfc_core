@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(wfc_startup)
 
-add_subdirectory(startup)
+add_subdirectory(package)
 
 if ( WFC_BUILD_ALL )
   #add_subdirectory(tests)

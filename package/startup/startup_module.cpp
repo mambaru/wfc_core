@@ -5,7 +5,7 @@
 //
 
 #include "startup_module.hpp"
-#include "startup_singleton.hpp"
+#include "startup/startup_singleton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 

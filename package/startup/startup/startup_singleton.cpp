@@ -10,7 +10,7 @@
 #include <wfc/json.hpp>
 
 #include "startup_singleton.hpp"
-#include "domain/startup.hpp"
+#include "startup.hpp"
 #include "startup_config_json.hpp"
 
 namespace wfc{
