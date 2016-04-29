@@ -1,5 +1,6 @@
 enable_testing()
 
+<<<<<<< HEAD
 
 include_directories(../core)
 
@@ -29,3 +30,20 @@ target_link_libraries(startup_test wfc )
 
 add_test(startup_test startup_test)
 
+=======
+include_directories(../config)
+
+add_executable(config_test config_test.cpp ../config/config.cpp )
+target_link_libraries(config_test wfc)
+
+#link_directories(../../wfc/build/wfc)
+#link_directories(/home/migashko/prj/gitlab.lan/wfc/build/wfc/)
+#link_directories(/home/migashko/prj/gitlab.lan/wfc/build/)
+#find_library(COMET NAMES wfc PATHS /home/migashko/prj/gitlab.lan/wfc/build/wfc/ NO_DEFAULT_PATH)
+#find_library(COMET NAMES wfc PATHS ../../wfc/build/wfc NO_DEFAULT_PATH)
+
+message(STATUS ${COMET} )
+
+
+add_test(config_test config_test)
+>>>>>>> fc238025937863890c08c73c4b0923421fd81f0a

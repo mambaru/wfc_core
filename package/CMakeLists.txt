@@ -1,6 +1,4 @@
-
 include(BuildInfo)
-
 
 SET(
   wfc_core_source_list
@@ -14,6 +12,11 @@ SET(
   startup/startup/startup.cpp
   startup/startup/startup_singleton.cpp
   startup/startup_module.cpp
+  
+  config/config_module.cpp
+  config/config/config_singleton.cpp
+  config/config/config.cpp
+
 )
 
 add_library(
