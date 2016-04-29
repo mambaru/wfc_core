@@ -1,12 +1,19 @@
 
 include(BuildInfo)
 
+
 SET(
   wfc_core_source_list
+
   core_package.cpp
   core/core_module.cpp
   core/core/core_singleton.cpp
   core/core/core.cpp
+  
+  startup/startup/parse_arguments.cpp
+  startup/startup/startup.cpp
+  startup/startup/startup_singleton.cpp
+  startup/startup_module.cpp
 )
 
 add_library(
