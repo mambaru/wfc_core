@@ -8,18 +8,23 @@
 
 namespace wfc{
   
+namespace{
+
 WFC_NAME2(config_singleton_name, "config")
 
-class config_singleton_impl: public ::wfc::singleton<
+class impl: public ::wfc::singleton<
   config_singleton_name,
   wfc::instance<config>,
-  config_config_json
+  config_config_json,
+  int(component_features::SuspendSupport)
 >
 {  
 };
 
+}
+
 config_singleton::config_singleton()
-  : component( std::make_shared<config_singleton_impl>() )
+  : component( std::make_shared<impl>() )
 {
 }
 

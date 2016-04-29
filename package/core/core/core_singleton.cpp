@@ -8,18 +8,21 @@
 
 namespace wfc{
 
+namespace{
 JSON_NAME2(core_singleton_name, "core")
 
-class core_singleton_impl: public ::wfc::singleton<
+class impl: public ::wfc::singleton<
   core_singleton_name,
   wfc::instance<core>,
-  core_config_json
+  core_config_json,
+  int(component_features::Fixed) | int(component_features::Extraordinary)
 >
 {  
 };
+}
 
 core_singleton::core_singleton()
-  : component( std::make_shared<core_singleton_impl>() )
+  : component( std::make_shared<impl>() )
 {
 }
 
