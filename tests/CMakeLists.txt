@@ -1,6 +1,7 @@
 enable_testing()
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 include_directories(../core)
 
@@ -47,3 +48,13 @@ message(STATUS ${COMET} )
 
 add_test(config_test config_test)
 >>>>>>> fc238025937863890c08c73c4b0923421fd81f0a
+=======
+include_directories(../logger)
+
+find_package( Threads )
+
+add_executable(logger_module_test logger_module_test.cpp ../logger/logger.cpp )
+target_link_libraries(logger_module_test wfc ${CMAKE_THREAD_LIBS_INIT} )
+
+add_test(logger_module_test logger_module_test)
+>>>>>>> 1c06975c5bf67c94145d2db59b4cddc80ed1843c

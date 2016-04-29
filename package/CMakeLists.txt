@@ -17,6 +17,11 @@ SET(
   config/config/config_singleton.cpp
   config/config/config.cpp
 
+  logger/logger/aux.cpp
+  logger/logger/writer.cpp
+  logger/logger/logger.cpp
+  logger/logger/logger_singleton.cpp
+  logger/logger_module.cpp
 )
 
 add_library(
