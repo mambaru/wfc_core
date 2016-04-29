@@ -4,9 +4,9 @@ include(BuildInfo)
 SET(
   wfc_core_source_list
   core_package.cpp
-  core_module.cpp
-  core_singleton.cpp
-  core.cpp
+  core/core_module.cpp
+  core/core/core_singleton.cpp
+  core/core/core.cpp
 )
 
 add_library(

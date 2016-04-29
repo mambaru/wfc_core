@@ -1,7 +1,7 @@
 
 #include "core_build_info.h"
 #include "core_package.hpp"
-#include "core_module.hpp"
+#include "core/core_module.hpp"
 #include <wfc/module/module_list.hpp>
 #include <iow/json/name.hpp>
 

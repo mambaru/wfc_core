@@ -1,6 +1,6 @@
 
 #include "core_module.hpp"
-#include "core_singleton.hpp"
+#include "core/core_singleton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/json.hpp>
 
