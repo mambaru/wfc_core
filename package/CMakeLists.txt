@@ -11,11 +11,11 @@ include(BuildInfo)
 
 SET(
   wfc_logger_source_list
-  logger/aux.cpp
-  logger/writer.cpp
-  logger/logger.cpp
-  module/logger_singleton.cpp
-  module/logger_module.cpp
+  logger/logger/aux.cpp
+  logger/logger/writer.cpp
+  logger/logger/logger.cpp
+  logger/logger/logger_singleton.cpp
+  logger/logger_module.cpp
   logger_package.cpp
 )
 

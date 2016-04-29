@@ -4,4 +4,4 @@ project(wfc_logger)
 
 include_directories(.)
 
-add_subdirectory(logger)
+add_subdirectory(package)

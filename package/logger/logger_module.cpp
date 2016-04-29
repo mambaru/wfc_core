@@ -5,7 +5,7 @@
 //
 
 #include "logger_module.hpp"
-#include "logger_singleton.hpp"
+#include "logger/logger_singleton.hpp"
 
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
