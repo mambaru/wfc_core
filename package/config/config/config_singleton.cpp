@@ -16,7 +16,8 @@ class impl: public ::wfc::singleton<
   config_singleton_name,
   wfc::instance<config>,
   config_config_json,
-  int(component_features::SuspendSupport)
+    int(component_features::DisableSuspend) 
+  | int(component_features::CommonWorkflow)
 >
 {  
 };
