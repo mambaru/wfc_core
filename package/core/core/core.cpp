@@ -191,11 +191,8 @@ int core::_main_loop()
     }
   );
   
-/*#warning сделать таймер и убрать wrk
-  ::wfc::asio::io_service::work wrk(this->global()->io_service);*/
   this->global()->io_service.run();
   this->global()->io_service.reset();
-
   this->_stop();
   return 0;
 }
@@ -345,7 +342,6 @@ void core::_start()
     if ( !this->_abort_flag ) { CONFIG_LOG_END("Start instance '" <<  m->name() << "'...Done") }
     else { CONFIG_LOG_END("Start instance '" <<  m->name() << "'...aborted!") }
     
-    //g->io_service.run_one();
     g->io_service.poll();
     g->io_service.reset();
   });
@@ -353,11 +349,7 @@ void core::_start()
 
 void core::_stop()
 {
-  /*if ( _idle_timer!=nullptr )
-  {
-    _idle_timer->cancel();
-  }*/
-  
+ 
   auto g = this->global();
 
   if ( g == nullptr)

@@ -57,28 +57,28 @@ config::config()
 
 void config::reconfigure()
 {
-  
   this->get_workflow()->release_timer(_timer_id);
   _timer_id = 0;
   
-  if ( this->options().reload_changed )
+  if ( this->options().reload_changed_ms )
   {
-    _timer_id = this->get_workflow()->create_timer( std::chrono::seconds(1), [this]()
-    {
-      std::cout << "pnig" << std::endl;
-      if ( this->_config_changed!=0 )
-      {
-        time_t t = get_modify_time(this->_path);
-        if ( t!=this->_config_changed )
-          this->reload_and_reconfigure();
-        this->_config_changed = t;
-      }
-      return true;
-    });
-    /*std::cout << _timer_id << std::endl;
-    abort();*/
+    _timer_id = this->get_workflow()->create_timer( 
+      std::chrono::milliseconds(this->options().reload_changed_ms), 
+      this->wrap( std::bind(&config::timer_handler_, this) )
+    );
   }
-  
+}
+
+bool config::timer_handler_()
+{
+  if ( this->_config_changed!=0 )
+  {
+    time_t t = get_modify_time(this->_path);
+    if ( t!=this->_config_changed )
+      this->reload_and_reconfigure();
+    this->_config_changed = t;
+  }
+  return true;
 }
 
 void config::stop(const std::string& /*arg*/)

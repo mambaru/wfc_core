@@ -10,18 +10,20 @@
 
 namespace wfc{
   
-class core_package_impl: public ::wfc::module_list<
-  core_build_info,
-  core_module,
-  startup_module,
-  config_module,
-  logger_module
->
-{  
-};
+namespace 
+{
+  class impl: public ::wfc::module_list<
+    core_build_info,
+      core_module,
+      startup_module,
+      config_module,
+      logger_module
+  >
+  {};
+}
 
 core_package::core_package()
-  : package( std::make_shared<core_package_impl>() )
+  : package( std::make_shared<impl>() )
 {
 }
 

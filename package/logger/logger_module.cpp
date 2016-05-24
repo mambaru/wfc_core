@@ -12,7 +12,8 @@
 
 namespace wfc{
 
-namespace {
+namespace 
+{
   WFC_NAME2(logger_module_name, "logger")
   class impl: public ::wfc::component_list<
     logger_module_name,

@@ -4,8 +4,6 @@
 
 namespace wfc{
 
-class core_package_impl;
-
 class core_package
   : public ::wfc::package
 {

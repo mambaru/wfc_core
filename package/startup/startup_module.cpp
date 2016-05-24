@@ -11,7 +11,8 @@
 
 namespace wfc{
   
-namespace{
+namespace
+{
   WFC_NAME2(name, "startup")
 
   class impl: public ::wfc::component_list<

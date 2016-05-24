@@ -31,6 +31,7 @@ public:
   
   
 private:
+  bool timer_handler_();
   void parse_configure_(std::string source, std::string strconf, configuration& mainconf);
   std::string load_from_file_(const std::string& path);
   void save_to_file_(const std::string& path, const std::string& strconf);

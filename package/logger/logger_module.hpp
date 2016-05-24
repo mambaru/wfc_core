@@ -10,19 +10,6 @@
 
 namespace wfc{
   
-/**
- * \defgroup logger_module Модуль логгирования. 
- * \ingroup logger_package 
- */
-
-/**
- * \brief Включает компоненты модуля логгировния. 
- * \ingroup logger_package
- * 
- * Состоит из одного синглетона logger_singleton
- * 
- * \see logger_singleton
- */
 class logger_module
   : public ::wfc::module
 {
