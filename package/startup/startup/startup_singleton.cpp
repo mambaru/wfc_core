@@ -19,8 +19,16 @@ namespace
 {  
   JSON_NAME2(name, "startup")
 
-  class impl: public ::wfc::singleton<name, wfc::instance<startup_domain>, startup_config_json,
-    int(component_features::Fixed) | int(component_features::Extraordinary) > {};
+  class impl : public ::wfc::singleton
+  <
+    name, 
+    wfc::instance<startup_domain>,
+    startup_config_json,
+    component_features::Fixed 
+    | component_features::Extraordinary 
+    | component_features::DisableSuspend 
+    | component_features::CommonWorkflow 
+  > {};
 }
 
 startup_singleton::startup_singleton()

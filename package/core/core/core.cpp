@@ -59,9 +59,9 @@ int core::run()
 
   if ( !_stop_flag )
   {
-    DOMAIN_LOG_BEGIN("after start handlers")
+    DOMAIN_LOG_BEGIN("After start handlers... ")
     this->global()->after_start.fire();
-    DOMAIN_LOG_BEGIN("after start handlers")
+    DOMAIN_LOG_BEGIN("After start handlers")
   }
 
   if ( !_stop_flag )
@@ -111,7 +111,7 @@ void core::core_abort( std::string message )
 void core::reconfigure()
 {
   auto opt = this->options();
-  this->global()->workflow->reconfigure(opt.workflow);
+  this->global()->workflow->reconfigure(opt.core_workflow);
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
@@ -247,21 +247,21 @@ void core::_configure()
     {
       if ( this->_abort_flag )
       {
-        CONFIG_LOG_FATAL("core::configure: component '" << name << "' aborted!")
+        CONFIG_LOG_FATAL("Configure component '" << name << "' aborted!")
         return;
       }
       std::string confstr = conf->get_config(name);
       if ( !confstr.empty() )
       {
-        CONFIG_LOG_BEGIN("core::configure: component '" << name << "'...")
+        CONFIG_LOG_BEGIN("Configure component '" << name << "'...")
         obj->configure(confstr, std::string() );
         
-        if ( !this->_abort_flag ) { CONFIG_LOG_END("core::configure: component '" << name << "'...Done!") }
-        else { CONFIG_LOG_END("core::configure: component '" << name << "'...aborted!") }
+        if ( !this->_abort_flag ) { CONFIG_LOG_END("Configure component '" << name << "'...Done") }
+        else { CONFIG_LOG_END("Configure component '" << name << "'...aborted!") }
       }
       else
       {
-        CONFIG_LOG_ERROR("core::configure: configuration for '" << name << "' not found!")
+        CONFIG_LOG_MESSAGE("Configuration for '" << name << "' not set")
       }
     });
   }
@@ -296,15 +296,15 @@ void core::_initialize()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_FATAL("core::initialize: instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_FATAL("Initialize instance '" << m->name() << "' aborted!")
       return;
     }
 
-    CONFIG_LOG_BEGIN("core::initialize: instance '" << m->name() << "'... startup_priority="  << m->startup_priority() )
+    CONFIG_LOG_BEGIN("Initialize instance '" << m->name() << "'... startup_priority="  << m->startup_priority() )
     m->initialize();
  
-    if ( !this->_abort_flag ) { CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...Done!") }
-    else { CONFIG_LOG_END("core::initialize: module '" << m->name() << "'...aborted!") }
+    if ( !this->_abort_flag ) { CONFIG_LOG_END("Initialize module '" << m->name() << "'...Done") }
+    else { CONFIG_LOG_END("Initialize module '" << m->name() << "'...aborted!") }
 
     g->io_service.poll();
     g->io_service.reset();
@@ -336,14 +336,14 @@ void core::_start()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_FATAL("core::start: instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_FATAL("Start instance '" << m->name() << "' aborted!")
       return;
     }
 
-    CONFIG_LOG_BEGIN("core::start: instance '" << m->name() << "'...")
+    CONFIG_LOG_BEGIN("Start instance '" << m->name() << "'...")
     m->start(std::string());
-    if ( !this->_abort_flag ) { CONFIG_LOG_END("core::start: instance '" <<  m->name() << "'...Done!") }
-    else { CONFIG_LOG_END("core::start: instance '" <<  m->name() << "'...aborted!") }
+    if ( !this->_abort_flag ) { CONFIG_LOG_END("Start instance '" <<  m->name() << "'...Done") }
+    else { CONFIG_LOG_END("Start instance '" <<  m->name() << "'...aborted!") }
     
     //g->io_service.run_one();
     g->io_service.poll();
@@ -387,23 +387,23 @@ void core::_stop()
 
   std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr& m)
   {
-    CONFIG_LOG_BEGIN("core::stop: module '" << m->name() << "'...")
+    DOMAIN_LOG_BEGIN("Stop instance '" << m->name() << "'...")
     if ( m->name()=="logger" && this->_abort_flag )
     {
       DOMAIN_LOG_FATAL("!!! WFC ABORTED! Смотрите выше.")
     }
 
     m->stop(std::string());
-    CONFIG_LOG_END("core::stop: module '" <<  m->name() << "'...Done!")
+    DOMAIN_LOG_END("Stop instance '" <<  m->name() << "'...Done")
   });
 
-  DOMAIN_LOG_BEGIN("after stop handlers")
+  CONFIG_LOG_BEGIN("After stop handlers run...")
   g->after_stop.fire();
-  DOMAIN_LOG_END("after stop handlers")
+  CONFIG_LOG_END("After stop handlers ... Done")
 
-  DOMAIN_LOG_END("stop '" << g->instance_name << "'...Done!")
+  DOMAIN_LOG_END("Stop daemon '" << g->instance_name << "'...Done")
   _same = nullptr;
-  DOMAIN_LOG_MESSAGE("=======================================")
+  DOMAIN_LOG_MESSAGE("==================== Bye! ====================")
 }
 
 }

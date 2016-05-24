@@ -21,7 +21,7 @@ struct core_config_json
        json::member<n_idle_timeout_ms, core_config, time_t, &core_config::idle_timeout_ms>,
        json::member<n_rlimit_as_mb, core_config, size_t, &core_config::rlimit_as_mb >,
        json::member<n_enable_callback_check, core_config, bool, &core_config::enable_callback_check >,
-       json::member<n_workflow, core_config, workflow_options, &core_config::workflow, workflow_options_json >
+       json::member<n_workflow, core_config, workflow_options, &core_config::core_workflow, workflow_options_on_json >
     >::type
   > type;
   

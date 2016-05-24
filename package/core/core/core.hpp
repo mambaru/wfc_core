@@ -3,7 +3,7 @@
 #include <wfc/module/icomponent.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/core/global.hpp>
-#include <wfc/core/workflow.hpp>
+#include <wfc/workflow.hpp>
 
 #include <vector>
 #include <utility>
@@ -49,7 +49,7 @@ private:
   std::atomic<bool> _stop_flag;
   std::atomic<bool> _abort_flag;
   std::shared_ptr<core> _same;
-  std::shared_ptr<workflow> _core_timer;
+  std::shared_ptr< ::wfc::workflow > _core_timer;
 };
 
 }

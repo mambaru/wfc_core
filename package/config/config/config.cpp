@@ -50,8 +50,40 @@ config::~config()
 }
 
 config::config()
-  : _config_changed(0)
+  : _timer_id(0)
+  , _config_changed(0)
 {
+}
+
+void config::reconfigure()
+{
+  
+  this->get_workflow()->release_timer(_timer_id);
+  _timer_id = 0;
+  
+  if ( this->options().reload_changed )
+  {
+    _timer_id = this->get_workflow()->create_timer( std::chrono::seconds(1), [this]()
+    {
+      std::cout << "pnig" << std::endl;
+      if ( this->_config_changed!=0 )
+      {
+        time_t t = get_modify_time(this->_path);
+        if ( t!=this->_config_changed )
+          this->reload_and_reconfigure();
+        this->_config_changed = t;
+      }
+      return true;
+    });
+    /*std::cout << _timer_id << std::endl;
+    abort();*/
+  }
+  
+}
+
+void config::stop(const std::string& /*arg*/)
+{
+  this->get_workflow()->release_timer(_timer_id);
 }
 
 void config::start(const std::string& /*arg*/)
@@ -62,6 +94,9 @@ void config::start(const std::string& /*arg*/)
   }
   
   this->_config_changed = get_modify_time(this->_path);
+  
+  
+  /*
   if ( auto g = this->global() )
   {
     g->idle.push_back( [this]()->bool
@@ -76,6 +111,7 @@ void config::start(const std::string& /*arg*/)
       return true;
     });
   }
+  */
 }
 
 void config::reload_and_reconfigure()
