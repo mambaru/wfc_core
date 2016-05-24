@@ -18,7 +18,8 @@ WFC_NAME2(logger_singleton_name, "logger")
 class logger_singleton_impl: public ::wfc::singleton<
   logger_singleton_name,
   ::wfc::instance<logger>,
-  logger_config_json
+  logger_config_json,
+  component_features::CommonWorkflow
 >
 {  
 };
