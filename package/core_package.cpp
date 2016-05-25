@@ -13,10 +13,10 @@ namespace
 {
   class impl: public ::wfc::module_list<
     core_build_info,
-      core_module,
-      startup_module,
+      logger_module,
       config_module,
-      logger_module
+      core_module,
+      startup_module
   >
   {};
 }
