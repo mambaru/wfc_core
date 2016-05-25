@@ -7,15 +7,10 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace wfc{
 
-/**
- * \brief Опции логгера
- * \ingroup logger_module
- * 
- * \see logger
- */
 struct writer_options
 {
   /// Включает вывод миллисекунд в поле времени лога

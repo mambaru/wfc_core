@@ -1,46 +1,27 @@
 #include "config.hpp"
+#include "configuration.hpp"
+#include "configuration_json.hpp"
 
-//#include <wfc/inet/epoller.hpp>
 #include <wfc/core/global.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 #include <wfc/module/icomponent.hpp>
-#include <vector>
+
 #include <string>
-#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <syslog.h>
 
-#include "configuration.hpp"
-#include "configuration_json.hpp"
+
 namespace wfc{
 
-namespace {
-
-static void signal_sighup_handler(int)
+namespace
 {
-  if ( auto g = wfcglobal::static_global )
-  {
-    g->io_service.post([g]()
-    {
-      if ( auto c = g->registry.get<iconfig>("config") )
-        c->reload_and_reconfigure();
-    });
-  }
-}
-
-static time_t get_modify_time(const std::string& path)
-{
-  struct stat st;
-  if ( stat( path.c_str(), &st) != -1)
-    return st.st_mtime;
-  return static_cast<time_t>(-1);
-}
-
+  static void signal_sighup_handler(int);
+  inline time_t get_modify_time(const std::string& path);
 } // namespace
 
 
@@ -69,23 +50,6 @@ void config::reconfigure()
   }
 }
 
-bool config::timer_handler_()
-{
-  if ( this->_config_changed!=0 )
-  {
-    time_t t = get_modify_time(this->_path);
-    if ( t!=this->_config_changed )
-      this->reload_and_reconfigure();
-    this->_config_changed = t;
-  }
-  return true;
-}
-
-void config::stop(const std::string& /*arg*/)
-{
-  this->get_workflow()->release_timer(_timer_id);
-}
-
 void config::start(const std::string& /*arg*/)
 {
   if ( this->options().reload_sighup )
@@ -94,24 +58,11 @@ void config::start(const std::string& /*arg*/)
   }
   
   this->_config_changed = get_modify_time(this->_path);
-  
-  
-  /*
-  if ( auto g = this->global() )
-  {
-    g->idle.push_back( [this]()->bool
-    {
-      if ( this->options().reload_changed && this->_config_changed!=0 )
-      {
-        time_t t = get_modify_time(this->_path);
-        if ( t!=this->_config_changed )
-          this->reload_and_reconfigure();
-        this->_config_changed = t;
-      }
-      return true;
-    });
-  }
-  */
+}
+
+void config::stop(const std::string& /*arg*/)
+{
+  this->get_workflow()->release_timer(_timer_id);
 }
 
 void config::reload_and_reconfigure()
@@ -161,68 +112,6 @@ void config::load_and_parse(std::string path)
   _path = path;
 }
 
-void config::parse_configure_(std::string source, std::string confstr, configuration& mainconf)
-{
-  std::string::const_iterator jsonbeg = confstr.begin();
-  std::string::const_iterator jsonend = confstr.end();
-  
-  try
-  {
-    jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
-    configuration_json::serializer()(mainconf, jsonbeg, jsonend);
-  }
-  catch(const json::json_error& e)
-  {
-    std::stringstream ss;
-    ss << "Invalid json configuration from '" << source << "':" << std::endl;
-    ss << e.message( jsonbeg, jsonend );
-    throw std::domain_error(ss.str());
-  }
-
-  /*if ( auto modules = _global->modules )
-  {*/
-    for ( auto& mconf : mainconf)
-    {
-      if ( auto m = this->global()->registry.get<icomponent>("component", mconf.first) )
-      {
-        jsonbeg = mconf.second.begin();
-        jsonend = mconf.second.end();
-        try
-        {
-          jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
-          if ( !m->parse( std::string(jsonbeg, jsonend)) )
-          {
-            std::stringstream ss;
-            ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-            ss << "Configuration is not valid! see documentation for module";
-            throw std::domain_error(ss.str());  
-          }
-        }
-        catch(const json::json_error& e)
-        {
-          std::stringstream ss;
-          ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-          ss << e.message( jsonbeg, jsonend );
-          throw std::domain_error(ss.str());
-        }
-        catch(const std::exception& e)
-        {
-          std::stringstream ss;
-          ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-          ss << e.what();
-          throw std::domain_error(ss.str());
-        }
-      }
-      else
-      {
-        std::stringstream ss;
-        ss << "Invalid json configuration from '" << source << "':" << std::endl;
-        ss << "Module '" << mconf.first << "' not found"; 
-        throw std::domain_error(ss.str());
-      }
-    }
-  //}
-}
 
 std::string config::get_config(std::string name)
 {
@@ -276,6 +165,78 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   return true;
 }
 
+void config::parse_configure_(std::string source, std::string confstr, configuration& mainconf)
+{
+  std::string::const_iterator jsonbeg = confstr.begin();
+  std::string::const_iterator jsonend = confstr.end();
+  
+  try
+  {
+    jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
+    configuration_json::serializer()(mainconf, jsonbeg, jsonend);
+  }
+  catch(const json::json_error& e)
+  {
+    std::stringstream ss;
+    ss << "Invalid json configuration from '" << source << "':" << std::endl;
+    ss << e.message( jsonbeg, jsonend );
+    throw std::domain_error(ss.str());
+  }
+
+  for ( auto& mconf : mainconf)
+  {
+    if ( auto m = this->global()->registry.get<icomponent>("component", mconf.first) )
+    {
+      jsonbeg = mconf.second.begin();
+      jsonend = mconf.second.end();
+      try
+      {
+        jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
+        if ( !m->parse( std::string(jsonbeg, jsonend)) )
+        {
+          std::stringstream ss;
+          ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
+          ss << "Configuration is not valid! see documentation for module";
+          throw std::domain_error(ss.str());  
+        }
+      }
+      catch(const json::json_error& e)
+      {
+        std::stringstream ss;
+        ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
+        ss << e.message( jsonbeg, jsonend );
+        throw std::domain_error(ss.str());
+      }
+      catch(const std::exception& e)
+      {
+        std::stringstream ss;
+        ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
+        ss << e.what();
+        throw std::domain_error(ss.str());
+      }
+    }
+    else
+    {
+      std::stringstream ss;
+      ss << "Invalid json configuration from '" << source << "':" << std::endl;
+      ss << "Module '" << mconf.first << "' not found"; 
+      throw std::domain_error(ss.str());
+    }
+  }
+}
+
+bool config::timer_handler_()
+{
+  if ( this->_config_changed!=0 )
+  {
+    time_t t = get_modify_time(this->_path);
+    if ( t!=this->_config_changed )
+      this->reload_and_reconfigure();
+    this->_config_changed = t;
+  }
+  return true;
+}
+
 std::string config::load_from_file_(const std::string& path)
 {
   std::string confstr;
@@ -300,5 +261,30 @@ void config::save_to_file_(const std::string& path, const std::string& strconf)
     );
   }
 }
+
+namespace
+{
+  static void signal_sighup_handler(int)
+  {
+    if ( auto g = wfcglobal::static_global )
+    {
+      g->io_service.post([g]()
+      {
+        if ( auto c = g->registry.get<iconfig>("config") )
+          c->reload_and_reconfigure();
+      });
+    }
+  }
+
+  inline time_t get_modify_time(const std::string& path)
+  {
+    struct stat st;
+    if ( stat( path.c_str(), &st) != -1)
+      return st.st_mtime;
+    return static_cast<time_t>(-1);
+  }
+
+} // namespace
+
 
 }

@@ -8,10 +8,11 @@ namespace wfc{
   
 namespace 
 {
-  WFC_NAME2(core_module_name, "core")
+  WFC_NAME2(module_name, "core")
 
-  class impl: public ::wfc::component_list<
-    core_module_name,
+  class impl: public ::wfc::component_list
+  <
+    module_name,
     core_singleton
   >
   {};

@@ -7,7 +7,6 @@ namespace wfc{
 
 struct config_config_json
 {
-  //JSON_NAME(enabled)
   JSON_NAME(reload_changed_ms)
   JSON_NAME(reload_sighup)
   

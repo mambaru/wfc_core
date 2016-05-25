@@ -17,11 +17,11 @@ namespace wfc{
 
 namespace
 {  
-  JSON_NAME2(name, "startup")
+  JSON_NAME2(singleton_name, "startup")
 
   class impl : public ::wfc::singleton
   <
-    name, 
+    singleton_name, 
     wfc::instance<startup_domain>,
     startup_config_json,
     component_features::Fixed 

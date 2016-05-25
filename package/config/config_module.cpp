@@ -8,11 +8,11 @@ namespace wfc{
 
 namespace {  
   
-  WFC_NAME2(config_module_name, "config")
+  WFC_NAME2(module_name, "config")
 
   class impl: public ::wfc::component_list
   <
-    config_module_name,
+    module_name,
     config_singleton
   >
   {};

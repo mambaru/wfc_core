@@ -1,15 +1,12 @@
 #pragma once
-#include <wfc/domain_object.hpp>
-#include <wfc/module/icomponent.hpp>
-#include <wfc/core/icore.hpp>
-#include <wfc/core/global.hpp>
-#include <wfc/workflow.hpp>
-
-#include <vector>
-#include <utility>
-#include <memory>
 
 #include "core_config.hpp"
+
+#include <wfc/core/workflow.hpp>
+#include <wfc/domain_object.hpp>
+#include <wfc/core/icore.hpp>
+#include <vector>
+#include <memory>
 
 namespace wfc{
 

@@ -7,9 +7,10 @@
 #pragma once
 
 #include "writer_options.hpp"
+
 #include <string>
-#include <vector>
 #include <unordered_map>
+
 namespace wfc{
 
 struct logger_config

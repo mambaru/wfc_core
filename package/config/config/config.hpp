@@ -1,18 +1,18 @@
 #pragma once
-#include <vector>
-#include <wfc/core/iconfig.hpp>
-#include <wfc/core/global.hpp>
-#include <wfc/domain_object.hpp>
 
 #include "configuration.hpp"
 #include "config_config.hpp"
+
+#include <wfc/core/iconfig.hpp>
+#include <wfc/domain_object.hpp>
+
+#include <string>
 
 namespace wfc{
 
 class config
   :  public ::wfc::domain_object<iconfig, config_config>
 {
-  typedef ::wfc::domain_object<iconfig, config_config> super;
 public:
   virtual ~config();
   config();
@@ -22,13 +22,11 @@ public:
   virtual void start(const std::string& arg) override;
   virtual void stop(const std::string& arg) override;
   
-  
   // iconfig
   virtual void reload_and_reconfigure() override;
   virtual void load_and_parse(std::string path) override;
   virtual std::string get_config(std::string name) override;
   virtual bool generate_config( const iconfig::generate_options& go, const std::string& path, std::string& result) override;
-  
   
 private:
   bool timer_handler_();

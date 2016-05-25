@@ -16,7 +16,7 @@ struct program_arguments
   bool daemonize = false;
   bool coredump = false;
   bool autoup = false;
-  time_t autoup_timeout = 0; // Убрать в конфиг 
+  time_t autoup_timeout = 0;
 
   std::string errorstring;
   std::string helpstring;
@@ -25,9 +25,6 @@ struct program_arguments
   std::string instance_name;
   std::string config_path;
   std::string pid_dir;
-  // TODO:
-  // std::string configex_path; // для модуля wfc-config (откуда брать плейсхолдеры для основного конфига)
-  // std::string ini_path; // Текущая конфигурация в ini-файле (по умолчанию "имя проекта".ini)
 
   typedef std::map<std::string, std::string> map1;
   typedef std::map<std::string, map1> map2;

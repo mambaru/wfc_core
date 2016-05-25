@@ -1,9 +1,13 @@
 #include "core.hpp"
+
 #include <wfc/core/iconfig.hpp>
-#include <wfc/system/system.hpp>
 #include <wfc/module/iinstance.hpp>
+#include <wfc/module/icomponent.hpp>
+
+#include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 #include <wfc/memory.hpp>
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -14,17 +18,16 @@
 
 namespace wfc{
 
-namespace {
-
-static std::atomic<bool> gs_stop_signal;
-
-static void signal_sigint_handler(int)
+namespace 
 {
-  std::clog << "Stop signal handler" << std::endl;
-  DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
-  gs_stop_signal = true;
-}
+  static std::atomic<bool> gs_stop_signal;
 
+  static void signal_sigint_handler(int)
+  {
+    std::clog << "Stop signal handler" << std::endl;
+    DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
+    gs_stop_signal = true;
+  }
 } // namespace
 
 core::~core()

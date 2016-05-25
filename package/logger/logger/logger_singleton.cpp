@@ -6,27 +6,29 @@
 
 #include "logger_singleton.hpp"
 #include "logger_config_json.hpp"
-#include "../logger/logger.hpp"
+#include "logger.hpp"
 #include <wfc/module/singleton.hpp>
 #include <wfc/module/instance.hpp>
 #include <wfc/name.hpp>
 
 namespace wfc{
 
-WFC_NAME2(logger_singleton_name, "logger")
+namespace
+{
+  WFC_NAME2(singleton_name, "logger")
 
-class logger_singleton_impl: public ::wfc::singleton<
-  logger_singleton_name,
-  ::wfc::instance<logger>,
-  logger_config_json,
-  component_features::CommonWorkflow
->
-{  
-};
+  class impl: public ::wfc::singleton
+  <
+    singleton_name,
+    ::wfc::instance<logger>,
+    logger_config_json,
+    component_features::CommonWorkflow
+  >
+  {};
+}
 
 logger_singleton::logger_singleton()
-  : component( std::make_shared<logger_singleton_impl>() )
-{
-}
+  : component( std::make_shared<impl>() )
+{}
 
 }

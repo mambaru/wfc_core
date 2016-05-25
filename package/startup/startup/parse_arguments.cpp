@@ -9,64 +9,13 @@ namespace wfc
   
 namespace 
 {
-  inline void parse_pair( const std::string& opt, program_arguments::map1& res)
-  {
-    size_t beg = opt.find('=');
-    std::string key = opt;
-    std::string val ;
-    if ( beg != std::string::npos )
-    {
-      key = std::string(opt.begin(), opt.begin() + beg);
-      val = std::string(opt.begin() + beg + 1, opt.end() );
-    }
-    res[key]=val;
-  }
+  inline void parse_pair( const std::string& opt, program_arguments::map1& res);
   
-  inline void parse_options( const std::string& opt, program_arguments::map1& res)
-  {
-    size_t beg = 0;
-    while ( beg != std::string::npos )
-    {
-      size_t end = opt.find(":", beg);
-      if ( end != std::string::npos)
-      {
-        parse_pair(std::string(opt.begin()+beg, opt.begin()+end), res);
-        beg = end+1;
-      }
-      else
-      {
-        parse_pair(std::string(opt.begin()+beg, opt.end()), res);
-        beg=end;
-      }
-    }
-  }
+  inline void parse_options( const std::string& opt, program_arguments::map1& res);
 
-  inline void parse_instance( const std::string& opt, program_arguments::map2& res)
-  {
-    if (opt.empty()) return;
-    size_t pos = opt.find(":");
-    if ( pos == std::string::npos )
-    {
-      res[opt];
-    }
-    else
-    {
-      std::string name(opt.begin(), opt.begin() + pos);
-      std::string value(opt.begin()+ pos + 1, opt.end());
-      parse_options(value, res[name]);
-    }
-  }
+  inline void parse_instance( const std::string& opt, program_arguments::map2& res);
   
-  inline program_arguments::map2 parse_custom_options( std::vector<std::string> opts)
-  {
-    program_arguments::map2 res;
-    for ( const auto& opt: opts)
-    {
-      parse_instance(opt, res);
-    }
-    return std::move(res);
-  }
-
+  inline program_arguments::map2 parse_custom_options( std::vector<std::string> opts);
 }
 
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
@@ -162,5 +111,69 @@ catch(...)
 {
   pa.errorstring = "unhandled exception: Parameter is not valid ";
 }
+
+namespace 
+{
+  inline void parse_pair( const std::string& opt, program_arguments::map1& res)
+  {
+    size_t beg = opt.find('=');
+    std::string key = opt;
+    std::string val ;
+    if ( beg != std::string::npos )
+    {
+      key = std::string(opt.begin(), opt.begin() + beg);
+      val = std::string(opt.begin() + beg + 1, opt.end() );
+    }
+    res[key]=val;
+  }
+  
+  inline void parse_options( const std::string& opt, program_arguments::map1& res)
+  {
+    size_t beg = 0;
+    while ( beg != std::string::npos )
+    {
+      size_t end = opt.find(":", beg);
+      if ( end != std::string::npos)
+      {
+        parse_pair(std::string(opt.begin()+beg, opt.begin()+end), res);
+        beg = end+1;
+      }
+      else
+      {
+        parse_pair(std::string(opt.begin()+beg, opt.end()), res);
+        beg=end;
+      }
+    }
+  }
+
+  inline void parse_instance( const std::string& opt, program_arguments::map2& res)
+  {
+    if (opt.empty()) return;
+    size_t pos = opt.find(":");
+    if ( pos == std::string::npos )
+    {
+      res[opt];
+    }
+    else
+    {
+      std::string name(opt.begin(), opt.begin() + pos);
+      std::string value(opt.begin()+ pos + 1, opt.end());
+      parse_options(value, res[name]);
+    }
+  }
+  
+  inline program_arguments::map2 parse_custom_options( std::vector<std::string> opts)
+  {
+    program_arguments::map2 res;
+    for ( const auto& opt: opts)
+    {
+      parse_instance(opt, res);
+    }
+    return std::move(res);
+  }
+
+}
+
+
 
 }

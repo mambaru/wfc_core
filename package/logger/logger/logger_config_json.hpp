@@ -5,7 +5,7 @@
 //
 #pragma once
 
-#include "../logger/logger_config.hpp"
+#include "logger_config.hpp"
 #include <wfc/json.hpp>
 
 namespace wfc{
@@ -50,7 +50,6 @@ struct logger_config_json
   typedef type::serializer serializer;
   typedef type::target target;
   typedef type::member_list member_list;
-  
 };
 
 }

@@ -35,7 +35,6 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
     g->program_name  = _pa.program_name;
     g->instance_name  = _pa.instance_name;
     g->args.insert(_pa.instance_options);
-    //g->args = _pa.instance_options;
   }
 
   if ( !_pa.errorstring.empty() )

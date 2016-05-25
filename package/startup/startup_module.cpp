@@ -13,10 +13,10 @@ namespace wfc{
   
 namespace
 {
-  WFC_NAME2(name, "startup")
+  WFC_NAME2(module_name, "startup")
 
   class impl: public ::wfc::component_list<
-    name,
+    module_name,
     startup_singleton
   >
   {};

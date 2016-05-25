@@ -1,24 +1,27 @@
-
-#include "core_singleton.hpp"
 #include <wfc/module/singleton.hpp>
 #include <wfc/module/instance.hpp>
-#include <wfc/json.hpp>
+#include <wfc/name.hpp>
+
+#include "core_singleton.hpp"
 #include "core.hpp"
 #include "core_config_json.hpp"
 
 namespace wfc{
 
-namespace{
-JSON_NAME2(core_singleton_name, "core")
+namespace
+{
+  WFC_NAME2(singleton_name, "core")
 
-class impl: public ::wfc::singleton<
-  core_singleton_name,
-  wfc::instance<core>,
-  core_config_json,
-  int(component_features::Fixed) | int(component_features::Extraordinary)
->
-{  
-};
+  class impl: public ::wfc::singleton
+  <
+    singleton_name,
+    wfc::instance<core>,
+    core_config_json,
+    component_features::Fixed 
+    | component_features::Extraordinary
+  >
+  {};
+
 }
 
 core_singleton::core_singleton()

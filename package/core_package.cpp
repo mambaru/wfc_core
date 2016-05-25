@@ -6,7 +6,6 @@
 #include "config/config_module.hpp"
 #include "logger/logger_module.hpp"
 #include <wfc/module/module_list.hpp>
-#include <iow/json/name.hpp>
 
 namespace wfc{
   

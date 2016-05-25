@@ -10,14 +10,6 @@
 
 namespace wfc{
 
-/**
- * \brief Синглетон логгера.
- * \ingroup logger_module
- * 
- * Управляет объектом logger
- * 
- * \see logger
- */
 class logger_singleton
   : public ::wfc::component
 {

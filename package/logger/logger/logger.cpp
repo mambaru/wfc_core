@@ -14,7 +14,6 @@
 #include <iostream>
 #include <memory>
 
-
 namespace wfc{
 
 logger::~logger()
@@ -55,7 +54,7 @@ void logger::reconfigure()
     {
       if ( auto pthis = wthis.lock() )
       {
-        if (auto log = pthis->get_or_create( name, type) )
+        if (auto log = pthis->get_or_create_( name, type) )
         {
           log->write(name, type, str);
           return true;
@@ -90,94 +89,104 @@ void logger::perform_io(data_ptr d, io_id_t /*io_id*/, outgoing_handler_t callba
     return;
   }
 
-  if ( cmd=="help" )
+  if ( cmd == "help" )
   {
     result = "help!!!";
   }
-  else if ( cmd=="allow" )
+  else if ( cmd == "allow" )
   {
     std::string value;
     ss >> value;
     _deny.erase(value);
   }
-  else if ( cmd=="deny" )
+  else if ( cmd == "deny" )
   {
     std::string value;
     ss >> value;
     _deny.insert(value);
   }
-  else
+  else if ( cmd == "list" )
   {
-      auto itr = _writers.find(cmd);
-      if ( itr==_writers.end() || itr->second==nullptr )
+    
+  }
+  else if ( cmd == "get" )
+  {
+    
+  }
+  else if ( cmd == "set" )
+  {
+    std::string name;
+    ss >> name;
+    auto itr = _writers.find(name);
+    if ( itr==_writers.end() || itr->second==nullptr )
+    {
+      result = std::string("ERROR: logger '") + cmd + "' not found";
+    }
+    else
+    {
+      bool ready = true;
+      auto pwrite = itr->second;
+      auto opt = pwrite->options();
+      std::sort(opt.deny.begin(), opt.deny.end());
+      std::string field;
+      ss >> field;
+      if (field == "milliseconds")
       {
-        result = std::string("ERROR: log '") + cmd + "' not found";
+        bool value;
+        ss >> std::boolalpha >> value;
+        opt.milliseconds = value;
+      }
+      else if (field == "limit")
+      {
+        size_t value;
+        ss >> value;
+        opt.limit = value;
+      }
+      else if (field == "stdout")
+      {
+        std::string value;
+        ss >> value;
+        opt.stdout = value;
+      }
+      else if (field == "syslog")
+      {
+        std::string value;
+        ss >> value;
+        opt.syslog = value;
+      }
+      else if (field == "path")
+      {
+        std::string value;
+        ss >> value;
+        opt.path = value;
+      }
+      else if (field == "deny")
+      {
+        std::string value;
+        ss >> value;
+        auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
+        if (itr==opt.deny.end())
+          opt.deny.push_back(value);
+      }
+      else if (field == "allow")
+      {
+        std::string value;
+        ss >> value;
+        auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
+        if (itr!=opt.deny.end())
+          opt.deny.erase(itr);
       }
       else
       {
-        bool ready = true;
-        auto pwrite = itr->second;
-        auto opt = pwrite->options();
-        std::sort(opt.deny.begin(), opt.deny.end());
-        std::string field;
-        ss >> field;
-        if (field == "milliseconds")
-        {
-          bool value;
-          ss >> std::boolalpha >> value;
-          opt.milliseconds = value;
-        }
-        else if (field == "limit")
-        {
-          size_t value;
-          ss >> value;
-          opt.limit = value;
-        }
-        else if (field == "stdout")
-        {
-          std::string value;
-          ss >> value;
-          opt.stdout = value;
-        }
-        else if (field == "syslog")
-        {
-          std::string value;
-          ss >> value;
-          opt.syslog = value;
-        }
-        else if (field == "path")
-        {
-          std::string value;
-          ss >> value;
-          opt.path = value;
-        }
-        else if (field == "deny")
-        {
-          std::string value;
-          ss >> value;
-          auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
-          if (itr==opt.deny.end())
-            opt.deny.push_back(value);
-        }
-        else if (field == "allow")
-        {
-          std::string value;
-          ss >> value;
-          auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
-          if (itr!=opt.deny.end())
-            opt.deny.erase(itr);
-        }
-        else
-        {
-          ready = false;
-          result = std::string("ERROR: unkown field: ") + field; 
-        }
+        ready = false;
+        result = std::string("ERROR: unkown field: ") + field; 
+      }
 
-        if ( ready )
-        {
-          pwrite->initialize(opt);
-          result="Done";
-        }
+      if ( ready )
+      {
+        pwrite->initialize(opt);
+        result="Done";
+      }
     }
   }
   callback(std::make_unique<data_type>(result.begin(), result.end()) );
@@ -189,7 +198,7 @@ bool logger::is_deny_(const std::string& some) const
   return _deny.find(some) != _deny.end();
 }
 
-auto logger::get_or_create(const std::string& name, const std::string& type) -> ilogger_ptr
+auto logger::get_or_create_(const std::string& name, const std::string& type) -> ilogger_ptr
 {
   std::lock_guard<mutex_type> lk(_mutex);
   
@@ -214,7 +223,6 @@ auto logger::find_or_create_(const std::string& name) -> ilogger_ptr
   }
   return create_(name);
 }
-
 
 auto logger::create_(const std::string& name) -> ilogger_ptr
 {
@@ -243,12 +251,6 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
   if ( itr != opt.custom.end() )
   {
     wopt = itr->second;
-    /*
-    writer_options cstm = itr->second;
-
-    if (!cstm.path.empty())
-      wopt.path = cstm.path;
-    */
   }
 
   if ( wopt.path.empty() )
@@ -264,7 +266,6 @@ void logger::customize_(const std::string& name, writer_options& wopt) const
   {
     wopt.path = wopt.path + "-" + name + ".log";
   }
-
 }
 
 void logger::unreg_loggers_()
@@ -277,6 +278,5 @@ void logger::unreg_loggers_()
     }
   }
 }
-
 
 }
