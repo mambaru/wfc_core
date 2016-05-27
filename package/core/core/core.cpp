@@ -25,7 +25,6 @@ namespace
   static void signal_sigint_handler(int)
   {
     std::clog << "Stop signal handler" << std::endl;
-    DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
     gs_stop_signal = true;
   }
 } // namespace
@@ -141,6 +140,7 @@ bool core::_idle()
 {
   if ( gs_stop_signal )
   {
+    DOMAIN_LOG_MESSAGE("wfc_core: stop signal")
     _stop_flag = true;
   }
 
