@@ -77,10 +77,12 @@ int core::run()
     DOMAIN_LOG_FATAL("!!! START ABORTED! Смотрите выше.")
   }
 
-  ::iow::queue_options qopt;
+  ::iow::workflow_options qopt;
+  qopt.use_io_service = true;
   qopt.wrnsize = 10;
   qopt.maxsize = 100;
-  _core_timer = ::wfc::workflow::create(this->global()->io_service, qopt);
+  qopt.threads = 0;
+  _core_timer = std::make_shared< ::iow::workflow >( this->global()->io_service, qopt );
   return this->_main_loop();
 }
 

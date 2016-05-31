@@ -23,6 +23,7 @@ namespace
     ::wfc::instance<logger>,
     logger_config_json,
     component_features::CommonWorkflow
+    | component_features::DisableSuspend
   >
   {};
 }

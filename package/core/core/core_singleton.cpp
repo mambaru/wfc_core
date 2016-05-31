@@ -19,6 +19,7 @@ namespace
     core_config_json,
     component_features::Fixed 
     | component_features::Extraordinary
+    | component_features::DisableSuspend
   >
   {};
 

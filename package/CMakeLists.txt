@@ -12,7 +12,7 @@ SET(
   startup/startup/startup.cpp
   startup/startup/startup_singleton.cpp
   startup/startup_module.cpp
-  
+
   config/config_module.cpp
   config/config/config_singleton.cpp
   config/config/config.cpp
@@ -22,6 +22,10 @@ SET(
   logger/logger/logger.cpp
   logger/logger/logger_singleton.cpp
   logger/logger_module.cpp
+
+  workflow/workflow_module.cpp
+  workflow/workflow/workflow_multiton.cpp
+  workflow/workflow/workflow_domain.cpp
 )
 
 add_library(
