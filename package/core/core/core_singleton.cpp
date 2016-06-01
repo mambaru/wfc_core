@@ -20,6 +20,7 @@ namespace
     component_features::Fixed 
     | component_features::Extraordinary
     | component_features::DisableSuspend
+    | component_features::CommonWorkflow 
   >
   {};
 

@@ -41,10 +41,19 @@ core::core()
   gs_stop_signal = false;
 }
 
+void core::create()
+{
+  this->global()->workflow->reconfigure(this->options().core_workflow);
+#warning !!! TODO: создавать здесь!!!
+  this->global()->workflow->start(); //??
+}
+
+
 void core::core_reconfigure()
 {
   _reconfigure_flag = true;
 }
+
 
 int core::run()
 {
@@ -102,12 +111,12 @@ void core::core_stop( )
 
 void core::core_abort( std::string message ) 
 {
-  DOMAIN_LOG_FATAL("")
-  DOMAIN_LOG_FATAL("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  DOMAIN_LOG_FATAL("!!        АВАРИЙНОЕ ЗАВЕРШЕНИЕ")
-  DOMAIN_LOG_FATAL("!!        " << message )
-  DOMAIN_LOG_FATAL("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  DOMAIN_LOG_FATAL("")
+  IOW_WRITE_LOG_FATAL("domain","")
+  IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  IOW_WRITE_LOG_FATAL("domain","!!        АВАРИЙНОЕ ЗАВЕРШЕНИЕ")
+  IOW_WRITE_LOG_FATAL("domain","!!        " << message )
+  IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+  IOW_WRITE_LOG_FATAL("domain","")
   _stop_flag = true;
   _abort_flag = true;
 }
@@ -115,7 +124,11 @@ void core::core_abort( std::string message )
 void core::reconfigure()
 {
   auto opt = this->options();
-  this->global()->workflow->reconfigure(opt.core_workflow);
+  /*this->global()->workflow->reconfigure(opt.core_workflow);
+#warning !!!
+  this->global()->workflow->start(); //??
+  */
+  
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;

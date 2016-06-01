@@ -26,7 +26,8 @@ public:
   virtual void core_abort( std::string message ) override;
   
   /// domain_object
-  virtual void reconfigure();
+  virtual void create() override;
+  virtual void reconfigure()override;
   virtual void stop( const std::string &) override;
 
   

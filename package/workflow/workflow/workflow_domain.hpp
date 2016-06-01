@@ -16,7 +16,10 @@ public:
   typedef ::wfc::workflow domain_interface;
   typedef ::wfc::workflow_options options_type;
   virtual ~workflow_domain();
+  using domain_object<iinterface, workflow_options>::create;
+  virtual void create() override;
   virtual void reconfigure() override;
+  virtual void start(const std::string& ) override;
   virtual void stop(const std::string& ) override;
 private:
   std::shared_ptr<impl> _workflow;

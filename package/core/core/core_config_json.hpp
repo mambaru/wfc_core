@@ -12,7 +12,7 @@ struct core_config_json
   JSON_NAME(core_timeout_ms)
   JSON_NAME(rlimit_as_mb)
   JSON_NAME(enable_callback_check)
-  JSON_NAME(workflow)
+  JSON_NAME2(n_workflow, "core-workflow")
   
   typedef json::object<
     core_config,
