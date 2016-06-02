@@ -16,8 +16,8 @@ namespace {
     object_name,
     ::wfc::instance<workflow_domain>,
     workflow_options2_json,
-    component_features::DisableSuspend 
-    | component_features::CommonWorkflow 
+      component_features::DisabledSuspend 
+    | component_features::DisabledWorkflow 
   >
   {};
 }

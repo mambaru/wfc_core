@@ -24,10 +24,10 @@ namespace
     singleton_name, 
     wfc::instance<startup_domain>,
     startup_config_json,
-    component_features::Fixed 
-    | component_features::Extraordinary 
-    | component_features::DisableSuspend 
-    | component_features::CommonWorkflow 
+    component_features::DisabledEnabled 
+    | component_features::DisabledPriority 
+    | component_features::DisabledSuspend 
+    | component_features::DisabledWorkflow 
   > {};
 }
 

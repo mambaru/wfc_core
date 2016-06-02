@@ -22,8 +22,8 @@ namespace
     singleton_name,
     ::wfc::instance<logger>,
     logger_config_json,
-    component_features::CommonWorkflow
-    | component_features::DisableSuspend
+      component_features::DisabledWorkflow
+    | component_features::DisabledSuspend
   >
   {};
 }

@@ -16,9 +16,9 @@ class impl: public ::wfc::singleton<
   config_singleton_name,
   wfc::instance<config>,
   config_config_json,
-    component_features::DisableSuspend
-  | component_features::CommonWorkflow
-  | component_features::Extraordinary
+    component_features::DisabledSuspend
+  | component_features::DisabledWorkflow
+  | component_features::DisabledPriority
 >
 {  
 };
