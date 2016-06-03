@@ -27,7 +27,7 @@ public:
   
   /// domain_object
   virtual void create() override;
-  virtual void reconfigure()override;
+  virtual void ready() override;
   virtual void stop( const std::string &) override;
 
   

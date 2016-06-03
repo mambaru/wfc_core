@@ -36,7 +36,7 @@ config::config()
 {
 }
 
-void config::reconfigure()
+void config::ready()
 {
   this->get_workflow()->release_timer(_timer_id);
   _timer_id = 0;

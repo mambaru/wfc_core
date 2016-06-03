@@ -20,14 +20,13 @@ workflow_domain::~workflow_domain()
   this->stop("");
 }
 
-void workflow_domain::create() 
-{
-  _workflow = std::make_shared<impl>( this->global()->io_service, this->options() );
-  this->global()->registry.set( "workflow", this->name(), _workflow );
-}
-
 void workflow_domain::reconfigure() 
 {
+  if ( _workflow == nullptr )
+  {
+    _workflow = std::make_shared<impl>( this->global()->io_service, this->options() );
+    this->global()->registry.set( "workflow", this->name(), _workflow );
+  }
   _workflow->reconfigure( this->options() );
 }
 

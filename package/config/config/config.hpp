@@ -18,7 +18,7 @@ public:
   config();
   
   //domain_object
-  virtual void reconfigure() override;
+  virtual void ready() override;
   virtual void start(const std::string& arg) override;
   virtual void stop(const std::string& arg) override;
   

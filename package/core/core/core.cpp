@@ -121,7 +121,7 @@ void core::core_abort( std::string message )
   _abort_flag = true;
 }
 
-void core::reconfigure()
+void core::ready()
 {
   auto opt = this->options();
   /*this->global()->workflow->reconfigure(opt.core_workflow);
