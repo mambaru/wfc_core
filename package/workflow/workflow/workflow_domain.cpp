@@ -17,7 +17,6 @@ public:
 
 workflow_domain::~workflow_domain()
 {
-  this->stop("");
 }
 
 void workflow_domain::reconfigure() 
@@ -25,7 +24,8 @@ void workflow_domain::reconfigure()
   if ( _workflow == nullptr )
   {
     _workflow = std::make_shared<impl>( this->global()->io_service, this->options() );
-    this->global()->registry.set( "workflow", this->name(), _workflow );
+    if ( auto g = this->global() )
+      g->registry.set( "workflow", this->name(), _workflow );
   }
   _workflow->reconfigure( this->options() );
 }
@@ -37,8 +37,10 @@ void workflow_domain::start(const std::string& )
 
 void workflow_domain::stop(const std::string& ) 
 {
-  this->global()->registry.erase("workflow", this->name() );
-  _workflow->stop();
+  if ( auto g = this->global() )
+    g->registry.erase("workflow", this->name() );
+  if ( auto w = _workflow )
+    w->stop();
 }
 
 
