@@ -124,10 +124,6 @@ void core::core_abort( std::string message )
 void core::ready()
 {
   auto opt = this->options();
-  /*this->global()->workflow->reconfigure(opt.core_workflow);
-#warning !!!
-  this->global()->workflow->start(); //??
-  */
   
   if ( opt.rlimit_as_mb != 0 )
   {
@@ -324,6 +320,15 @@ void core::_initialize()
     g->io_service.poll();
     g->io_service.reset();
   });
+  
+  if ( auto d = g->registry.reset_dirty() )
+  {
+    CONFIG_LOG_MESSAGE("Initialization finished for " << d << " registry changed")
+  }
+  else
+  {
+    CONFIG_LOG_MESSAGE("Initialization finished. No registry changed")
+  }
 }
 
 void core::_start()
@@ -363,6 +368,16 @@ void core::_start()
     g->io_service.poll();
     g->io_service.reset();
   });
+
+  if ( auto d = g->registry.reset_dirty() )
+  {
+    CONFIG_LOG_MESSAGE(" ----------- DEBUG: Started finished for " << d << " registry changed")
+  }
+  else
+  {
+    CONFIG_LOG_MESSAGE("--------- DEBUG: Initialization finished. No registry changed")
+  }
+
 }
 
 void core::_stop()

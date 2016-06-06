@@ -216,7 +216,7 @@ auto logger::find_or_create_(const std::string& name) -> ilogger_ptr
 {
   if ( auto g = this->global() )
   {
-    if ( auto l = g->registry.get<ilogger>("logger", name) )
+    if ( auto l = g->registry.get<ilogger>("logger", name, true) )
     {
       return l;
     }
@@ -237,7 +237,7 @@ auto logger::create_(const std::string& name) -> ilogger_ptr
   
   if ( auto g = this->global() )
   {
-    g->registry.set("logger", name,  pwriter);
+    g->registry.set("logger", name,  pwriter, true);
   }
   
   return pwriter;

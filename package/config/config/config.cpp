@@ -41,7 +41,7 @@ void config::ready()
   this->get_workflow()->release_timer(_timer_id);
   _timer_id = 0;
   
-  if ( this->options().reload_changed_ms )
+  if ( this->options().reload_changed_ms != 0 )
   {
     _timer_id = this->get_workflow()->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
@@ -58,10 +58,12 @@ void config::start(const std::string& /*arg*/)
   }
   
   this->_config_changed = get_modify_time(this->_path);
+  this->ready();
 }
 
 void config::stop(const std::string& /*arg*/)
 {
+  signal(SIGHUP, nullptr);
   this->get_workflow()->release_timer(_timer_id);
 }
 
@@ -227,6 +229,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
 
 bool config::timer_handler_()
 {
+  DEBUG_LOG_DEBUG("bool config::timer_handler_()")
   if ( this->_config_changed!=0 )
   {
     time_t t = get_modify_time(this->_path);
