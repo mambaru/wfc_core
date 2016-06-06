@@ -229,7 +229,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
 
 bool config::timer_handler_()
 {
-  DEBUG_LOG_DEBUG("bool config::timer_handler_()")
+  //DEBUG_LOG_DEBUG("bool config::timer_handler_()")
   if ( this->_config_changed!=0 )
   {
     time_t t = get_modify_time(this->_path);
