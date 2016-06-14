@@ -21,13 +21,15 @@ workflow_domain::~workflow_domain()
 
 void workflow_domain::reconfigure() 
 {
+  auto opt = this->options();
+  opt.id = this->name();
   if ( _workflow == nullptr )
   {
-    _workflow = std::make_shared<impl>( this->global()->io_service, this->options() );
+    _workflow = std::make_shared<impl>( this->global()->io_service, opt );
     if ( auto g = this->global() )
       g->registry.set( "workflow", this->name(), _workflow );
   }
-  _workflow->reconfigure( this->options() );
+  _workflow->reconfigure( opt );
 }
 
 void workflow_domain::start(const std::string& ) 
