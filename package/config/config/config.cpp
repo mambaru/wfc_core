@@ -171,13 +171,13 @@ void config::parse_configure_(std::string source, std::string confstr, configura
 {
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
+
+  json::json_error e;
+  jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
+  if (!e)
+    configuration_json::serializer()(mainconf, jsonbeg, jsonend, &e);
   
-  try
-  {
-    jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
-    configuration_json::serializer()(mainconf, jsonbeg, jsonend);
-  }
-  catch(const json::json_error& e)
+  if ( e )
   {
     std::stringstream ss;
     ss << "Invalid json configuration from '" << source << "':" << std::endl;
@@ -193,7 +193,8 @@ void config::parse_configure_(std::string source, std::string confstr, configura
       jsonend = mconf.second.end();
       try
       {
-        jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
+        jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
+        if ( e ) throw e;
         if ( !m->parse( std::string(jsonbeg, jsonend)) )
         {
           std::stringstream ss;
