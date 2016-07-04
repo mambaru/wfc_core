@@ -42,7 +42,7 @@ struct logger_config_json
       json::base<writer_options_json>,
       json::member<n_single,   logger_config, bool,        &logger_config::single>,
       json::member<n_custom,   logger_config, logger_config::custom_map, &logger_config::custom,
-        json::array< std::unordered_map< json::value<std::string>, writer_options_json > >
+        json::dict< std::unordered_map< json::value<std::string>, writer_options_json > >
       >
     >::type
   > type;

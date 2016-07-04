@@ -172,16 +172,15 @@ void config::parse_configure_(std::string source, std::string confstr, configura
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
   
-  try
-  {
-    jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
-    configuration_json::serializer()(mainconf, jsonbeg, jsonend);
-  }
-  catch(const json::json_error& e)
+  json::json_error e;
+  jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
+  configuration_json::serializer()(mainconf, jsonbeg, jsonend, &e);
+  
+  if ( e )
   {
     std::stringstream ss;
     ss << "Invalid json configuration from '" << source << "':" << std::endl;
-    ss << e.message( jsonbeg, jsonend );
+    ss << json::strerror::message_trace(e, jsonbeg, jsonend );
     throw std::domain_error(ss.str());
   }
 
@@ -193,7 +192,8 @@ void config::parse_configure_(std::string source, std::string confstr, configura
       jsonend = mconf.second.end();
       try
       {
-        jsonbeg = json::parser::parse_space(jsonbeg, jsonend);
+        e.reset();
+        jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
         if ( !m->parse( std::string(jsonbeg, jsonend)) )
         {
           std::stringstream ss;
@@ -206,7 +206,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
       {
         std::stringstream ss;
         ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-        ss << e.message( jsonbeg, jsonend );
+        ss << json::strerror::message_trace(e, jsonbeg, jsonend );
         throw std::domain_error(ss.str());
       }
       catch(const std::exception& e)
@@ -229,7 +229,6 @@ void config::parse_configure_(std::string source, std::string confstr, configura
 
 bool config::timer_handler_()
 {
-  //DEBUG_LOG_DEBUG("bool config::timer_handler_()")
   if ( this->_config_changed!=0 )
   {
     time_t t = get_modify_time(this->_path);
