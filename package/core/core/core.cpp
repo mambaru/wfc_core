@@ -101,6 +101,7 @@ void core::stop( const std::string &)
   _same = this->shared_from_this();
   DOMAIN_LOG_MESSAGE("************* void core::stop( const std::string &)  *****************")
   _stop_flag = true;
+  
 }
 
 void core::core_stop( )
