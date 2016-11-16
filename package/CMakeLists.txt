@@ -26,6 +26,11 @@ SET(
   workflow/workflow_module.cpp
   workflow/workflow/workflow_multiton.cpp
   workflow/workflow/workflow_domain.cpp
+
+  stat/stat_module.cpp
+  stat/stat/stat_multiton.cpp
+  stat/stat/stat_domain.cpp
+
 )
 
 add_library(
