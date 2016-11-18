@@ -1,16 +1,18 @@
 
 #include <wfc/iinterface.hpp>
 #include "stat_domain.hpp"
+#include <wfc/stat/stat.hpp>
+//#include <wrtstat/wrtstat.hpp>
 
 namespace wfc{
  
 
 class stat_domain::impl
-  : public stat
+  : public ::wfc::stat
 {
 public:
-  impl(const stat_config& /*opt*/ )
-    : stat( /*opt*/)
+  impl(const stat_config& opt )
+    : stat( opt)
   {}
 };
 
@@ -21,6 +23,7 @@ stat_domain::~stat_domain()
 
 void stat_domain::reconfigure() 
 {
+  //_impl = std::make_shared<impl>(this->options() );
   /*
   auto opt = this->options();
   opt.id = this->name();
@@ -50,6 +53,22 @@ void stat_domain::stop(const std::string& )
     w->stop();
   */
 }
+
+int stat_domain::reg_name(const std::string& name) 
+{
+  return _impl->reg_name(name);
+}
+
+stat_domain::meter_ptr stat_domain::create_handler(int /*id*/) 
+{
+  return nullptr;
+}
+
+stat_domain::meter_ptr stat_domain::create_handler(const std::string& /*name*/) 
+{
+  return nullptr;
+}
+
 
 
 
