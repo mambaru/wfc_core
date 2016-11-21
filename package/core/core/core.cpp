@@ -83,7 +83,7 @@ int core::run()
   }
   else if ( _abort_flag )
   {
-    DOMAIN_LOG_FATAL("!!! START ABORTED! Смотрите выше.")
+    DOMAIN_LOG_MESSAGE("!!! START ABORTED! Смотрите выше.")
   }
 
   ::iow::workflow_options qopt;
@@ -242,7 +242,7 @@ void core::_sunrise()
   }
   else
   {
-    SYSLOG_LOG_FATAL("daemon " << this->global()->program_name << " start abort")    
+    SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " start abort....")    
   }
 }
 
@@ -259,7 +259,7 @@ void core::_configure()
     {
       if ( this->_abort_flag )
       {
-        CONFIG_LOG_FATAL("Configure component '" << name << "' aborted!")
+        CONFIG_LOG_MESSAGE("Configure component '" << name << "' aborted!")
         return;
       }
       std::string confstr = conf->get_config(name);
@@ -308,7 +308,7 @@ void core::_initialize()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_FATAL("Initialize instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_MESSAGE("Initialize instance '" << m->name() << "' aborted!")
       return;
     }
 
@@ -357,7 +357,7 @@ void core::_start()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_FATAL("Start instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_MESSAGE("Start instance '" << m->name() << "' aborted!")
       return;
     }
 
@@ -416,7 +416,7 @@ void core::_stop()
     DOMAIN_LOG_BEGIN("Stop instance '" << m->name() << "'...")
     if ( m->name()=="logger" && this->_abort_flag )
     {
-      DOMAIN_LOG_FATAL("!!! WFC ABORTED! Смотрите выше.")
+      DOMAIN_LOG_MESSAGE("!!! WFC ABORTED! Смотрите выше.")
     }
 
     m->stop(std::string());

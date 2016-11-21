@@ -15,8 +15,8 @@ namespace {
   class impl: public ::wfc::multiton<
     object_name,
     ::wfc::instance<stat_domain>,
-    stat_config_json,
-    component_features::DisabledWorkflow 
+    stat_config_json/*,
+    component_features::DisabledWorkflow */
   >
   {};
 }

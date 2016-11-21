@@ -38,12 +38,12 @@ config::config()
 
 void config::ready()
 {
-  this->get_workflow()->release_timer(_timer_id);
+  this->global()->workflow->release_timer(_timer_id);
   _timer_id = 0;
   
   if ( this->options().reload_changed_ms != 0 )
   {
-    _timer_id = this->get_workflow()->create_timer( 
+    _timer_id = this->global()->workflow->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
       this->wrap( std::bind(&config::timer_handler_, this) )
     );
@@ -64,7 +64,7 @@ void config::start(const std::string& /*arg*/)
 void config::stop(const std::string& /*arg*/)
 {
   signal(SIGHUP, nullptr);
-  this->get_workflow()->release_timer(_timer_id);
+  this->global()->workflow->release_timer(_timer_id);
 }
 
 void config::reload_and_reconfigure()

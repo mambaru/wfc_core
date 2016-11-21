@@ -15,12 +15,15 @@ class stat_domain
 public:
   virtual ~stat_domain();
   virtual void reconfigure() override;
+  virtual void initialize() override;
   virtual       int reg_name(const std::string& name) override;
   virtual meter_ptr create_handler(int id) override;
   virtual meter_ptr create_handler(const std::string& name) override;
 
 private:
   std::shared_ptr<impl> _impl;
+  workflow_type::timer_id_t _stat_wf_id = -1;
+  std::string _log;
 };
 
 }
