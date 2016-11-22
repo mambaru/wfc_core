@@ -32,6 +32,7 @@ struct stat_config_json
   JSON_NAME(levels)
   JSON_NAME(log)
   JSON_NAME(log_metric)
+  JSON_NAME(btp_target)
   
   typedef json::object<
     stat_config,
@@ -40,6 +41,7 @@ struct stat_config_json
       json::member< n_step_ns, ::wrtstat::separator_options, ::wrtstat::types::time_type, &::wrtstat::separator_options::step_ts>,
       json::member< n_limit, ::wrtstat::reducer_options, ::wrtstat::types::size_type, &::wrtstat::reducer_options::limit>,
       json::member< n_levels, ::wrtstat::reducer_options, ::wrtstat::types::size_type, &::wrtstat::reducer_options::levels>,
+      json::member< n_btp_target, stat_config, std::string, &stat_config::btp_target>,
       json::member< n_log, stat_config, std::string, &stat_config::log>,
       json::member< n_log_metric, stat_config, int, &stat_config::log_metric, enum_json>
      >

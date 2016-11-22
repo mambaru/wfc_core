@@ -1,6 +1,7 @@
 
 #include "stat_module.hpp"
 #include "stat/stat_multiton.hpp"
+#include "gateway/btp_gateway_multiton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
@@ -12,7 +13,8 @@ namespace
 
   class impl: public ::wfc::component_list<
     module_name,
-    stat_multiton
+    stat_multiton,
+    btp_gateway_multiton
   >
   {};
 }

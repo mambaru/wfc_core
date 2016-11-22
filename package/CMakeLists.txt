@@ -30,6 +30,7 @@ SET(
   stat/stat_module.cpp
   stat/stat/stat_multiton.cpp
   stat/stat/stat_domain.cpp
+  stat/gateway/btp_gateway_multiton.cpp
 
 )
 
