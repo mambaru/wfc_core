@@ -120,8 +120,22 @@ void stat_domain::initialize()
   }
 }
 
+istat::meter_ptr stat_domain::create_meter(const std::string& rate_name, const std::string& size_name)
+{
+  if ( this->suspended() )
+    return nullptr;
+  return _impl->create_meter(rate_name, size_name);
+}
+
+istat::meter_ptr stat_domain::clone_meter(meter_ptr m, size_t count )
+{
+  if ( this->suspended() )
+    return nullptr;
+  return _impl->clone_meter(m, count);
+}
 
 
+/*
 int stat_domain::reg_name(const std::string& name) 
 {
   return _impl->reg_name(name);
@@ -149,7 +163,7 @@ stat_domain::meter_ptr stat_domain::clone_meter(meter_ptr m, size_t count)
     return nullptr;
   return _impl->clone_meter(m, count);
 }
-
+*/
 
 
 }

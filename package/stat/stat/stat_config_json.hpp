@@ -2,6 +2,7 @@
 
 #include "stat_config.hpp"
 #include <wfc/json.hpp>
+#include <wfc/stat/stat_options_json.hpp>
 
 namespace wfc{
 
@@ -26,10 +27,6 @@ struct stat_config_json
     >
   > enum_json;
 
-  JSON_NAME(reduced_size)
-  JSON_NAME(step_ns)
-  JSON_NAME(limit)
-  JSON_NAME(levels)
   JSON_NAME(log)
   JSON_NAME(log_metric)
   JSON_NAME(btp_target)
@@ -37,10 +34,7 @@ struct stat_config_json
   typedef json::object<
     stat_config,
     json::member_list<
-      json::member< n_reduced_size,  ::wrtstat::aggregator_options, ::wrtstat::types::size_type, & ::wrtstat::aggregator_options::reduced_size>,
-      json::member< n_step_ns, ::wrtstat::separator_options, ::wrtstat::types::time_type, &::wrtstat::separator_options::step_ts>,
-      json::member< n_limit, ::wrtstat::reducer_options, ::wrtstat::types::size_type, &::wrtstat::reducer_options::limit>,
-      json::member< n_levels, ::wrtstat::reducer_options, ::wrtstat::types::size_type, &::wrtstat::reducer_options::levels>,
+      json::base<stat_options_json>,
       json::member< n_btp_target, stat_config, std::string, &stat_config::btp_target>,
       json::member< n_log, stat_config, std::string, &stat_config::log>,
       json::member< n_log_metric, stat_config, int, &stat_config::log_metric, enum_json>
