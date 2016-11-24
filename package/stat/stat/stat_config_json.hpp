@@ -2,7 +2,7 @@
 
 #include "stat_config.hpp"
 #include <wfc/json.hpp>
-#include <wfc/stat/stat_options_json.hpp>
+#include <wfc/statistics/stat_options_json.hpp>
 
 namespace wfc{
 
@@ -36,8 +36,8 @@ struct stat_config_json
     json::member_list<
       json::base<stat_options_json>,
       json::member< n_btp_target, stat_config, std::string, &stat_config::btp_target>,
-      json::member< n_log, stat_config, std::string, &stat_config::log>,
-      json::member< n_log_metric, stat_config, int, &stat_config::log_metric, enum_json>
+      json::member< n_log,        stat_config, std::string, &stat_config::log>,
+      json::member< n_log_metric, stat_config, int,         &stat_config::log_metric, enum_json>
      >
   > type;
   

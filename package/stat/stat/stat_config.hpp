@@ -1,6 +1,6 @@
 #pragma once
 
-#include <wfc/stat/stat_options.hpp>
+#include <wfc/statistics/stat_options.hpp>
 
 namespace wfc{
 

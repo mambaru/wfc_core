@@ -1,18 +1,19 @@
 
 #include <wfc/iinterface.hpp>
 #include "stat_domain.hpp"
-#include <wfc/stat/stat.hpp>
+#include <wfc/statistics/statistics.hpp>
 //#include <wrtstat/wrtstat.hpp>
 
 namespace wfc{
  
 
 class stat_domain::impl
-  : public ::wfc::stat
+  : public ::wfc::statistics
+  , public ::wfc::iinterface
 {
 public:
   impl(const stat_config& opt )
-    : stat( opt)
+    : statistics( opt)
   {}
 };
 
@@ -21,11 +22,24 @@ stat_domain::~stat_domain()
 {
 }
 
+void stat_domain::reconfigure_basic()
+{
+  _impl->enable( !this->suspended()  );
+}
+
 void stat_domain::reconfigure()
 {
   _impl = std::make_shared<impl>( this->options() );
+  _impl->enable( !this->suspended()  );
+
   if ( auto wf = this->get_workflow() ) 
     wf->release_timer(_stat_wf_id);
+  
+  if ( auto g = this->global() )
+  {
+    g->registry.set( "statistics", this->name(), _impl, false);
+  }
+  
 }
 
 
@@ -73,10 +87,16 @@ void stat_domain::initialize()
     auto wbtp = _wbtp;
     auto log = this->options().log;
     int metric = this->options().log_metric;
-    _stat_wf_id = wf->create_timer( std::chrono::milliseconds(1000), [wimpl, wbtp, log, metric]()
+    _stat_wf_id = wf->create_timer( std::chrono::milliseconds(1000), [this, wimpl, wbtp, log, metric]()
     {
+      /*if ( this->suspended() )
+        return;
+        */
+
       if ( auto pimpl = wimpl.lock() )
       {
+        /*pimpl->enable( !this->suspended() );*/
+
         int count = pimpl->count();
         for ( int i = 0; i < count; ++i)
         {
@@ -92,6 +112,9 @@ void stat_domain::initialize()
               wlog( ss, "perc99", ag->perc99, metric );
               wlog( ss, "perc100", ag->perc100, metric );
               wlog( ss, "max", ag->max, metric );
+              
+              
+              
               WFC_LOG_MESSAGE(log, ss.str() )
             }
 
@@ -120,6 +143,17 @@ void stat_domain::initialize()
   }
 }
 
+void stat_domain::stop(const std::string&) 
+{
+  if ( auto wf = this->get_workflow() ) 
+    wf->release_timer(_stat_wf_id);
+
+  if ( auto g = this->global() )
+  {
+    g->registry.erase( "statistics", this->name());
+  }
+}
+/*
 istat::meter_ptr stat_domain::create_meter(const std::string& rate_name, const std::string& size_name)
 {
   if ( this->suspended() )
@@ -133,7 +167,7 @@ istat::meter_ptr stat_domain::clone_meter(meter_ptr m, size_t count )
     return nullptr;
   return _impl->clone_meter(m, count);
 }
-
+*/
 
 /*
 int stat_domain::reg_name(const std::string& name) 

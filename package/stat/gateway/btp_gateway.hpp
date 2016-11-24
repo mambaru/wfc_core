@@ -1,7 +1,7 @@
 #pragma once
 
-#include <wfc/stat/ibtp.hpp>
-#include <wfc/stat/api/add_json.hpp>
+#include <wfc/statistics/ibtp.hpp>
+#include <wfc/statistics/api/add_json.hpp>
 #include <wfc/jsonrpc.hpp>
 
 

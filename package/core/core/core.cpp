@@ -290,6 +290,12 @@ void core::_initialize()
   if ( g == nullptr)
     return;
 
+  if ( !g->registry.dirty() )
+  {
+    CONFIG_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
+    return;
+  }
+
   typedef std::shared_ptr<iinstance> instance_ptr;
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
@@ -315,8 +321,8 @@ void core::_initialize()
     CONFIG_LOG_BEGIN("Initialize instance '" << m->name() << "'... startup_priority="  << m->startup_priority() )
     m->initialize();
  
-    if ( !this->_abort_flag ) { CONFIG_LOG_END("Initialize module '" << m->name() << "'...Done") }
-    else { CONFIG_LOG_END("Initialize module '" << m->name() << "'...aborted!") }
+    if ( !this->_abort_flag ) { CONFIG_LOG_END("Initialize instance '" << m->name() << "'...Done") }
+    else { CONFIG_LOG_END("Initialize instance '" << m->name() << "'...aborted!") }
 
     g->io_service.poll();
     g->io_service.reset();

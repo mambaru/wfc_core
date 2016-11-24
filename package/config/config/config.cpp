@@ -280,8 +280,8 @@ namespace
 
   inline time_t get_modify_time(const std::string& path)
   {
-    struct stat st;
-    if ( stat( path.c_str(), &st) != -1)
+    struct ::stat st;
+    if ( ::stat( path.c_str(), &st) != -1)
       return st.st_mtime;
     return static_cast<time_t>(-1);
   }
