@@ -89,32 +89,24 @@ void stat_domain::initialize()
     int metric = this->options().log_metric;
     _stat_wf_id = wf->create_timer( std::chrono::milliseconds(1000), [this, wimpl, wbtp, log, metric]()
     {
-      /*if ( this->suspended() )
-        return;
-        */
-
       if ( auto pimpl = wimpl.lock() )
       {
-        /*pimpl->enable( !this->suspended() );*/
-
         int count = pimpl->count();
         for ( int i = 0; i < count; ++i)
         {
+          std::string name = pimpl->get_name(i);
           while (auto ag = pimpl->pop(i) )
           {
             if ( !log.empty() )
             {
               std::stringstream ss;
-              ss << pimpl->get_name(i) << " ";
+              ss << name << " ";
               ss << "count:"    << ag->count << " ";
               wlog( ss, "min", ag->min, metric );
               wlog( ss, "perc80", ag->perc80, metric );
               wlog( ss, "perc99", ag->perc99, metric );
               wlog( ss, "perc100", ag->perc100, metric );
               wlog( ss, "max", ag->max, metric );
-              
-              
-              
               WFC_LOG_MESSAGE(log, ss.str() )
             }
 
@@ -122,12 +114,16 @@ void stat_domain::initialize()
             {
               // Структура aggregated в wfc немного отличается от btp 
               auto req = std::make_unique<btp::request::add>();
+              req->name = name;
               // сначала переносим data
               req->cl = std::move(ag->data);
               // потом все остальное (req->ag.data не сериализуется! только req->cl )
               req->ag = std::move(*ag);
+              this->prepare_(req);
               pbtp->add( std::move(req), nullptr );
             }
+            
+
 
           }
         }
@@ -152,6 +148,20 @@ void stat_domain::stop(const std::string&)
   {
     g->registry.erase( "statistics", this->name());
   }
+}
+
+void stat_domain::prepare_(btp::request::add::ptr& add)
+{
+  add->ag.min /= 1000;
+  add->ag.perc100 /= 1000; 
+  add->ag.perc99 /= 1000;
+  add->ag.perc95 /= 1000;
+  add->ag.perc80 /= 1000;
+  add->ag.perc50 /= 1000;
+  add->ag.avg /= 1000;
+  add->ag.max /= 1000;
+  for (auto& v : add->ag.data)
+    v /= 1000;
 }
 /*
 istat::meter_ptr stat_domain::create_meter(const std::string& rate_name, const std::string& size_name)

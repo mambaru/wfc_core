@@ -31,7 +31,8 @@ public:
   virtual meter_ptr create_meter(const std::string& name, size_t count) override;
   virtual meter_ptr clone_meter(meter_ptr m, size_t count) override;
   */
-
+private:
+  void prepare_(btp::request::add::ptr& add); 
 private:
   std::shared_ptr<impl> _impl;
   std::weak_ptr<ibtp> _wbtp;
