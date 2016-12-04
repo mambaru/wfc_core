@@ -6,6 +6,7 @@
 #include "config/config_module.hpp"
 #include "logger/logger_module.hpp"
 #include "workflow/workflow_module.hpp"
+#include "stat/stat_module.hpp"
 #include <wfc/module/module_list.hpp>
 
 namespace wfc{
@@ -14,6 +15,7 @@ namespace
 {
   class impl: public ::wfc::module_list<
     core_build_info,
+      stat_module,
       workflow_module,
       logger_module,
       config_module,

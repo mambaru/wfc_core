@@ -32,6 +32,27 @@ void workflow_domain::reconfigure()
   _workflow->reconfigure( opt );
 }
 
+void workflow_domain::initialize()
+{
+  if ( auto core = this->get_workflow() )
+  {
+    core->release_timer(_stat_timer);
+    _meter_size = this->create_meter_prototype("", this->name() + ".queue_size");
+    _meter_drop = this->create_meter_prototype("", this->name() + ".dropped");
+
+    if ( _meter_size == nullptr )
+      return;
+
+    _stat_timer = core->create_timer( std::chrono::seconds(1), [this]()->bool
+    {
+      this->create_meter(_meter_size, _workflow->queue_size() );
+      this->create_meter(_meter_drop, _workflow->dropped() );
+      return true;
+    });
+  }
+}
+
+
 void workflow_domain::start(const std::string& ) 
 {
   _workflow->start();
@@ -39,6 +60,8 @@ void workflow_domain::start(const std::string& )
 
 void workflow_domain::stop(const std::string& ) 
 {
+  if ( auto core = this->get_workflow() )
+    core->release_timer(_stat_timer);
   if ( auto g = this->global() )
     g->registry.erase("workflow", this->name() );
   if ( auto w = _workflow )

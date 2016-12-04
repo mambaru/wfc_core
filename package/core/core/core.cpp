@@ -83,7 +83,7 @@ int core::run()
   }
   else if ( _abort_flag )
   {
-    DOMAIN_LOG_FATAL("!!! START ABORTED! Смотрите выше.")
+    DOMAIN_LOG_MESSAGE("!!! START ABORTED! Смотрите выше.")
   }
 
   ::iow::workflow_options qopt;
@@ -101,6 +101,7 @@ void core::stop( const std::string &)
   _same = this->shared_from_this();
   DOMAIN_LOG_MESSAGE("************* void core::stop( const std::string &)  *****************")
   _stop_flag = true;
+  
 }
 
 void core::core_stop( )
@@ -241,7 +242,7 @@ void core::_sunrise()
   }
   else
   {
-    SYSLOG_LOG_FATAL("daemon " << this->global()->program_name << " start abort")    
+    SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " start abort....")    
   }
 }
 
@@ -258,7 +259,7 @@ void core::_configure()
     {
       if ( this->_abort_flag )
       {
-        CONFIG_LOG_FATAL("Configure component '" << name << "' aborted!")
+        CONFIG_LOG_MESSAGE("Configure component '" << name << "' aborted!")
         return;
       }
       std::string confstr = conf->get_config(name);
@@ -289,6 +290,12 @@ void core::_initialize()
   if ( g == nullptr)
     return;
 
+  if ( !g->registry.dirty() )
+  {
+    CONFIG_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
+    return;
+  }
+
   typedef std::shared_ptr<iinstance> instance_ptr;
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
@@ -307,15 +314,15 @@ void core::_initialize()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_FATAL("Initialize instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_MESSAGE("Initialize instance '" << m->name() << "' aborted!")
       return;
     }
 
     CONFIG_LOG_BEGIN("Initialize instance '" << m->name() << "'... startup_priority="  << m->startup_priority() )
     m->initialize();
  
-    if ( !this->_abort_flag ) { CONFIG_LOG_END("Initialize module '" << m->name() << "'...Done") }
-    else { CONFIG_LOG_END("Initialize module '" << m->name() << "'...aborted!") }
+    if ( !this->_abort_flag ) { CONFIG_LOG_END("Initialize instance '" << m->name() << "'...Done") }
+    else { CONFIG_LOG_END("Initialize instance '" << m->name() << "'...aborted!") }
 
     g->io_service.poll();
     g->io_service.reset();
@@ -356,7 +363,7 @@ void core::_start()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_FATAL("Start instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_MESSAGE("Start instance '" << m->name() << "' aborted!")
       return;
     }
 
@@ -415,7 +422,7 @@ void core::_stop()
     DOMAIN_LOG_BEGIN("Stop instance '" << m->name() << "'...")
     if ( m->name()=="logger" && this->_abort_flag )
     {
-      DOMAIN_LOG_FATAL("!!! WFC ABORTED! Смотрите выше.")
+      DOMAIN_LOG_MESSAGE("!!! WFC ABORTED! Смотрите выше.")
     }
 
     m->stop(std::string());

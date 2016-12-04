@@ -38,12 +38,12 @@ config::config()
 
 void config::ready()
 {
-  this->get_workflow()->release_timer(_timer_id);
+  this->global()->workflow->release_timer(_timer_id);
   _timer_id = 0;
   
   if ( this->options().reload_changed_ms != 0 )
   {
-    _timer_id = this->get_workflow()->create_timer( 
+    _timer_id = this->global()->workflow->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
       this->wrap( std::bind(&config::timer_handler_, this) )
     );
@@ -64,7 +64,7 @@ void config::start(const std::string& /*arg*/)
 void config::stop(const std::string& /*arg*/)
 {
   signal(SIGHUP, nullptr);
-  this->get_workflow()->release_timer(_timer_id);
+  this->global()->workflow->release_timer(_timer_id);
 }
 
 void config::reload_and_reconfigure()
@@ -181,7 +181,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
   {
     std::stringstream ss;
     ss << "Invalid json configuration from '" << source << "':" << std::endl;
-    ss << e.message( jsonbeg, jsonend );
+    ss << json::strerror::message_trace(e, jsonbeg, jsonend );
     throw std::domain_error(ss.str());
   }
 
@@ -195,6 +195,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
       {
         jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
         if ( e ) throw e;
+        e.reset();
         if ( !m->parse( std::string(jsonbeg, jsonend)) )
         {
           std::stringstream ss;
@@ -207,7 +208,7 @@ void config::parse_configure_(std::string source, std::string confstr, configura
       {
         std::stringstream ss;
         ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-        ss << e.message( jsonbeg, jsonend );
+        ss << json::strerror::message_trace(e, jsonbeg, jsonend );
         throw std::domain_error(ss.str());
       }
       catch(const std::exception& e)
@@ -230,7 +231,6 @@ void config::parse_configure_(std::string source, std::string confstr, configura
 
 bool config::timer_handler_()
 {
-  //DEBUG_LOG_DEBUG("bool config::timer_handler_()")
   if ( this->_config_changed!=0 )
   {
     time_t t = get_modify_time(this->_path);
@@ -282,8 +282,8 @@ namespace
 
   inline time_t get_modify_time(const std::string& path)
   {
-    struct stat st;
-    if ( stat( path.c_str(), &st) != -1)
+    struct ::stat st;
+    if ( ::stat( path.c_str(), &st) != -1)
       return st.st_mtime;
     return static_cast<time_t>(-1);
   }

@@ -51,7 +51,7 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
     if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
     std::cout << _pa.helpstring << std::endl;
     std::cout << "Для генерации и форматировани конфигурации используете: " << std::endl;
-    std::cout << "  ./prefixdbd -G | python -mjson.tool " << std::endl;
+    std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
     std::cout << std::endl;
   }
   else if ( _pa.info )

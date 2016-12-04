@@ -18,10 +18,14 @@ public:
   virtual ~workflow_domain();
   using domain_object<iinterface, workflow_options>::create;
   virtual void reconfigure() override;
+  virtual void initialize() override;
   virtual void start(const std::string& ) override;
   virtual void stop(const std::string& ) override;
 private:
   std::shared_ptr<impl> _workflow;
+  timer_id_t _stat_timer;
+  meter_ptr _meter_size;
+  meter_ptr _meter_drop;
 };
 
 }
