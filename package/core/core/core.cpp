@@ -44,8 +44,7 @@ core::core()
 void core::create()
 {
   this->global()->workflow->reconfigure(this->options().core_workflow);
-#warning !!! TODO: создавать здесь!!!
-  this->global()->workflow->start(); //??
+  this->global()->workflow->start();
 }
 
 
