@@ -107,6 +107,7 @@ void stat_domain::initialize()
               wlog( ss, "perc99", ag->perc99, metric );
               wlog( ss, "perc100", ag->perc100, metric );
               wlog( ss, "max", ag->max, metric );
+              ss << "lossy:"    << ag->lossy << " ";
               WFC_LOG_MESSAGE(log, ss.str() )
             }
 
