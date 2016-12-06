@@ -120,6 +120,7 @@ void stat_domain::initialize()
               req->cl = std::move(ag->data);
               // потом все остальное (req->ag.data не сериализуется! только req->cl )
               req->ag = std::move(*ag);
+              req->ts = req->ag.ts;
               this->prepare_(req);
               pbtp->add( std::move(req), nullptr );
             }
