@@ -124,9 +124,6 @@ void stat_domain::initialize()
               this->prepare_(req);
               pbtp->add( std::move(req), nullptr );
             }
-            
-
-
           }
         }
       }
@@ -152,8 +149,9 @@ void stat_domain::stop(const std::string&)
   }
 }
 
-void stat_domain::prepare_(btp::request::add::ptr& add)
+void stat_domain::prepare_(btp::request::add::ptr& /*add*/)
 {
+  /*
   add->ag.min /= 1000;
   add->ag.perc100 /= 1000; 
   add->ag.perc99 /= 1000;
@@ -164,6 +162,7 @@ void stat_domain::prepare_(btp::request::add::ptr& add)
   add->ag.max /= 1000;
   for (auto& v : add->ag.data)
     v /= 1000;
+  */
 }
 /*
 istat::meter_ptr stat_domain::create_meter(const std::string& rate_name, const std::string& size_name)
