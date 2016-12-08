@@ -47,6 +47,7 @@ namespace
 {
   void wlog_metric( std::stringstream& os, long long int val, int metric)
   {
+    val*=1000;
     val/=metric;
     os << val;
     switch (metric)
@@ -65,6 +66,7 @@ namespace
       return;
 
     os << name << ":";
+
     if ( metric==0 ) 
     {
       if (val!=0) val = 1000000000/val;
