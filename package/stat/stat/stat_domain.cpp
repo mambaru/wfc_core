@@ -39,7 +39,6 @@ void stat_domain::reconfigure()
   {
     g->registry.set( "statistics", this->name(), _impl, false);
   }
-  
 }
 
 

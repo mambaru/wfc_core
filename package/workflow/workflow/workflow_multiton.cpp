@@ -1,7 +1,7 @@
 
 #include "workflow_multiton.hpp"
 #include "workflow_domain.hpp"
-#include <wfc/core/workflow_options_json.hpp>
+#include "workflow_config_json.hpp"
 #include <wfc/module/multiton.hpp>
 #include <wfc/module/instance.hpp>
 #include <wfc/name.hpp>
@@ -15,7 +15,7 @@ namespace {
   class impl: public ::wfc::multiton<
     object_name,
     ::wfc::instance<workflow_domain>,
-    workflow_options2_json,
+    workflow_config_json,
       component_features::DisabledSuspend 
     | component_features::DisabledWorkflow 
   >
