@@ -47,10 +47,14 @@ void system_statistics_domain::initialize()
       procstat ps;
       if ( 0==get_procstat(&ps) )
       {
-        this->create_meter(proto->utime,  0, ps.utime - proto->ps.utime );
-        this->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
-        this->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
-        this->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
+        if ( proto->ps.utime != 0 )
+          this->create_meter(proto->utime,  0, ps.utime - proto->ps.utime );
+        if ( proto->ps.stime != 0 )
+          this->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
+        if ( proto->ps.cutime != 0 )
+          this->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
+        if ( proto->ps.cstime != 0 )
+          this->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
         this->create_meter(proto->vsize,  ps.vsize/(1024*1024), 0);
         this->create_meter(proto->rss,  ps.rss*getpagesize()/(1024*1024), 0);
         proto->ps = ps;
