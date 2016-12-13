@@ -51,8 +51,8 @@ void system_statistics_domain::initialize()
         this->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
         this->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
         this->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
-        this->create_meter(proto->vsize,  ps.vsize, 0);
-        this->create_meter(proto->rss,  ps.rss, 0);
+        this->create_meter(proto->vsize,  ps.vsize/(1024*1024), 0);
+        this->create_meter(proto->rss,  ps.rss*getpagesize()/(1024*1024), 0);
         proto->ps = ps;
       }
       return true;
