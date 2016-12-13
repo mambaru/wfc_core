@@ -9,14 +9,15 @@
 namespace wfc{  namespace core{
 
 class system_statistics_domain
-  : public domain_object<iinterface, statistics_config>
+  : public domain_object<iinterface, system_statistics_config>
 {
-  class impl;
+  //struct protostat;
 public:
   virtual void configure() override;
   virtual void initialize() override;
 private:
-  std::shared_ptr<impl> _impl;
+  timer_id_t _timer_id = -1;
+  //std::shared_ptr<protostat> _protos;
 };
 
 }}

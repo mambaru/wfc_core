@@ -9,7 +9,7 @@
 namespace wfc{ namespace core{
 
 class statistics_domain
-  : public domain_object<iinterface, stat_config>
+  : public domain_object<iinterface, statistics_config>
 {
   class impl;
 public:

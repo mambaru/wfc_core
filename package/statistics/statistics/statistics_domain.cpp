@@ -12,7 +12,7 @@ class statistics_domain::impl
   , public ::wfc::iinterface
 {
 public:
-  impl(const stat_config& opt )
+  impl(const statistics_config& opt )
     : statistics( opt)
   {}
 };
@@ -122,7 +122,6 @@ void statistics_domain::initialize()
               // потом все остальное (req->ag.data не сериализуется! только req->cl )
               req->ag = std::move(*ag);
               req->ts = req->ag.ts;
-              this->prepare_(req);
               pbtp->add( std::move(req), nullptr );
             }
           }

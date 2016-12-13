@@ -14,8 +14,8 @@ namespace {
 
   class impl: public ::wfc::multiton<
     object_name,
-    ::wfc::instance<stat_domain>,
-    stat_config_json
+    ::wfc::instance<statistics_domain>,
+    statistics_config_json
   >
   {};
 }

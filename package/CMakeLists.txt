@@ -32,6 +32,7 @@ SET(
   statistics/statistics/statistics_domain.cpp
   statistics/system_statistics/system_statistics_multiton.cpp
   statistics/system_statistics/system_statistics_domain.cpp
+  statistics/system_statistics/impl/get_procstat.cpp
   statistics/gateway/btp_gateway_multiton.cpp
 
 )
