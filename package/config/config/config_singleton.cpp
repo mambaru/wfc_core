@@ -6,7 +6,7 @@
 #include "config.hpp"
 #include "config_config_json.hpp"
 
-namespace wfc{
+namespace wfc{  namespace core{
   
 namespace{
 
@@ -30,4 +30,4 @@ config_singleton::config_singleton()
 {
 }
 
-}
+}}

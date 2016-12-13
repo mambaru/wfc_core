@@ -8,7 +8,7 @@
 
 #include <wfc/module/module.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class startup_module
   : public ::wfc::module
@@ -17,4 +17,4 @@ public:
   startup_module();
 };
 
-}
+}}

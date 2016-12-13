@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-namespace wfc{
+namespace wfc{  namespace core{
 
 class core
   : public ::wfc::domain_object<icore, core_config>
@@ -50,4 +50,4 @@ private:
   std::shared_ptr< ::iow::workflow > _core_timer;
 };
 
-}
+}}

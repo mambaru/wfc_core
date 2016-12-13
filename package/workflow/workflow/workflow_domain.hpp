@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class workflow_domain
   : public domain_object<iinterface, workflow_config>
@@ -33,4 +33,4 @@ private:
 
 };
 
-}
+}}

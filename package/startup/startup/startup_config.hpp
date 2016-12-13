@@ -7,10 +7,10 @@
 
 #include <ctime>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct startup_config
 {
 };
 
-}
+}}

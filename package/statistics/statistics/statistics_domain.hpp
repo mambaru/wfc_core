@@ -2,37 +2,22 @@
 
 #include <wfc/domain_object.hpp>
 #include <wfc/statistics/ibtp.hpp>
-#include "stat_config.hpp"
+#include "statistics_config.hpp"
 #include <string>
 #include <memory>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
-class stat_domain
+class statistics_domain
   : public domain_object<iinterface, stat_config>
 {
   class impl;
 public:
-  virtual ~stat_domain();
+  virtual ~statistics_domain();
   virtual void reconfigure_basic() override;
   virtual void reconfigure() override;
   virtual void initialize() override;
   virtual void stop(const std::string&) override;
-
-  /*
-  virtual meter_ptr create_meter(const std::string& rate_name, const std::string& size_name) override final;
-  virtual meter_ptr clone_meter(meter_ptr m, size_t count ) override final;
-  */
-
-
-  /*
-  virtual       int reg_name(const std::string& name) override;
-  virtual meter_ptr create_meter(int id, size_t count) override;
-  virtual meter_ptr create_meter(const std::string& name, size_t count) override;
-  virtual meter_ptr clone_meter(meter_ptr m, size_t count) override;
-  */
-private:
-  void prepare_(btp::request::add::ptr& add); 
 private:
   std::shared_ptr<impl> _impl;
   std::weak_ptr<ibtp> _wbtp;
@@ -40,4 +25,4 @@ private:
   std::string _log;
 };
 
-}
+}}

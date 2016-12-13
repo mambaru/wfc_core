@@ -14,7 +14,7 @@
 #include <iostream>
 #include <memory>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 logger::~logger()
 {
@@ -279,4 +279,4 @@ void logger::unreg_loggers_()
   }
 }
 
-}
+}}

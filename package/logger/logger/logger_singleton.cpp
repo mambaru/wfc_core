@@ -11,7 +11,7 @@
 #include <wfc/module/instance.hpp>
 #include <wfc/name.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 namespace
 {
@@ -32,4 +32,4 @@ logger_singleton::logger_singleton()
   : component( std::make_shared<impl>() )
 {}
 
-}
+}}

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct writer_options
 {
@@ -27,4 +27,4 @@ struct writer_options
   std::vector< std::string > deny;
 };
 
-}
+}}

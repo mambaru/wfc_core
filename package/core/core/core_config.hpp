@@ -3,7 +3,7 @@
 #include <ctime>
 #include <wfc/core/workflow_options.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct core_config
 {
@@ -15,4 +15,4 @@ struct core_config
   core_config() { /*core_workflow.enabled = true;*/ }
 };
 
-}
+}}

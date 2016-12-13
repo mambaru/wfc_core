@@ -8,7 +8,7 @@
 
 #include <wfc/module/component.hpp>
 
-namespace wfc{ 
+namespace wfc{ namespace core{
 
 class btp_gateway_multiton
   : public ::wfc::component
@@ -17,4 +17,4 @@ public:
   btp_gateway_multiton();
 };
 
-}
+}}

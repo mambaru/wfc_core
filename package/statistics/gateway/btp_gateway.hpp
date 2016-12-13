@@ -5,7 +5,7 @@
 #include <wfc/jsonrpc.hpp>
 
 
-namespace wfc{ namespace stat{ namespace gateway{ 
+namespace wfc{ namespace core{ namespace gateway{ 
 
 using namespace ::wfc::btp;
 

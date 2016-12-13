@@ -9,7 +9,7 @@
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
   
 namespace
 {
@@ -26,4 +26,4 @@ startup_module::startup_module()
   : module( std::make_shared<impl>() )
 {}
 
-}
+}}

@@ -6,7 +6,7 @@
 #include <wfc/module/instance.hpp>
 #include <wfc/name.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 namespace {
 
@@ -26,4 +26,4 @@ workflow_multiton::workflow_multiton()
   : component( std::make_shared<impl>() )
 {}
 
-}
+}}

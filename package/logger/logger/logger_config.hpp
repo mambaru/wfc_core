@@ -11,7 +11,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct logger_config
   : writer_options
@@ -21,4 +21,4 @@ struct logger_config
   custom_map custom;
 };
 
-}
+}}

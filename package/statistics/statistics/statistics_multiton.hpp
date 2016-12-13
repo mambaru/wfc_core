@@ -2,13 +2,13 @@
 
 #include <wfc/module/component.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
-class stat_multiton
+class statistics_multiton
   : public ::wfc::component
 {
 public:
-  stat_multiton();
+  statistics_multiton();
 };
 
-}
+}}

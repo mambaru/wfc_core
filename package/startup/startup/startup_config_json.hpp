@@ -10,7 +10,7 @@
 #include "startup_config.hpp"
 #include <wfc/json.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct startup_config_json
 {
@@ -25,4 +25,4 @@ struct startup_config_json
 
 };
 
-}
+}}

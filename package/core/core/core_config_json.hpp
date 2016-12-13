@@ -4,7 +4,7 @@
 #include <wfc/json.hpp>
 #include <wfc/core/workflow_options_json.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct core_config_json
 {
@@ -30,4 +30,4 @@ struct core_config_json
   typedef type::member_list member_list;
 };
 
-}
+}}

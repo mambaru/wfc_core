@@ -2,8 +2,7 @@
 
 #include <wfc/core/workflow_options.hpp>
 
-namespace wfc{
-
+namespace wfc{ namespace core{
 
 struct workflow_config: workflow_options
 {
@@ -17,4 +16,4 @@ struct workflow_config: workflow_options
   stat_names_t stat_names;
 };
 
-}
+}}

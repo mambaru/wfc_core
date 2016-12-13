@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct program_arguments
 {
@@ -35,4 +35,4 @@ struct program_arguments
   
 };
 
-}
+}}

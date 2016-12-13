@@ -1,13 +1,13 @@
 
 #include <wfc/iinterface.hpp>
-#include "stat_domain.hpp"
+#include "statistics_domain.hpp"
 #include <wfc/statistics/statistics.hpp>
 //#include <wrtstat/wrtstat.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
  
 
-class stat_domain::impl
+class statistics_domain::impl
   : public ::wfc::statistics
   , public ::wfc::iinterface
 {
@@ -18,16 +18,16 @@ public:
 };
 
 
-stat_domain::~stat_domain()
+statistics_domain::~statistics_domain()
 {
 }
 
-void stat_domain::reconfigure_basic()
+void statistics_domain::reconfigure_basic()
 {
   _impl->enable( !this->suspended()  );
 }
 
-void stat_domain::reconfigure()
+void statistics_domain::reconfigure()
 {
   _impl = std::make_shared<impl>( this->options() );
   _impl->enable( !this->suspended()  );
@@ -78,13 +78,13 @@ namespace
   }
 }
 
-void stat_domain::initialize() 
+void statistics_domain::initialize() 
 {
   _wbtp = this->get_target<ibtp>( this->options().btp_target );
 
   if ( auto wf = this->get_workflow() ) 
   {
-    std::weak_ptr<stat_domain::impl> wimpl = _impl;
+    std::weak_ptr<statistics_domain::impl> wimpl = _impl;
     auto wbtp = _wbtp;
     auto log = this->options().log;
     int metric = this->options().log_metric;
@@ -139,7 +139,7 @@ void stat_domain::initialize()
   }
 }
 
-void stat_domain::stop(const std::string&) 
+void statistics_domain::stop(const std::string&) 
 {
   if ( auto wf = this->get_workflow() ) 
     wf->release_timer(_stat_wf_id);
@@ -150,66 +150,4 @@ void stat_domain::stop(const std::string&)
   }
 }
 
-void stat_domain::prepare_(btp::request::add::ptr& /*add*/)
-{
-  /*
-  add->ag.min /= 1000;
-  add->ag.perc100 /= 1000; 
-  add->ag.perc99 /= 1000;
-  add->ag.perc95 /= 1000;
-  add->ag.perc80 /= 1000;
-  add->ag.perc50 /= 1000;
-  add->ag.avg /= 1000;
-  add->ag.max /= 1000;
-  for (auto& v : add->ag.data)
-    v /= 1000;
-  */
-}
-/*
-istat::meter_ptr stat_domain::create_meter(const std::string& rate_name, const std::string& size_name)
-{
-  if ( this->suspended() )
-    return nullptr;
-  return _impl->create_meter(rate_name, size_name);
-}
-
-istat::meter_ptr stat_domain::clone_meter(meter_ptr m, size_t count )
-{
-  if ( this->suspended() )
-    return nullptr;
-  return _impl->clone_meter(m, count);
-}
-*/
-
-/*
-int stat_domain::reg_name(const std::string& name) 
-{
-  return _impl->reg_name(name);
-}
-
-stat_domain::meter_ptr stat_domain::create_meter(int id, size_t count) 
-{
-  if ( this->suspended() )
-    return nullptr;
-
-  return _impl->create_meter(id, count);
-}
-
-stat_domain::meter_ptr stat_domain::create_meter(const std::string& name, size_t count) 
-{
-  if ( this->suspended() )
-    return nullptr;
-
-  return _impl->create_meter(name, count);
-}
-
-stat_domain::meter_ptr stat_domain::clone_meter(meter_ptr m, size_t count) 
-{
-  if ( this->suspended() )
-    return nullptr;
-  return _impl->clone_meter(m, count);
-}
-*/
-
-
-}
+}}

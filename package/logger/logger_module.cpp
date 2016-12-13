@@ -10,7 +10,7 @@
 #include "logger_module.hpp"
 #include "logger/logger_singleton.hpp"
 
-namespace wfc{
+namespace wfc{  namespace core{
 
 namespace 
 {
@@ -28,4 +28,4 @@ logger_module::logger_module()
 {
 }
 
-}
+}}

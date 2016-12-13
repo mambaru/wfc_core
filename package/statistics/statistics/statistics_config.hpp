@@ -2,9 +2,9 @@
 
 #include <wfc/statistics/stat_options.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
-struct stat_config
+struct statistics_config
   : public stat_options
 {
   std::string btp_target;
@@ -12,4 +12,4 @@ struct stat_config
   int log_metric = 1;
 };
 
-}
+}}

@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class config
   :  public ::wfc::domain_object<iconfig, config_config>
@@ -41,4 +41,4 @@ private:
   std::string _path;
 };
 
-}
+}}

@@ -3,7 +3,7 @@
 #include "config_config.hpp"
 #include <wfc/json.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct config_config_json
 {
@@ -24,4 +24,4 @@ struct config_config_json
 
 };
 
-}
+}}

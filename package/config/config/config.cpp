@@ -16,7 +16,7 @@
 #include <syslog.h>
 
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 namespace
 {
@@ -291,4 +291,4 @@ namespace
 } // namespace
 
 
-}
+}}

@@ -13,7 +13,7 @@
 #include <iostream>
 #include <fstream>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 writer_options writer::options() const
 {
@@ -106,4 +106,4 @@ void writer::write_to_syslog_(const std::string& ident, const std::string& str)
   aux::syslog_write(_conf.syslog, ident, str);
 }
 
-}
+}}

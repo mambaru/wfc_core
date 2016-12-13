@@ -21,7 +21,7 @@
 #include <errno.h>
 
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 startup_domain::~startup_domain()
 {
@@ -307,4 +307,4 @@ bool startup_domain::generate_()
   return true;
 }
 
-}
+}}

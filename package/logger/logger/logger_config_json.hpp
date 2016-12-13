@@ -8,7 +8,7 @@
 #include "logger_config.hpp"
 #include <wfc/json.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct logger_config_json
 {
@@ -52,4 +52,4 @@ struct logger_config_json
   typedef type::member_list member_list;
 };
 
-}
+}}

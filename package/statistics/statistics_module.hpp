@@ -2,13 +2,13 @@
 
 #include <wfc/module/module.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
-class stat_module
+class statistics_module
   : public ::wfc::module
 {
 public:
-  stat_module();
+  statistics_module();
 };
 
-}
+}}

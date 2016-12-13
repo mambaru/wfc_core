@@ -4,7 +4,7 @@
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
   
 namespace
 {
@@ -22,4 +22,4 @@ workflow_module::workflow_module()
 {
 }
 
-}
+}}

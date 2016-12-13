@@ -17,7 +17,7 @@
 #include <string>
 #include <set>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class writer;
 
@@ -59,4 +59,4 @@ private:
   mutable mutex_type _mutex;
 };
 
-}
+}}

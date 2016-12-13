@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <syslog.h>
 
-namespace wfc{ namespace aux {
+namespace wfc{  namespace core{ namespace aux {
 
   namespace{
 
@@ -86,4 +86,4 @@ namespace wfc{ namespace aux {
 
 
   
-} }
+} } }

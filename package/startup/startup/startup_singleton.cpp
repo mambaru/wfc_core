@@ -13,7 +13,7 @@
 #include "startup.hpp"
 #include "startup_config_json.hpp"
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 namespace
 {  
@@ -36,4 +36,4 @@ startup_singleton::startup_singleton()
 {
 }
 
-}
+}}

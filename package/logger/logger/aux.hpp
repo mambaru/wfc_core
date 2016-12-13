@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace wfc{ namespace aux{
+namespace wfc{  namespace core{ namespace aux{
 
   std::string mkdate(bool milliseconds = false);
   
@@ -16,4 +16,4 @@ namespace wfc{ namespace aux{
 
   void syslog_write(const std::string& sysname, const std::string& type, const std::string& str);
   
-}} // namespace
+}}} // namespace

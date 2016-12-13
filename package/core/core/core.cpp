@@ -16,7 +16,7 @@
 #include <syslog.h>
 #include <sys/resource.h>
 
-namespace wfc{
+namespace wfc{  namespace core{
 
 namespace 
 {
@@ -437,4 +437,4 @@ void core::_stop()
   DOMAIN_LOG_MESSAGE("==================== Bye! ====================")
 }
 
-}
+}}

@@ -4,8 +4,8 @@
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
-namespace wfc{
-  
+namespace wfc{  namespace core{
+
 namespace 
 {
   WFC_NAME2(module_name, "core")
@@ -23,4 +23,4 @@ core_module::core_module()
 {
 }
 
-}
+}}

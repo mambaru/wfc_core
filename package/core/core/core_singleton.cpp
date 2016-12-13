@@ -6,7 +6,7 @@
 #include "core.hpp"
 #include "core_config_json.hpp"
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 namespace
 {
@@ -31,4 +31,4 @@ core_singleton::core_singleton()
 {
 }
 
-}
+}}

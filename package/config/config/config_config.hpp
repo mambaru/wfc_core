@@ -1,6 +1,6 @@
 #pragma once
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct config_config
 {
@@ -8,4 +8,4 @@ struct config_config
   time_t reload_changed_ms = 0;
 };
 
-}
+}}

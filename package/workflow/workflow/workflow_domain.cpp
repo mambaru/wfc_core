@@ -1,9 +1,8 @@
 
 #include "workflow_domain.hpp"
 
-namespace wfc{
+namespace wfc{ namespace core{
  
-
 class workflow_domain::impl
   : public iinterface
   , public workflow
@@ -101,6 +100,4 @@ void workflow_domain::stop(const std::string& )
     w->stop();
 }
 
-
-
-}
+}}

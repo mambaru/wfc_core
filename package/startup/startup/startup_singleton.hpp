@@ -8,7 +8,7 @@
 
 #include <wfc/module/component.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class startup_singleton
   : public ::wfc::component
@@ -17,4 +17,4 @@ public:
   startup_singleton();
 };
 
-}
+}}

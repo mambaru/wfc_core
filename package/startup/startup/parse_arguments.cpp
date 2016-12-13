@@ -4,8 +4,7 @@
 #include <iow/boost.hpp>
 
 #include <iostream>
-namespace wfc
-{
+namespace wfc{ namespace core{
   
 namespace 
 {
@@ -174,6 +173,4 @@ namespace
 
 }
 
-
-
-}
+}}

@@ -11,7 +11,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class logger;
 
@@ -39,4 +39,4 @@ private:
   std::shared_ptr<logger> _logger;
 };
 
-}
+}}

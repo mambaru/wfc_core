@@ -1,12 +1,12 @@
 #pragma once
 
-#include "stat_config.hpp"
+#include "statistics_config.hpp"
 #include <wfc/json.hpp>
 #include <wfc/statistics/stat_options_json.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
-struct stat_config_json
+struct statistics_config_json
 {
   JSON_NAME(perseconds)
   JSON_NAME(seconds)
@@ -32,12 +32,12 @@ struct stat_config_json
   JSON_NAME(btp_target)
   
   typedef json::object<
-    stat_config,
+    statistics_config,
     json::member_list<
       json::base<stat_options_json>,
-      json::member< n_btp_target, stat_config, std::string, &stat_config::btp_target>,
-      json::member< n_log,        stat_config, std::string, &stat_config::log>,
-      json::member< n_log_metric, stat_config, int,         &stat_config::log_metric, enum_json>
+      json::member< n_btp_target, statistics_config, std::string, &statistics_config::btp_target>,
+      json::member< n_log,        statistics_config, std::string, &statistics_config::log>,
+      json::member< n_log_metric, statistics_config, int,         &statistics_config::log_metric, enum_json>
      >
   > type;
   
@@ -46,4 +46,4 @@ struct stat_config_json
   typedef type::member_list member_list;
 };
 
-}
+}}

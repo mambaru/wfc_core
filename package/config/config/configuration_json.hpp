@@ -4,7 +4,7 @@
 
 #include "configuration.hpp"
 
-namespace wfc{
+namespace wfc{  namespace core{
 
 struct configuration_json
 {
@@ -16,4 +16,4 @@ struct configuration_json
   >::serializer serializer;
 };
 
-}
+}}

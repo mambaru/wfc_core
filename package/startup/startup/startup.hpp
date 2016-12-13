@@ -12,7 +12,7 @@
 #include <wfc/domain_object.hpp>
 #include <string>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 class idle_timer;
   
@@ -33,4 +33,4 @@ private:
   program_arguments _pa;
 };
 
-}
+}}

@@ -1,27 +1,30 @@
 
-#include "stat_module.hpp"
-#include "stat/stat_multiton.hpp"
+#include "statistics_module.hpp"
+#include "statistics/statistics_multiton.hpp"
+#include "system_statistics/system_statistics_multiton.hpp"
 #include "gateway/btp_gateway_multiton.hpp"
+
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
   
 namespace
 {
-  WFC_NAME2(module_name, "stat")
+  WFC_NAME2(module_name, "statistics")
 
   class impl: public ::wfc::component_list<
     module_name,
-    stat_multiton,
+    statistics_multiton,
+    system_statistics_multiton,
     btp_gateway_multiton
   >
   {};
 }
 
-stat_module::stat_module()
+statistics_module::statistics_module()
   : module( std::make_shared<impl>() )
 {
 }
 
-}
+}}

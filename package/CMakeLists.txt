@@ -27,10 +27,12 @@ SET(
   workflow/workflow/workflow_multiton.cpp
   workflow/workflow/workflow_domain.cpp
 
-  stat/stat_module.cpp
-  stat/stat/stat_multiton.cpp
-  stat/stat/stat_domain.cpp
-  stat/gateway/btp_gateway_multiton.cpp
+  statistics/statistics_module.cpp
+  statistics/statistics/statistics_multiton.cpp
+  statistics/statistics/statistics_domain.cpp
+  statistics/system_statistics/system_statistics_multiton.cpp
+  statistics/system_statistics/system_statistics_domain.cpp
+  statistics/gateway/btp_gateway_multiton.cpp
 
 )
 

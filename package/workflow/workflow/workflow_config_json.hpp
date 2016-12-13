@@ -2,7 +2,7 @@
 
 #include <wfc/core/workflow_options_json.hpp>
 
-namespace wfc{
+namespace wfc{ namespace core{
 
 struct workflow_config_json
 {
@@ -33,4 +33,4 @@ struct workflow_config_json
   typedef type::member_list member_list; 
 };
 
-}
+}}
