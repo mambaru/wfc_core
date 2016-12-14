@@ -16,6 +16,7 @@ struct program_arguments
   bool daemonize = false;
   bool coredump = false;
   bool autoup = false;
+  bool success_autoup = false;
   time_t autoup_timeout = 0;
 
   std::string errorstring;

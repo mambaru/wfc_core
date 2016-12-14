@@ -19,6 +19,7 @@ class impl: public ::wfc::singleton<
     component_features::DisabledSuspend
   | component_features::DisabledWorkflow
   | component_features::DisabledPriority
+  | component_features::DisabledStatistics
 >
 {  
 };

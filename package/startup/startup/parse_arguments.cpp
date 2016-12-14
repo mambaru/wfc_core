@@ -43,12 +43,12 @@ try
   desc_startup.add_options()
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "run as daemon")
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "allow core dump")
-    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [minimum uptime in sec]")
+    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [minimum uptime in sec] with fail")
+    ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "auto restart daemon with success")
     ("name,n", value<std::string>(&pa.instance_name), "unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "directory for pid file")
     ("instance-options,O", value< vstrings >(&instance_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom option for instance object");
-    
 
   desc.add(desc_startup);
 

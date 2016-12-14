@@ -7,6 +7,8 @@
 #include <wfc/core/icore.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
+#include <wfc/module/ipackage.hpp>
+#include <wfc/module/imodule.hpp>
 #include <wfc/module/icomponent.hpp>
 
 #include <string>
@@ -134,19 +136,29 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     return false;
   }
 
-  configuration mainconf;
+  
   if ( go.empty() )
   {
-    g->registry.for_each<icomponent>("component", [&mainconf](const std::string& name, std::shared_ptr<icomponent> obj)
+    std::vector< std::pair<std::string, std::string> > vectconf;
+    g->registry.for_each<ipackage>("package", [&vectconf](const std::string&, std::shared_ptr<ipackage> pkg)
     {
-      if (obj!=nullptr)
+      if ( pkg == nullptr )
+        return;
+      auto modules = pkg->modules();
+      for (auto m : modules)
       {
-        mainconf[name] = obj->generate("");
+        auto components = m->components();
+        for (auto c : components )
+        {
+          vectconf.push_back( std::make_pair(c->name(), c->generate("") ) );
+        }
       }
     });
+    json::dict_vector< json::raw_value<> >::serializer()(vectconf, std::back_inserter(result));
   }
   else
   {
+    configuration mainconf;
     for ( const auto& opt: go )
     {
       if ( auto obj = g->registry.get<icomponent>("component", opt.first) )
@@ -161,8 +173,9 @@ bool config::generate_config( const generate_options& go, const std::string& pat
         return false;
       }
     }
+    configuration_json::serializer()(mainconf, std::back_inserter(result));
   }
-  configuration_json::serializer()(mainconf, std::back_inserter(result));
+  
   this->save_to_file_( path, result);
   return true;
 }

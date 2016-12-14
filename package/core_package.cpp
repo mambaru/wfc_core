@@ -15,12 +15,12 @@ namespace
 {
   class impl: public ::wfc::module_list<
     core_build_info,
-      core::statistics_module,
-      core::workflow_module,
-      core::logger_module,
+      core::startup_module,
       core::config_module,
       core::core_module,
-      core::startup_module
+      core::logger_module,
+      core::workflow_module,
+      core::statistics_module
   >
   {};
 }

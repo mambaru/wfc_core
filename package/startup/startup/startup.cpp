@@ -153,13 +153,16 @@ bool startup_domain::perform_start_( )
 
   if ( _pa.daemonize && _pa.autoup )
   {
+    bool success_autoup = _pa.success_autoup;
     std::weak_ptr<startup_domain> wthis = this->shared_from_this();
-    ::wfc::autoup(_pa.autoup_timeout, [wthis](bool restart, int status, time_t work_time)->bool
+    ::wfc::autoup( _pa.autoup_timeout, [wthis, success_autoup](bool restart, int status, time_t work_time)->bool
     {
       if ( auto pthis = wthis.lock() )
       {
         std::stringstream ss;
         ss << "Daemon stop with status: " << status << " after work time " << work_time << "sec. " ;
+        if ( !restart && status == 0 && success_autoup)
+          restart = true;
         if ( restart )
           ss << "Restarting...";
         else
