@@ -2,6 +2,7 @@
 
 #include <wfc/domain_object.hpp>
 #include <wfc/core/workflow.hpp>
+#include <wfc/statistics/meters.hpp>
 #include "workflow_config.hpp"
 #include <string>
 #include <memory>
@@ -13,8 +14,8 @@ class workflow_domain
 {
   class impl;
 public:
+  typedef std::shared_ptr< ::wfc::value_meter > value_meter_ptr;
   typedef ::wfc::workflow domain_interface;
-  //typedef workflow_config options_type;
   virtual ~workflow_domain();
   using domain_object<iinterface, workflow_config>::create;
   virtual void reconfigure() override;
@@ -24,9 +25,9 @@ public:
 private:
   std::shared_ptr<impl> _workflow;
   timer_id_t _stat_timer;
-  meter_ptr _meter_size;
-  meter_ptr _meter_drop;
-  std::vector<meter_ptr> _meters_threads;
+  value_meter_ptr _meter_size;
+  value_meter_ptr _meter_drop;
+  std::vector<value_meter_ptr> _meters_threads;
   
   size_t _dropped = 0;
   std::vector<size_t> _counters;

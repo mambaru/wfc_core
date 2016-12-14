@@ -38,49 +38,49 @@ void workflow_domain::initialize()
   if ( auto core = this->get_workflow() )
   {
     core->release_timer(_stat_timer);
-    if ( !opt.stat_names.queue.empty() )
-      _meter_size = this->create_meter_prototype("", this->name() + opt.stat_names.queue);
-    if ( !opt.stat_names.dropped.empty() )
-      _meter_drop = this->create_meter_prototype("", this->name() + opt.stat_names.dropped);
-    
-    
-    if ( !opt.stat_names.thread.empty() && this->get_statistics()!=nullptr )
+    if ( auto stat = this->get_statistics() )
     {
-      _meters_threads.clear();
-      _counters.clear();
-      for ( int i = 0; i < opt.threads; i++ )
-      {
-        std::stringstream ss;
-        ss << this->name() << opt.stat_names.thread << i;
-        _meters_threads.push_back( this->create_meter_prototype("", ss.str()) );
-        _counters.push_back(0);
-      }
-    }
-    
+      if ( !opt.stat.queue.empty() )
+        _meter_size = stat->create_value_prototype(this->name() + opt.stat.queue);
+      if ( !opt.stat.dropped.empty() )
+        _meter_drop = stat->create_value_prototype(this->name() + opt.stat.dropped);
 
-    if ( _meter_size == nullptr && _meter_drop==nullptr && _meters_threads.empty() )
-      return;
-    
-
-    _stat_timer = core->create_timer( std::chrono::seconds(1), [this]()->bool
-    {
-      size_t dropped = this->_workflow->dropped() - this->_dropped;
-      this->create_meter( this->_meter_size, this->_workflow->queue_size(), 0 );
-      this->create_meter( this->_meter_drop, 0, dropped );
-      
-      if ( !this->_counters.empty() )
+      if ( !opt.stat.thread.empty() )
       {
-        size_t threads = this->_workflow->get()->get_threads();
-        for ( size_t i =0 ; i < threads; ++i )
+        _meters_threads.clear();
+        _counters.clear();
+        for ( int i = 0; i < opt.threads; i++ )
         {
-          size_t counter = this->_workflow->get()->get_counter(i) - this->_counters[i];
-          this->_counters[i] = this->_workflow->get()->get_counter(i);
-          this->create_meter( _meters_threads[i], 0, counter );
+          std::stringstream ss;
+          ss << this->name() << opt.stat.thread << i;
+          _meters_threads.push_back( stat->create_value_prototype(ss.str()) );
+          _counters.push_back(0);
         }
       }
-      
-      return true;
-    });
+
+      if ( _meter_size == nullptr && _meter_drop==nullptr && _meters_threads.empty() )
+        return;
+
+      _stat_timer = core->create_timer( std::chrono::milliseconds(opt.stat.interval_ms), [this, stat]()->bool
+      {
+        size_t dropped = this->_workflow->dropped() - this->_dropped;
+        stat->create_meter( this->_meter_size, this->_workflow->queue_size(), 0 );
+        stat->create_meter( this->_meter_drop, 0, dropped );
+        
+        if ( !this->_counters.empty() )
+        {
+          size_t threads = this->_workflow->get()->get_threads();
+          for ( size_t i =0 ; i < threads; ++i )
+          {
+            size_t counter = this->_workflow->get()->get_counter(i) - this->_counters[i];
+            this->_counters[i] = this->_workflow->get()->get_counter(i);
+            stat->create_meter( _meters_threads[i], 0, counter );
+          }
+        }
+        
+        return true;
+      });
+    } // if ( auto stat = this->get_statistics() )
   }
 }
 

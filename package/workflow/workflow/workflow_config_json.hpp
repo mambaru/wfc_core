@@ -6,26 +6,28 @@ namespace wfc{ namespace core{
 
 struct workflow_config_json
 {
+  JSON_NAME(interval_ms)
   JSON_NAME(queue)
   JSON_NAME(dropped)
   JSON_NAME(thread)
 
-  typedef workflow_config::stat_names_t stat_names_t;
+  typedef workflow_config::stat_params stat_params;
   typedef json::object<
-    stat_names_t,
+    stat_params,
     json::member_list<
-      json::member<n_queue, stat_names_t, std::string, &stat_names_t::queue >,
-      json::member<n_dropped, stat_names_t, std::string, &stat_names_t::dropped >,
-      json::member<n_thread, stat_names_t, std::string, &stat_names_t::thread >
+      json::member<n_interval_ms, stat_params, time_t, &stat_params::interval_ms >,
+      json::member<n_queue, stat_params, std::string, &stat_params::queue >,
+      json::member<n_dropped, stat_params, std::string, &stat_params::dropped >,
+      json::member<n_thread, stat_params, std::string, &stat_params::thread >
     >
-  > stat_names_json;
+  > stat_params_json;
   
-  JSON_NAME(stat_names)
+  JSON_NAME(stat_params)
   typedef json::object<
     workflow_config,
     json::member_list<
       json::base< workflow_options2_json >,
-      json::member<n_stat_names, workflow_config, workflow_config::stat_names_t, &workflow_config::stat_names, stat_names_json >
+      json::member<n_stat_params, workflow_config, stat_params, &workflow_config::stat, stat_params_json >
     >
   > type;
   typedef type::target target;

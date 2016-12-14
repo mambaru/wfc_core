@@ -17,7 +17,6 @@ public:
   virtual void initialize() override;
 private:
   timer_id_t _timer_id = -1;
-  //std::shared_ptr<protostat> _protos;
 };
 
 }}
