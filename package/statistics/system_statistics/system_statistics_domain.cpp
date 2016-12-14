@@ -29,7 +29,7 @@ void system_statistics_domain::initialize()
   _timer_id = -1;
 
   auto stat = this->get_statistics();
-  if ( stat = nullptr )
+  if ( stat == nullptr )
     return;
   
   auto prefix = this->options().prefix;
