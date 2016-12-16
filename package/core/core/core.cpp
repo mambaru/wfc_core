@@ -389,6 +389,33 @@ void core::_start()
   auto opt = this->options();
   if ( !opt.cpu.empty() )
   {
+      std::vector<int> ids;
+      ids.push_back(::getpid());
+      this->global()->registry.for_each<workflow>("workflow", 
+        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
+        {
+          std::vector<int> cids = wrk->manager()->get_ids();
+          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
+        }
+      );
+
+      for (int tid : ids)
+      {
+        cpu_set_t  mask;
+        CPU_ZERO(&mask);
+        for ( int cpu : opt.cpu )
+        {
+          CONFIG_LOG_MESSAGE("CPU_SET: " << cpu << " for " << tid )
+          CPU_SET(cpu, &mask);
+        }
+        int result = ::sched_setaffinity( ::getpid(), sizeof(mask), &mask);
+        if ( result == -1 )
+        {
+          CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
+        }
+      }
+
+      /*
     cpu_set_t  mask;
     CPU_ZERO(&mask);
     for ( int id : opt.cpu )
@@ -400,7 +427,7 @@ void core::_start()
     if ( result == -1 )
     {
       CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
-    }
+    }*/
   }
 
 }

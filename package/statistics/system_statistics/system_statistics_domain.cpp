@@ -133,6 +133,8 @@ void system_statistics_domain::ready()
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
   
   
+  /*
+  
   this->get_workflow()->create_timer( 
     std::chrono::seconds( 10 ),
     [thread_stats, this]()->bool
@@ -150,12 +152,14 @@ void system_statistics_domain::ready()
       {
         cpu_set_t  mask;
         CPU_ZERO(&mask);
-        CPU_SET(1, &mask);
+        CPU_SET(4, &mask);
         ::sched_setaffinity( id, sizeof(mask), &mask);
       }
       return true;
     }
   );
+  */
+  
 
   /*
   _timer_id2 = this->get_workflow()->create_timer( 
