@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <syslog.h>
 #include <sys/resource.h>
+#include <sched.h>
 
 namespace wfc{  namespace core{
 
@@ -144,7 +145,23 @@ void core::ready()
     {
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
-  }  
+  }
+  
+  if ( !opt.cpu.empty() )
+  {
+    cpu_set_t  mask;
+    CPU_ZERO(&mask);
+    for ( int id : opt.cpu )
+    {
+      CONFIG_LOG_MESSAGE("CPU_SET: " << id)
+      CPU_SET(id, &mask);
+    }
+    int result = sched_setaffinity(0, sizeof(mask), &mask);
+    if ( result == -1 )
+    {
+      CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
+    }
+  }
 }
 
 bool core::_idle()
