@@ -18,7 +18,7 @@ public:
   virtual void stop(const std::string&) override;
 private:
   timer_id_t _timer_id = -1;
-  timer_id_t _timer_id2 = -1;
+  //timer_id_t _timer_id2 = -1;
 };
 
 }}

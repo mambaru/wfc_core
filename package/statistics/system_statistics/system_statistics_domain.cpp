@@ -62,7 +62,7 @@ private:
       {
         COMMON_LOG_MESSAGE("Получена статистика для pid=" << proto->pid);
         if ( proto->ps.utime != 0 || true)
-          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime + 7);
+          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime);
         if ( proto->ps.stime != 0 )
           stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
         if ( proto->ps.cutime != 0 )
@@ -95,7 +95,7 @@ private:
       std::stringstream ss;
       ss << _prefix;
       if ( id != -1 )
-        ss << ".thread" << id;
+        ss << "thread" << id << ".";
       ss << name;
       return stat->create_value_prototype(ss.str());
     }
@@ -117,13 +117,14 @@ void system_statistics_domain::configure()
 void system_statistics_domain::stop(const std::string&) 
 {
   this->get_workflow()->release_timer(_timer_id);
-  this->get_workflow()->release_timer(_timer_id2);
+  //this->get_workflow()->release_timer(_timer_id2);
 }
 void system_statistics_domain::ready()
 {
   this->get_workflow()->release_timer(_timer_id);
-  this->get_workflow()->release_timer(_timer_id2);
-  _timer_id2 = _timer_id = -1; 
+  //this->get_workflow()->release_timer(_timer_id2);
+  //_timer_id2 = 
+  _timer_id = -1; 
 
   auto stat = this->get_statistics();
   if ( stat == nullptr )
@@ -131,6 +132,7 @@ void system_statistics_domain::ready()
 
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
   
+  /*
   _timer_id2 = this->get_workflow()->create_timer( 
     std::chrono::seconds( 10 ),
     [thread_stats, this]()->bool
@@ -156,8 +158,9 @@ void system_statistics_domain::ready()
       return true;
     }
   );
+  */
 
-  /*
+  
   auto prefix = this->options().prefix;
   auto proto = std::make_shared<protostat>();
   proto->utime = stat->create_value_prototype(prefix + "utime");
@@ -189,7 +192,7 @@ void system_statistics_domain::ready()
       return true;
     }
   );
-  */
+  
   
 }
 
