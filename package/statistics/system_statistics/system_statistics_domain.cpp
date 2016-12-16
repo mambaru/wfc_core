@@ -54,8 +54,8 @@ private:
       procstat ps;
       if ( 0==get_procstat(proto->pid, &ps) )
       {
-        if ( proto->ps.utime != 0 )
-          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime );
+        if ( proto->ps.utime != 0 || true)
+          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime + 7);
         if ( proto->ps.stime != 0 )
           stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
         if ( proto->ps.cutime != 0 )
