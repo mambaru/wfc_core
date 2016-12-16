@@ -156,7 +156,7 @@ void core::ready()
       CONFIG_LOG_MESSAGE("CPU_SET: " << id)
       CPU_SET(id, &mask);
     }
-    int result = sched_setaffinity(0, sizeof(mask), &mask);
+    int result = ::sched_setaffinity( ::getpid(), sizeof(mask), &mask);
     if ( result == -1 )
     {
       CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
