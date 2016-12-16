@@ -35,7 +35,7 @@ void workflow_domain::reconfigure()
 void workflow_domain::initialize()
 {
   auto opt = this->options();
-  if ( auto core = this->get_workflow() )
+  if ( auto core = this->global()->workflow )
   {
     core->release_timer(_stat_timer);
     if ( auto stat = this->get_statistics() )
@@ -69,11 +69,11 @@ void workflow_domain::initialize()
         
         if ( !this->_counters.empty() )
         {
-          size_t threads = this->_workflow->get()->get_threads();
+          size_t threads = this->_workflow->manager()->get_threads();
           for ( size_t i =0 ; i < threads; ++i )
           {
-            size_t counter = this->_workflow->get()->get_counter(i) - this->_counters[i];
-            this->_counters[i] = this->_workflow->get()->get_counter(i);
+            size_t counter = this->_workflow->manager()->get_counter(i) - this->_counters[i];
+            this->_counters[i] = this->_workflow->manager()->get_counter(i);
             stat->create_meter( _meters_threads[i], 0, counter );
           }
         }
@@ -92,7 +92,7 @@ void workflow_domain::start(const std::string& )
 
 void workflow_domain::stop(const std::string& ) 
 {
-  if ( auto core = this->get_workflow() )
+  if ( auto core = this->global()->workflow )
     core->release_timer(_stat_timer);
   if ( auto g = this->global() )
     g->registry.erase("workflow", this->name() );
