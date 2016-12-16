@@ -108,7 +108,7 @@ void system_statistics_domain::configure()
 
 }
 
-void system_statistics_domain::initialize()
+void system_statistics_domain::ready()
 {
   this->get_workflow()->release_timer(_timer_id);
   _timer_id = -1;
@@ -122,9 +122,12 @@ void system_statistics_domain::initialize()
     [&ids](const std::string&, std::shared_ptr<workflow> wrk)
     {
       std::vector<int> cids = wrk->manager()->get_ids();
+      DOMAIN_LOG_MESSAGE("Статитика для N " << cids.size());
       std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
     }
   );
+  DOMAIN_LOG_MESSAGE("Статитика для N " << ids.size());
+  abort();
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
   thread_stats->initialize(ids);
   _timer_id = this->get_workflow()->create_timer( 
