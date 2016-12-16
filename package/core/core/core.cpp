@@ -408,7 +408,7 @@ void core::_start()
           CONFIG_LOG_MESSAGE("CPU_SET: " << cpu << " for " << tid )
           CPU_SET(cpu, &mask);
         }
-        int result = ::sched_setaffinity( ::getpid(), sizeof(mask), &mask);
+        int result = ::sched_setaffinity( tid, sizeof(mask), &mask);
         if ( result == -1 )
         {
           CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
