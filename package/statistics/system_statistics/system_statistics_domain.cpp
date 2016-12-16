@@ -21,6 +21,7 @@ struct protostat
 class procmeter
 {
   typedef protostat::meter_ptr meter_ptr;
+  typedef std::mutex mutex_type;
 public:
   procmeter(std::weak_ptr<wfc::statistics> stat,  std::string prefix)
     : _prefix(prefix)
@@ -30,6 +31,8 @@ public:
 
   void initialize( std::vector<int> ids )
   {
+    std::lock_guard<mutex_type> lk(_mutext);
+    _threads.clear();
     _procstat = this->create_protostat_(-1);
     _procstat.pid = ::getpid();
     for (size_t i=0; i < ids.size(); ++i)
@@ -41,11 +44,13 @@ public:
 
   void perform()
   {
+    std::lock_guard<mutex_type> lk(_mutext);
     this->perform_( &_procstat );
     for ( auto& t : _threads )
       this->perform_( &t );
   }
 
+  
 private:
   void perform_( protostat* proto )
   {
@@ -101,6 +106,7 @@ private:
   std::weak_ptr<wfc::statistics> _wstat;
   protostat _procstat;
   std::vector<protostat> _threads;
+  mutex_type _mutext;
 };
   
 void system_statistics_domain::configure()
@@ -108,26 +114,40 @@ void system_statistics_domain::configure()
 
 }
 
+void system_statistics_domain::stop(const std::string&) 
+{
+  this->get_workflow()->release_timer(_timer_id);
+  this->get_workflow()->release_timer(_timer_id2);
+}
 void system_statistics_domain::ready()
 {
   this->get_workflow()->release_timer(_timer_id);
-  _timer_id = -1;
+  this->get_workflow()->release_timer(_timer_id2);
+  _timer_id2 = _timer_id = -1; 
 
   auto stat = this->get_statistics();
   if ( stat == nullptr )
     return;
 
-  std::vector<int> ids;
-  this->global()->registry.for_each<workflow>("workflow", 
-    [&ids](const std::string&, std::shared_ptr<workflow> wrk)
+  auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
+  
+  _timer_id2 = this->get_workflow()->create_timer( 
+    std::chrono::seconds( 10 ),
+    [thread_stats, this]()->bool
     {
-      std::vector<int> cids = wrk->manager()->get_ids();
-      std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
+      std::vector<int> ids;
+      this->global()->registry.for_each<workflow>("workflow", 
+        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
+        {
+          std::vector<int> cids = wrk->manager()->get_ids();
+          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
+        }
+      );
+      thread_stats->initialize(ids);
+      return true;
     }
   );
   
-  auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
-  thread_stats->initialize(ids);
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->options().interval_ms ),
     [thread_stats]()->bool
