@@ -146,22 +146,7 @@ void core::ready()
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
   }
-  
-  if ( !opt.cpu.empty() )
-  {
-    cpu_set_t  mask;
-    CPU_ZERO(&mask);
-    for ( int id : opt.cpu )
-    {
-      CONFIG_LOG_MESSAGE("CPU_SET: " << id)
-      CPU_SET(id, &mask);
-    }
-    int result = ::sched_setaffinity( ::getpid(), sizeof(mask), &mask);
-    if ( result == -1 )
-    {
-      CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
-    }
-  }
+
 }
 
 bool core::_idle()
@@ -399,6 +384,23 @@ void core::_start()
   else
   {
     CONFIG_LOG_MESSAGE("--------- DEBUG: Initialization finished. No registry changed")
+  }
+
+  auto opt = this->options();
+  if ( !opt.cpu.empty() )
+  {
+    cpu_set_t  mask;
+    CPU_ZERO(&mask);
+    for ( int id : opt.cpu )
+    {
+      CONFIG_LOG_MESSAGE("CPU_SET: " << id)
+      CPU_SET(id, &mask);
+    }
+    int result = ::sched_setaffinity( ::getpid(), sizeof(mask), &mask);
+    if ( result == -1 )
+    {
+      CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
+    }
   }
 
 }
