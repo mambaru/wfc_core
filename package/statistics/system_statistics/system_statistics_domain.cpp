@@ -132,6 +132,31 @@ void system_statistics_domain::ready()
 
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
   
+  
+  this->get_workflow()->create_timer( 
+    std::chrono::seconds( 10 ),
+    [thread_stats, this]()->bool
+    {
+      std::vector<int> ids;
+      this->global()->registry.for_each<workflow>("workflow", 
+        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
+        {
+          std::vector<int> cids = wrk->manager()->get_ids();
+          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
+        }
+      );
+
+      for (int id : ids)
+      {
+        cpu_set_t  mask;
+        CPU_ZERO(&mask);
+        CPU_SET(1, &mask);
+        ::sched_setaffinity( id, sizeof(mask), &mask);
+      }
+      return true;
+    }
+  );
+
   /*
   _timer_id2 = this->get_workflow()->create_timer( 
     std::chrono::seconds( 10 ),
@@ -149,7 +174,9 @@ void system_statistics_domain::ready()
       return true;
     }
   );
+  */
   
+  /*
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->options().interval_ms ),
     [thread_stats]()->bool
