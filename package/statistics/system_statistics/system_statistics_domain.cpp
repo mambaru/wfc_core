@@ -205,7 +205,8 @@ void system_statistics_domain::ready()
     std::chrono::milliseconds( this->options().interval_ms ),
     [stat, proto, this]()->bool
     {
-      auto t = this->global()->threads.get_proc_stat().utime;
+      //auto t = this->global()->threads.get_proc_stat().utime;
+      time_t t = 0;
       DOMAIN_LOG_MESSAGE("TEST " << t)
       procstat ps;
       if ( 0==get_procstat(&ps) )
