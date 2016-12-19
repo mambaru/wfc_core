@@ -203,8 +203,10 @@ void system_statistics_domain::ready()
   
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->options().interval_ms ),
-    [stat, proto]()->bool
+    [stat, proto, this]()->bool
     {
+      auto t = this->global()->threads.get_proc_stat().utime;
+      DOMAIN_LOG_MESSAGE("TEST " << t)
       procstat ps;
       if ( 0==get_procstat(&ps) )
       {
