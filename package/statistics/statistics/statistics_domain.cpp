@@ -138,7 +138,7 @@ void statistics_domain::initialize()
   }
 }
 
-void statistics_domain::stop(const std::string&) 
+void statistics_domain::stop() 
 {
   if ( auto wf = this->get_workflow() ) 
     wf->release_timer(_stat_wf_id);

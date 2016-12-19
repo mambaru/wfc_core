@@ -85,12 +85,12 @@ void workflow_domain::initialize()
 }
 
 
-void workflow_domain::start(const std::string& ) 
+void workflow_domain::start()
 {
   _workflow->start();
 }
 
-void workflow_domain::stop(const std::string& ) 
+void workflow_domain::stop() 
 {
   if ( auto core = this->global()->workflow )
     core->release_timer(_stat_timer);

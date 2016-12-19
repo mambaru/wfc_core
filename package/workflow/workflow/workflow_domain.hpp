@@ -20,8 +20,8 @@ public:
   using domain_object<iinterface, workflow_config>::create;
   virtual void reconfigure() override;
   virtual void initialize() override;
-  virtual void start(const std::string& ) override;
-  virtual void stop(const std::string& ) override;
+  virtual void start() override;
+  virtual void stop() override;
 private:
   std::shared_ptr<impl> _workflow;
   timer_id_t _stat_timer;

@@ -19,8 +19,8 @@ public:
   
   //domain_object
   virtual void ready() override;
-  virtual void start(const std::string& arg) override;
-  virtual void stop(const std::string& arg) override;
+  virtual void start() override;
+  virtual void stop() override;
   
   // iconfig
   virtual void reload_and_reconfigure() override;

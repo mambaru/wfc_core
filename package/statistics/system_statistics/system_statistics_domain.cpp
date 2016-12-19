@@ -114,7 +114,7 @@ void system_statistics_domain::configure()
 
 }
 
-void system_statistics_domain::stop(const std::string&) 
+void system_statistics_domain::stop() 
 {
   this->get_workflow()->release_timer(_timer_id);
   //this->get_workflow()->release_timer(_timer_id2);

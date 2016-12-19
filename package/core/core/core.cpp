@@ -96,15 +96,14 @@ int core::run()
 }
 
 
-void core::stop( const std::string &) 
+void core::stop() 
 {
   _same = this->shared_from_this();
-  DOMAIN_LOG_MESSAGE("************* void core::stop( const std::string &)  *****************")
+  DOMAIN_LOG_MESSAGE("************* void core::stop()  *****************")
   _stop_flag = true;
-  
 }
 
-void core::core_stop( )
+void core::core_stop()
 {
   DOMAIN_LOG_MESSAGE("wfc_core: stop!")
   _stop_flag = true;
@@ -122,7 +121,7 @@ void core::core_abort( std::string message )
   _abort_flag = true;
 }
 
-void core::ready()
+void core::start()
 {
   auto opt = this->options();
   

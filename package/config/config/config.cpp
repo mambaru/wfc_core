@@ -52,7 +52,7 @@ void config::ready()
   }
 }
 
-void config::start(const std::string& /*arg*/)
+void config::start()
 {
   if ( this->options().reload_sighup )
   {
@@ -63,7 +63,7 @@ void config::start(const std::string& /*arg*/)
   this->ready();
 }
 
-void config::stop(const std::string& /*arg*/)
+void config::stop()
 {
   signal(SIGHUP, nullptr);
   this->global()->workflow->release_timer(_timer_id);
