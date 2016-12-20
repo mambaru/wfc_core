@@ -386,6 +386,10 @@ void core::_start()
   }
 
   auto opt = this->options();
+  this->global()->threads.set_reg_cpu( opt.cpu );
+  this->global()->threads.set_unreg_cpu( opt.cpu );
+  this->global()->threads.update_thread_list();
+  /*
   if ( !opt.cpu.empty() )
   {
       std::vector<int> ids;
@@ -413,21 +417,8 @@ void core::_start()
           CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
         }
       }
-
-      /*
-    cpu_set_t  mask;
-    CPU_ZERO(&mask);
-    for ( int id : opt.cpu )
-    {
-      CONFIG_LOG_MESSAGE("CPU_SET: " << id)
-      CPU_SET(id, &mask);
-    }
-    int result = ::sched_setaffinity( ::getpid(), sizeof(mask), &mask);
-    if ( result == -1 )
-    {
-      CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
-    }*/
   }
+  */
 
 }
 
