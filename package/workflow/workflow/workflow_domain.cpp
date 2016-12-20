@@ -127,9 +127,9 @@ void workflow_domain::ready()
         {
           if ( proto_time == nullptr )
           {
-            size_t count = tcount->fetch_add(1);
+            size_t id = tcount->fetch_add(1);
             std::stringstream ss;
-            ss << pthis->name() << opt.stat.thread << count;
+            ss << pthis->name() << opt.stat.thread << id;
             proto_time = stat->create_value_prototype( ss.str());
             ss << ".count";
             proto_count = stat->create_value_prototype( ss.str());
