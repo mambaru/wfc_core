@@ -50,6 +50,7 @@ void workflow_domain::initialize()
       if ( !opt.stat.dropped.empty() )
         _meter_drop = stat->create_value_prototype(this->name() + opt.stat.dropped);
 
+      /*
       if ( !opt.stat.thread.empty() )
       {
         _meters_threads.clear();
@@ -61,7 +62,7 @@ void workflow_domain::initialize()
           //_meters_threads.push_back( stat->create_value_prototype(ss.str()) );
           _counters.push_back(0);
         }
-      }
+      }*/
 
       if ( _meter_size == nullptr && _meter_drop==nullptr /*&& _meters_threads.empty()*/ )
         return;
@@ -72,6 +73,7 @@ void workflow_domain::initialize()
         stat->create_meter( this->_meter_size, this->_workflow->queue_size(), 0 );
         stat->create_meter( this->_meter_drop, 0, dropped );
         
+        /*
         if ( !this->_counters.empty() )
         {
           size_t threads = this->_workflow->manager()->get_threads();
@@ -79,10 +81,10 @@ void workflow_domain::initialize()
           {
             //size_t counter = this->_workflow->manager()->get_counter(i) - this->_counters[i];
             this->_counters[i] = this->_workflow->manager()->get_counter(i);
-            /*stat->create_meter( _meters_threads[i], 0, counter );*/
+            //stat->create_meter( _meters_threads[i], 0, counter );
           }
         }
-        
+        */
         return true;
       });
     } // if ( auto stat = this->get_statistics() )
@@ -122,14 +124,14 @@ void workflow_domain::ready()
         {
           if ( proto == nullptr )
           {
-          
             size_t count = tcount->fetch_add(1);
             std::stringstream ss;
             ss << pthis->name() << opt.stat.thread << count;
             proto = stat->create_value_prototype( ss.str());
+            // при первом вызове статистику не вызываем, чтобы не "портить" графики всплесками
           }
-          
-          stat->create_meter(proto, std::chrono::duration_cast<std::chrono::microseconds>(span).count(), count );
+          else
+            stat->create_meter(proto, std::chrono::duration_cast<std::chrono::microseconds>(span).count(), count );
         }
       }
     };

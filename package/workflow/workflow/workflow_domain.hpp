@@ -31,10 +31,10 @@ private:
   timer_id_t _stat_timer;
   value_meter_ptr _meter_size;
   value_meter_ptr _meter_drop;
-  std::map< std::thread::id, time_meter_ptr> _meters_threads;
+  //std::map< std::thread::id, time_meter_ptr> _meters_threads;
   
   size_t _dropped = 0;
-  std::vector<size_t> _counters;
+  //std::vector<size_t> _counters;
 
 };
 
