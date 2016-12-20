@@ -129,7 +129,7 @@ void workflow_domain::ready()
             proto = stat->create_value_prototype( ss.str());
           }
           
-          stat->create_meter(proto, count, std::chrono::duration_cast<std::chrono::microseconds>(span).count() );
+          stat->create_meter(proto, std::chrono::duration_cast<std::chrono::microseconds>(span).count(), count );
         }
       }
     };
