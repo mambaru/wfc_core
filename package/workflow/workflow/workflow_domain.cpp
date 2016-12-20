@@ -69,9 +69,11 @@ void workflow_domain::initialize()
 
       _stat_timer = core->create_timer( std::chrono::milliseconds(opt.stat.interval_ms), [this, stat]()->bool
       {
-        size_t dropped = this->_workflow->dropped() - this->_dropped;
+        size_t dropped = this->_workflow->dropped();
+        size_t diffdrop = dropped - this->_dropped;
         stat->create_meter( this->_meter_size, this->_workflow->queue_size(), 0 );
-        stat->create_meter( this->_meter_drop, 0, dropped );
+        stat->create_meter( this->_meter_drop, 0, diffdrop );
+        this->_dropped = dropped;
         
         /*
         if ( !this->_counters.empty() )
