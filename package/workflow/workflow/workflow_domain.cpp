@@ -25,7 +25,7 @@ void workflow_domain::configure()
 
 void workflow_domain::reconfigure() 
 {
-  auto name = this->name();;
+  auto name = this->name();
   auto opt = this->options();
   opt.id = name;
   if ( _workflow == nullptr )
@@ -34,6 +34,8 @@ void workflow_domain::reconfigure()
     if ( auto g = this->global() )
       g->registry.set( "workflow", name, _workflow );
   }
+  else
+    _workflow->reconfigure(opt);
 
 }
 
@@ -117,9 +119,9 @@ void workflow_domain::ready()
   {
     std::weak_ptr<workflow_domain> wthis = this->shared_from_this();
     value_meter_ptr proto_time;
-    value_meter_ptr proto_count;
+    /*value_meter_ptr proto_count;*/
     auto tcount = std::make_shared< std::atomic<int> >();
-    opt.statistics_handler  = [wthis, proto_time, proto_count, tcount, opt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
+    opt.statistics_handler  = [wthis, proto_time, /*proto_count,*/ tcount, opt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
     {
       if ( auto pthis = wthis.lock() )
       {
@@ -131,14 +133,14 @@ void workflow_domain::ready()
             std::stringstream ss;
             ss << pthis->name() << opt.stat.thread << id;
             proto_time = stat->create_value_prototype( ss.str());
-            ss << ".count";
-            proto_count = stat->create_value_prototype( ss.str());
+            /*ss << ".count";
+            proto_count = stat->create_value_prototype( ss.str());*/
             // при первом вызове статистику не вызываем, чтобы не "портить" графики всплесками
           }
           else
           {
-            stat->create_meter(proto_time, std::chrono::duration_cast<std::chrono::microseconds>(span).count(), 1 );
-            stat->create_meter(proto_count, count, count );
+            stat->create_meter(proto_time, std::chrono::duration_cast<std::chrono::microseconds>(span).count(), count );
+            /*stat->create_meter(proto_count, count, count );*/
           }
         }
       }
