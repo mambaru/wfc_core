@@ -107,7 +107,7 @@ void workflow_domain::ready()
   auto opt = this->options();
   auto g = this->global();
   auto name = this->name();
-  
+  opt.id = name;
   g->threads.set_reg_cpu(name, opt.cpu);
   opt.startup_handler = [g, name](std::thread::id)
   {
