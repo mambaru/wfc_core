@@ -29,15 +29,20 @@ public:
   {
   }
 
-  void initialize( std::vector<int> ids )
+  void initialize(  )
   {
     std::lock_guard<mutex_type> lk(_mutext);
     _threads.clear();
-    _procstat = this->create_protostat_(-1);
+    _procstat = this->create_protostat_("", -1);
     _procstat.pid = ::getpid();
+  }
+
+  void add_threads( std::string name, std::vector<pid_t> ids )
+  {
+    std::lock_guard<mutex_type> lk(_mutext);
     for (size_t i=0; i < ids.size(); ++i)
     {
-      _threads.push_back( this->create_protostat_( static_cast<int>(i) ) );
+      _threads.push_back( this->create_protostat_( name, static_cast<int>(i) ) );
       _threads.back().pid = ids[i];
     }
   }
@@ -76,24 +81,24 @@ private:
     }
   }
 
-  protostat create_protostat_(int pid)
+  protostat create_protostat_(std::string name, int pid)
   {
     protostat proto;
-    proto.utime = this->create_meter_(pid, "utime");
-    proto.stime = this->create_meter_(pid, "stime");
-    proto.cutime = this->create_meter_(pid, "cutime");
-    proto.cstime = this->create_meter_(pid, "cstime");
-    proto.vsize = this->create_meter_(pid, "vsize");
-    proto.rss= this->create_meter_(pid, "rss");
+    proto.utime = this->create_meter_(pid, name, "utime");
+    proto.stime = this->create_meter_(pid, name, "stime");
+    proto.cutime = this->create_meter_(pid, name, "cutime");
+    proto.cstime = this->create_meter_(pid, name, "cstime");
+    proto.vsize = this->create_meter_(pid, name, "vsize");
+    proto.rss= this->create_meter_(pid, name, "rss");
     return proto;
   }
 
-  meter_ptr create_meter_( int id, std::string name)
+  meter_ptr create_meter_( int id, std::string group, std::string name)
   {
     if ( auto stat = _wstat.lock() )
     {
       std::stringstream ss;
-      ss << _prefix;
+      ss << _prefix << group;
       if ( id != -1 )
         ss << "thread" << id << ".";
       ss << name;
@@ -119,6 +124,9 @@ void system_statistics_domain::stop()
   this->get_workflow()->release_timer(_timer_id);
   //this->get_workflow()->release_timer(_timer_id2);
 }
+
+
+
 void system_statistics_domain::ready()
 {
   this->get_workflow()->release_timer(_timer_id);
@@ -131,56 +139,8 @@ void system_statistics_domain::ready()
     return;
 
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
-  
-  
-  /*
-  
-  this->get_workflow()->create_timer( 
-    std::chrono::seconds( 10 ),
-    [thread_stats, this]()->bool
-    {
-      std::vector<int> ids;
-      this->global()->registry.for_each<workflow>("workflow", 
-        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
-        {
-          std::vector<int> cids = wrk->manager()->get_ids();
-          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
-        }
-      );
-
-      for (int id : ids)
-      {
-        cpu_set_t  mask;
-        CPU_ZERO(&mask);
-        CPU_SET(4, &mask);
-        ::sched_setaffinity( id, sizeof(mask), &mask);
-      }
-      return true;
-    }
-  );
-  */
-  
-
-  /*
-  _timer_id2 = this->get_workflow()->create_timer( 
-    std::chrono::seconds( 10 ),
-    [thread_stats, this]()->bool
-    {
-      std::vector<int> ids;
-      this->global()->registry.for_each<workflow>("workflow", 
-        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
-        {
-          std::vector<int> cids = wrk->manager()->get_ids();
-          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
-        }
-      );
-      thread_stats->initialize(ids);
-      return true;
-    }
-  );
-  */
-  
-  /*
+  thread_stats->initialize();
+  thread_stats->add_threads( ".unreg.", this->global()->threads.get_unreg_pids() );
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->options().interval_ms ),
     [thread_stats]()->bool
@@ -189,9 +149,8 @@ void system_statistics_domain::ready()
       return true;
     }
   );
-  */
-
-  
+  //auto this->global()->threads.get_
+  /*
   auto prefix = this->options().prefix;
   auto proto = std::make_shared<protostat>();
   proto->utime = stat->create_value_prototype(prefix + "utime");
@@ -223,7 +182,7 @@ void system_statistics_domain::ready()
       return true;
     }
   );
-  
+  */
   
 }
 
