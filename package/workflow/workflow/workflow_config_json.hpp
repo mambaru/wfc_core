@@ -10,7 +10,7 @@ struct workflow_config_json
   JSON_NAME(queue)
   JSON_NAME(dropped)
   JSON_NAME(thread)
-
+  
   typedef workflow_config::stat_params stat_params;
   typedef json::object<
     stat_params,
@@ -22,12 +22,15 @@ struct workflow_config_json
     >
   > stat_params_json;
   
+  
+  JSON_NAME(cpu)
   JSON_NAME(stat_params)
   typedef json::object<
     workflow_config,
     json::member_list<
       json::base< workflow_options2_json >,
-      json::member<n_stat_params, workflow_config, stat_params, &workflow_config::stat, stat_params_json >
+      json::member<n_stat_params, workflow_config, stat_params, &workflow_config::stat, stat_params_json >,
+      json::member<n_cpu, workflow_config, std::set<int>, &workflow_config::cpu, json::array< std::set< json::value<int> > > >
     >
   > type;
   typedef type::target target;
