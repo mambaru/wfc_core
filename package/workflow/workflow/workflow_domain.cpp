@@ -140,9 +140,9 @@ void workflow_domain::ready()
             std::stringstream ss;
             ss << pthis->name() << opt.stat.thread << id;
             proto_time = stat->create_value_prototype( ss.str());
-            ss.clear();
-            ss << pthis->name() << "threads" << id;
-            proto_total = stat->create_value_prototype( ss.str());
+            std::stringstream ss1;
+            ss1 << pthis->name() << ".threads" << id;
+            proto_total = stat->create_value_prototype( ss1.str());
           }
           else
           {
