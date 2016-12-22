@@ -387,7 +387,8 @@ void core::_start()
 
   auto opt = this->options();
   this->global()->threads.set_reg_cpu( opt.cpu );
-  this->global()->threads.set_unreg_cpu( opt.cpu );
+  this->global()->threads.set_unreg_cpu( opt.unreg_cpu );
+  // TODO: сделать по таймауту
   this->global()->threads.update_thread_list();
   /*
   if ( !opt.cpu.empty() )
