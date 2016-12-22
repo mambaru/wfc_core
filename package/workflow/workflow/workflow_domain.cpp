@@ -125,9 +125,10 @@ void workflow_domain::ready()
   {
     std::weak_ptr<workflow_domain> wthis = this->shared_from_this();
     value_meter_ptr proto_time;
+    value_meter_ptr proto_total;
     /*value_meter_ptr proto_count;*/
     auto tcount = std::make_shared< std::atomic<int> >();
-    opt.statistics_handler  = [wthis, proto_time, /*proto_count,*/ tcount, opt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
+    opt.statistics_handler  = [wthis, proto_time, proto_total, tcount, opt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
     {
       if ( auto pthis = wthis.lock() )
       {
@@ -139,14 +140,15 @@ void workflow_domain::ready()
             std::stringstream ss;
             ss << pthis->name() << opt.stat.thread << id;
             proto_time = stat->create_value_prototype( ss.str());
-            /*ss << ".count";
-            proto_count = stat->create_value_prototype( ss.str());*/
-            // при первом вызове статистику не вызываем, чтобы не "портить" графики всплесками
+            ss.clear();
+            ss << pthis->name() << "threads" << id;
+            proto_total = stat->create_value_prototype( ss.str());
           }
           else
           {
-            stat->create_meter(proto_time, std::chrono::duration_cast<std::chrono::microseconds>(span).count(), count );
-            /*stat->create_meter(proto_count, count, count );*/
+            auto span_mcs = std::chrono::duration_cast<std::chrono::microseconds>(span).count();
+            stat->create_meter(proto_time, span_mcs, count );
+            stat->create_meter(proto_total, span_mcs, count );
           }
         }
       }
