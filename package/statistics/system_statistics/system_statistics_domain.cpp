@@ -61,11 +61,11 @@ private:
   {
     if ( auto stat = _wstat.lock() )
     {
-      COMMON_LOG_MESSAGE("Statistics for pid=" << proto->pid << "...");
+      //COMMON_LOG_MESSAGE("Statistics for pid=" << proto->pid << "...");
       procstat ps;
       if ( 0==get_procstat(proto->pid, &ps) )
       {
-        COMMON_LOG_MESSAGE("Получена статистика для pid=" << proto->pid);
+        //COMMON_LOG_MESSAGE("Получена статистика для pid=" << proto->pid);
         if ( proto->ps.utime != 0 || true)
           stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime);
         if ( proto->ps.stime != 0 )
@@ -137,6 +137,7 @@ void system_statistics_domain::ready()
   auto stat = this->get_statistics();
   if ( stat == nullptr )
     return;
+  /*
   auto g = this->global();
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
   g->threads.update_thread_list();
@@ -158,8 +159,9 @@ void system_statistics_domain::ready()
       return true;
     }
   );
+  */
   //auto this->global()->threads.get_
-  /*
+  
   auto prefix = this->options().prefix;
   auto proto = std::make_shared<protostat>();
   proto->utime = stat->create_value_prototype(prefix + "utime");
@@ -181,9 +183,10 @@ void system_statistics_domain::ready()
         if ( proto->ps.stime != 0 )
           stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
         if ( proto->ps.cutime != 0 )
-          stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
+          /*stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
         if ( proto->ps.cstime != 0 )
           stat->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
+        */
         stat->create_meter(proto->vsize,  ps.vsize/(1024*1024), 0);
         stat->create_meter(proto->rss,  ps.rss*getpagesize()/(1024*1024), 0);
         proto->ps = ps;
@@ -191,7 +194,7 @@ void system_statistics_domain::ready()
       return true;
     }
   );
-  */
+  
   
 }
 
