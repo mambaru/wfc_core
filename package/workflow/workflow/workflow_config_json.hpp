@@ -1,6 +1,7 @@
 #pragma once
 
 #include <wfc/core/workflow_options_json.hpp>
+#include "workflow_config.hpp"
 
 namespace wfc{ namespace core{
 
@@ -11,26 +12,27 @@ struct workflow_config_json
   JSON_NAME(dropped)
   JSON_NAME(thread)
   
-  typedef workflow_config::stat_params stat_params;
+  typedef workflow_config::statistics_params statistics_params;
   typedef json::object<
-    stat_params,
+    statistics_params,
     json::member_list<
-      json::member<n_interval_ms, stat_params, time_t, &stat_params::interval_ms >,
-      json::member<n_queue, stat_params, std::string, &stat_params::queue >,
-      json::member<n_dropped, stat_params, std::string, &stat_params::dropped >,
-      json::member<n_thread, stat_params, std::string, &stat_params::thread >
+      json::member<n_interval_ms, statistics_params, time_t, &statistics_params::interval_ms >,
+      json::member<n_queue, statistics_params, std::string, &statistics_params::queue >,
+      json::member<n_dropped, statistics_params, std::string, &statistics_params::dropped >,
+      json::member<n_thread, statistics_params, std::string, &statistics_params::thread >
     >
-  > stat_params_json;
+  > statistics_params_json;
   
   
   JSON_NAME(cpu)
-  JSON_NAME(stat_params)
+  JSON_NAME(statistics_params)
   typedef json::object<
     workflow_config,
     json::member_list<
       json::base< workflow_options2_json >,
-      json::member<n_stat_params, workflow_config, stat_params, &workflow_config::stat, stat_params_json >,
-      json::member<n_cpu, workflow_config, std::set<int>, &workflow_config::cpu, json::array< std::set< json::value<int> > > >
+      json::member<n_cpu, workflow_config, std::set<int>, &workflow_config::cpu, json::array< std::set< json::value<int> > > >,
+      json::member<n_statistics_params, workflow_config, statistics_params, &workflow_config::stat, statistics_params_json >
+      
     >
   > type;
   typedef type::target target;

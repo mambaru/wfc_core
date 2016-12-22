@@ -7,14 +7,14 @@ namespace wfc{ namespace core{
 struct workflow_config: workflow_options
 {
   std::set<int> cpu;
-  struct stat_params
+  struct statistics_params
   {
     time_t interval_ms = 1000;
     std::string queue = ".queue";
     std::string dropped = ".dropped";
     std::string thread = ".thread";
   };
-  stat_params stat;
+  statistics_params stat;
 };
 
 }}

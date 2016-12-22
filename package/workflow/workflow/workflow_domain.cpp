@@ -111,6 +111,8 @@ void workflow_domain::ready()
   g->threads.set_reg_cpu(name, opt.cpu);
   opt.startup_handler = [g, name](std::thread::id)
   {
+    std::cout << name << std::endl;
+    abort();
     g->threads.reg_thread(name);
   };
   opt.finish_handler = [g](std::thread::id)
