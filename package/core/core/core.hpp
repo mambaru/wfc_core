@@ -27,8 +27,8 @@ public:
   
   /// domain_object
   virtual void create() override;
-  virtual void ready() override;
-  virtual void stop( const std::string &) override;
+  virtual void start() override;
+  virtual void stop() override;
 
   
 private:

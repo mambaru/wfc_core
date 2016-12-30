@@ -17,7 +17,7 @@ public:
   virtual void reconfigure_basic() override;
   virtual void reconfigure() override;
   virtual void initialize() override;
-  virtual void stop(const std::string&) override;
+  virtual void stop() override;
 private:
   std::shared_ptr<impl> _impl;
   std::weak_ptr<ibtp> _wbtp;

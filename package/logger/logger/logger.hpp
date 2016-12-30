@@ -37,8 +37,8 @@ public:
   
 // domain_object
   virtual void reconfigure() override;
-  virtual void stop(const std::string& ) override;
-  virtual void start(const std::string& ) override;
+  virtual void stop() override;
+  virtual void start() override;
   
 //iinterface
   virtual void perform_io(data_ptr d, io_id_t io_id, outgoing_handler_t callback);

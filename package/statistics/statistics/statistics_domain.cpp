@@ -2,6 +2,7 @@
 #include <wfc/iinterface.hpp>
 #include "statistics_domain.hpp"
 #include <wfc/statistics/statistics.hpp>
+#include <ctime>
 //#include <wrtstat/wrtstat.hpp>
 
 namespace wfc{ namespace core{
@@ -80,15 +81,18 @@ namespace
 
 void statistics_domain::initialize() 
 {
-  _wbtp = this->get_target<ibtp>( this->options().btp_target );
+  auto opt = this->options();
+  _wbtp = this->get_target<ibtp>( opt.btp_target );
 
   if ( auto wf = this->get_workflow() ) 
   {
     std::weak_ptr<statistics_domain::impl> wimpl = _impl;
     auto wbtp = _wbtp;
-    auto log = this->options().log;
-    int metric = this->options().log_metric;
-    _stat_wf_id = wf->create_timer( std::chrono::milliseconds(1000), [this, wimpl, wbtp, log, metric]()
+    auto log = opt.log;
+    int metric = opt.log_metric;
+    auto start = std::chrono::system_clock::now();
+    time_t delay = opt.btp_delay_ms;
+    _stat_wf_id = wf->create_timer( std::chrono::milliseconds(opt.timeout_ms), [this, wimpl, wbtp, log, metric, start, delay]()
     {
       if ( auto pimpl = wimpl.lock() )
       {
@@ -114,15 +118,21 @@ void statistics_domain::initialize()
 
             if ( auto pbtp = wbtp.lock() )
             {
-              // Структура aggregated в wfc немного отличается от btp 
-              auto req = std::make_unique<btp::request::add>();
-              req->name = name;
-              // сначала переносим data
-              req->cl = std::move(ag->data);
-              // потом все остальное (req->ag.data не сериализуется! только req->cl )
-              req->ag = std::move(*ag);
-              req->ts = req->ag.ts;
-              pbtp->add( std::move(req), nullptr );
+              auto now = std::chrono::system_clock::now();
+              auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - start).count();
+              
+              if ( diff > delay )
+              {
+                // Структура aggregated в wfc немного отличается от btp 
+                auto req = std::make_unique<btp::request::add>();
+                req->name = name;
+                // сначала переносим data
+                req->cl = std::move(ag->data);
+                // потом все остальное (req->ag.data не сериализуется! только req->cl )
+                req->ag = std::move(*ag);
+                req->ts = req->ag.ts;
+                pbtp->add( std::move(req), nullptr );
+              }
             }
           }
         }
@@ -138,7 +148,7 @@ void statistics_domain::initialize()
   }
 }
 
-void statistics_domain::stop(const std::string&) 
+void statistics_domain::stop() 
 {
   if ( auto wf = this->get_workflow() ) 
     wf->release_timer(_stat_wf_id);

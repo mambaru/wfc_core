@@ -21,6 +21,7 @@ struct protostat
 class procmeter
 {
   typedef protostat::meter_ptr meter_ptr;
+  typedef std::mutex mutex_type;
 public:
   procmeter(std::weak_ptr<wfc::statistics> stat,  std::string prefix)
     : _prefix(prefix)
@@ -28,34 +29,45 @@ public:
   {
   }
 
-  void initialize( std::vector<int> ids )
+  void initialize(  )
   {
-    _procstat = this->create_protostat_(-1);
+    std::lock_guard<mutex_type> lk(_mutext);
+    _threads.clear();
+    _procstat = this->create_protostat_("", -1);
     _procstat.pid = ::getpid();
+  }
+
+  void add_threads( std::string name, std::vector<pid_t> ids )
+  {
+    std::lock_guard<mutex_type> lk(_mutext);
     for (size_t i=0; i < ids.size(); ++i)
     {
-      _threads.push_back( this->create_protostat_( static_cast<int>(i) ) );
+      _threads.push_back( this->create_protostat_( name, static_cast<int>(i) ) );
       _threads.back().pid = ids[i];
     }
   }
 
   void perform()
   {
+    std::lock_guard<mutex_type> lk(_mutext);
     this->perform_( &_procstat );
     for ( auto& t : _threads )
       this->perform_( &t );
   }
 
+  
 private:
   void perform_( protostat* proto )
   {
     if ( auto stat = _wstat.lock() )
     {
+      //COMMON_LOG_MESSAGE("Statistics for pid=" << proto->pid << "...");
       procstat ps;
       if ( 0==get_procstat(proto->pid, &ps) )
       {
-        if ( proto->ps.utime != 0 )
-          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime );
+        //COMMON_LOG_MESSAGE("Получена статистика для pid=" << proto->pid);
+        if ( proto->ps.utime != 0 || true)
+          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime);
         if ( proto->ps.stime != 0 )
           stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
         if ( proto->ps.cutime != 0 )
@@ -69,26 +81,26 @@ private:
     }
   }
 
-  protostat create_protostat_(int pid)
+  protostat create_protostat_(std::string name, int pid)
   {
     protostat proto;
-    proto.utime = this->create_meter_(pid, "utime");
-    proto.stime = this->create_meter_(pid, "stime");
-    proto.cutime = this->create_meter_(pid, "cutime");
-    proto.cstime = this->create_meter_(pid, "cstime");
-    proto.vsize = this->create_meter_(pid, "vsize");
-    proto.rss= this->create_meter_(pid, "rss");
+    proto.utime = this->create_meter_(pid, name, "utime");
+    proto.stime = this->create_meter_(pid, name, "stime");
+    proto.cutime = this->create_meter_(pid, name, "cutime");
+    proto.cstime = this->create_meter_(pid, name, "cstime");
+    proto.vsize = this->create_meter_(pid, name, "vsize");
+    proto.rss= this->create_meter_(pid, name, "rss");
     return proto;
   }
 
-  meter_ptr create_meter_( int id, std::string name)
+  meter_ptr create_meter_( int id, std::string group, std::string name)
   {
     if ( auto stat = _wstat.lock() )
     {
       std::stringstream ss;
-      ss << _prefix;
+      ss << _prefix << group;
       if ( id != -1 )
-        ss << ".thread" << id;
+        ss << "thread" << id << ".";
       ss << name;
       return stat->create_value_prototype(ss.str());
     }
@@ -99,6 +111,7 @@ private:
   std::weak_ptr<wfc::statistics> _wstat;
   protostat _procstat;
   std::vector<protostat> _threads;
+  mutex_type _mutext;
 };
   
 void system_statistics_domain::configure()
@@ -106,35 +119,49 @@ void system_statistics_domain::configure()
 
 }
 
-void system_statistics_domain::initialize()
+void system_statistics_domain::stop() 
 {
   this->get_workflow()->release_timer(_timer_id);
-  _timer_id = -1;
+  //this->get_workflow()->release_timer(_timer_id2);
+}
+
+
+
+void system_statistics_domain::ready()
+{
+  this->get_workflow()->release_timer(_timer_id);
+  //this->get_workflow()->release_timer(_timer_id2);
+  //_timer_id2 = 
+  _timer_id = -1; 
 
   auto stat = this->get_statistics();
   if ( stat == nullptr )
     return;
-
-  std::vector<int> ids;
-  this->global()->registry.for_each<workflow>("workflow", 
-    [&ids](const std::string&, std::shared_ptr<workflow> wrk)
-    {
-      std::vector<int> cids = wrk->manager()->get_ids();
-      std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
-    }
-  );
+  /*
+  auto g = this->global();
   auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
-  thread_stats->initialize(ids);
+  g->threads.update_thread_list();
+  thread_stats->initialize();
+  thread_stats->add_threads( ".unreg.", g->threads.get_unreg_pids() );
+  size_t counter = 0;
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->options().interval_ms ),
-    [thread_stats]()->bool
+    [thread_stats, g, counter]()mutable->bool 
     {
+      ++counter;
+      if ( counter == 10 || counter%100==0 )
+      {
+        g->threads.update_thread_list();
+        thread_stats->initialize();
+        thread_stats->add_threads( ".unreg.", g->threads.get_unreg_pids() );
+      }
       thread_stats->perform();
       return true;
     }
   );
-
-  /*
+  */
+  //auto this->global()->threads.get_
+  
   auto prefix = this->options().prefix;
   auto proto = std::make_shared<protostat>();
   proto->utime = stat->create_value_prototype(prefix + "utime");
@@ -146,7 +173,7 @@ void system_statistics_domain::initialize()
   
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->options().interval_ms ),
-    [stat, proto]()->bool
+    [stat, proto, this]()->bool
     {
       procstat ps;
       if ( 0==get_procstat(&ps) )
@@ -156,9 +183,10 @@ void system_statistics_domain::initialize()
         if ( proto->ps.stime != 0 )
           stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
         if ( proto->ps.cutime != 0 )
-          stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
+          /*stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
         if ( proto->ps.cstime != 0 )
           stat->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
+        */
         stat->create_meter(proto->vsize,  ps.vsize/(1024*1024), 0);
         stat->create_meter(proto->rss,  ps.rss*getpagesize()/(1024*1024), 0);
         proto->ps = ps;
@@ -166,7 +194,7 @@ void system_statistics_domain::initialize()
       return true;
     }
   );
-  */
+  
   
 }
 

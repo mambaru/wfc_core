@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <syslog.h>
 #include <sys/resource.h>
+#include <sched.h>
 
 namespace wfc{  namespace core{
 
@@ -95,15 +96,14 @@ int core::run()
 }
 
 
-void core::stop( const std::string &) 
+void core::stop() 
 {
   _same = this->shared_from_this();
-  DOMAIN_LOG_MESSAGE("************* void core::stop( const std::string &)  *****************")
+  DOMAIN_LOG_MESSAGE("************* void core::stop()  *****************")
   _stop_flag = true;
-  
 }
 
-void core::core_stop( )
+void core::core_stop()
 {
   DOMAIN_LOG_MESSAGE("wfc_core: stop!")
   _stop_flag = true;
@@ -121,7 +121,7 @@ void core::core_abort( std::string message )
   _abort_flag = true;
 }
 
-void core::ready()
+void core::start()
 {
   auto opt = this->options();
   
@@ -144,7 +144,8 @@ void core::ready()
     {
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
-  }  
+  }
+
 }
 
 bool core::_idle()
@@ -383,6 +384,42 @@ void core::_start()
   {
     CONFIG_LOG_MESSAGE("--------- DEBUG: Initialization finished. No registry changed")
   }
+
+  auto opt = this->options();
+  this->global()->threads.set_reg_cpu( opt.cpu );
+  this->global()->threads.set_unreg_cpu( opt.unreg_cpu );
+  // TODO: сделать по таймауту
+  this->global()->threads.update_thread_list();
+  /*
+  if ( !opt.cpu.empty() )
+  {
+      std::vector<int> ids;
+      ids.push_back(::getpid());
+      this->global()->registry.for_each<workflow>("workflow", 
+        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
+        {
+          std::vector<int> cids = wrk->manager()->get_ids();
+          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
+        }
+      );
+
+      for (int tid : ids)
+      {
+        cpu_set_t  mask;
+        CPU_ZERO(&mask);
+        for ( int cpu : opt.cpu )
+        {
+          CONFIG_LOG_MESSAGE("CPU_SET: " << cpu << " for " << tid )
+          CPU_SET(cpu, &mask);
+        }
+        int result = ::sched_setaffinity( tid, sizeof(mask), &mask);
+        if ( result == -1 )
+        {
+          CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
+        }
+      }
+  }
+  */
 
 }
 

@@ -14,9 +14,11 @@ class system_statistics_domain
   //struct protostat;
 public:
   virtual void configure() override;
-  virtual void initialize() override;
+  virtual void ready() override;
+  virtual void stop() override;
 private:
   timer_id_t _timer_id = -1;
+  //timer_id_t _timer_id2 = -1;
 };
 
 }}
