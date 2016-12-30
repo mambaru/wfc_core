@@ -21,13 +21,13 @@ logger::~logger()
   this->unreg_loggers_();
 }
 
-void logger::start(const std::string& )
+void logger::start()
 {
   _summary = 0;
   _starttime = aux::mkdate();
 }
 
-void logger::stop(const std::string& )
+void logger::stop()
 {
   std::lock_guard<mutex_type> lk(_mutex);
   this->unreg_loggers_();
