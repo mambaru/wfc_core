@@ -17,7 +17,7 @@ namespace wfc{ namespace core{
 class idle_timer;
   
 class startup_domain
-  : public ::wfc::domain_object<istartup, startup_config>
+  : public ::wfc::domain_object<istartup, startup_config, nostat>
   , public std::enable_shared_from_this<startup_domain>
 {
 public:

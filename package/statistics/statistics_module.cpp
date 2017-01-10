@@ -1,6 +1,6 @@
 
 #include "statistics_module.hpp"
-#include "statistics/statistics_multiton.hpp"
+#include "statistics_aggregator/statistics_multiton.hpp"
 #include "system_statistics/system_statistics_multiton.hpp"
 #include "gateway/btp_gateway_multiton.hpp"
 

@@ -10,8 +10,8 @@ struct protostat
   typedef std::shared_ptr< ::wfc::value_meter > meter_ptr;
   meter_ptr utime;                    /** user mode jiffies **/
   meter_ptr stime;                    /** kernel mode jiffies **/
-  meter_ptr cutime;                   /** user mode jiffies with childs **/
-  meter_ptr cstime;                   /** kernel mode jiffies with childs **/
+  // meter_ptr cutime;                   /** user mode jiffies with childs **/
+  // meter_ptr cstime;                   /** kernel mode jiffies with childs **/
   meter_ptr vsize;                    /** Virtual memory size **/
   meter_ptr rss;                      /** Resident Set Size **/
   int pid = 0;
@@ -70,10 +70,11 @@ private:
           stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime);
         if ( proto->ps.stime != 0 )
           stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
-        if ( proto->ps.cutime != 0 )
+        /*if ( proto->ps.cutime != 0 )
           stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
         if ( proto->ps.cstime != 0 )
           stat->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
+        */
         stat->create_meter(proto->vsize,  ps.vsize*getpagesize()/*/(1024*1024)*/, 0);
         stat->create_meter(proto->rss,  ps.rss*getpagesize()/*/(1024*1024)*/, 0);
         proto->ps = ps;
@@ -86,8 +87,8 @@ private:
     protostat proto;
     proto.utime = this->create_meter_(pid, name, "utime");
     proto.stime = this->create_meter_(pid, name, "stime");
-    proto.cutime = this->create_meter_(pid, name, "cutime");
-    proto.cstime = this->create_meter_(pid, name, "cstime");
+    /*proto.cutime = this->create_meter_(pid, name, "cutime");
+    proto.cstime = this->create_meter_(pid, name, "cstime");*/
     proto.vsize = this->create_meter_(pid, name, "vsize");
     proto.rss= this->create_meter_(pid, name, "rss");
     return proto;
@@ -162,17 +163,17 @@ void system_statistics_domain::ready()
   */
   //auto this->global()->threads.get_
   
-  auto prefix = this->options().prefix;
+  auto prefix = this->statistics_options().prefix;
   auto proto = std::make_shared<protostat>();
   proto->utime = stat->create_value_prototype(prefix + "utime");
   proto->stime = stat->create_value_prototype(prefix + "stime");
-  proto->cutime = stat->create_value_prototype(prefix + "cutime");
-  proto->cstime = stat->create_value_prototype(prefix + "cstime");
+  /*proto->cutime = stat->create_value_prototype(prefix + "cutime");
+  proto->cstime = stat->create_value_prototype(prefix + "cstime");*/
   proto->vsize = stat->create_value_prototype(prefix + "vsize");
   proto->rss= stat->create_value_prototype(prefix + "rss");
   
   _timer_id = this->get_workflow()->create_timer( 
-    std::chrono::milliseconds( this->options().interval_ms ),
+    std::chrono::milliseconds( this->statistics_options().interval_ms ),
     [stat, proto, this]()->bool
     {
       procstat ps;

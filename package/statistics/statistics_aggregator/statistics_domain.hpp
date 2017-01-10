@@ -2,6 +2,7 @@
 
 #include <wfc/domain_object.hpp>
 #include <wfc/statistics/ibtp.hpp>
+#include <wfc/statistics/stat_options.hpp>
 #include "statistics_config.hpp"
 #include <string>
 #include <memory>
@@ -9,7 +10,7 @@
 namespace wfc{ namespace core{
 
 class statistics_domain
-  : public domain_object<iinterface, statistics_config>
+  : public domain_object<iinterface, statistics_config, ::wfc::stat_options>
 {
   class impl;
 public:

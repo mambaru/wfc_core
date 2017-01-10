@@ -22,7 +22,7 @@ namespace wfc{ namespace core{
 class writer;
 
 class logger
-  : public domain_object<iinterface, logger_config>
+  : public domain_object<iinterface, logger_config, nostat>
   , public std::enable_shared_from_this<logger>
 {
   typedef std::mutex mutex_type;

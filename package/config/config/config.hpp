@@ -11,7 +11,7 @@
 namespace wfc{ namespace core{
 
 class config
-  :  public ::wfc::domain_object<iconfig, config_config>
+  :  public ::wfc::domain_object<iconfig, config_config, nostat>
 {
 public:
   virtual ~config();

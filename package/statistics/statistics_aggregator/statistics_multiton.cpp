@@ -4,18 +4,21 @@
 #include "statistics_config_json.hpp"
 #include <wfc/module/multiton.hpp>
 #include <wfc/module/instance.hpp>
+#include <wfc/statistics/stat_options_json.hpp>
 #include <wfc/name.hpp>
 
 namespace wfc{ namespace core{
 
 namespace {
 
-  WFC_NAME2(object_name, "statistics")
+  WFC_NAME2(object_name, "statistics-aggregator")
 
   class impl: public ::wfc::multiton<
     object_name,
     ::wfc::instance<statistics_domain>,
-    statistics_config_json
+    statistics_config_json,
+    ::wfc::component_features::Defaults,
+    stat_options_json
   >
   {};
 }

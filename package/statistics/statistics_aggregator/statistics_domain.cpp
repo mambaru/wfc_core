@@ -13,7 +13,7 @@ class statistics_domain::impl
   , public ::wfc::iinterface
 {
 public:
-  impl(const statistics_config& opt )
+  impl(const ::wfc::stat_options& opt )
     : statistics( opt)
   {}
 };
@@ -30,7 +30,7 @@ void statistics_domain::reconfigure_basic()
 
 void statistics_domain::reconfigure()
 {
-  _impl = std::make_shared<impl>( this->options() );
+  _impl = std::make_shared<impl>( this->statistics_options() );
   _impl->enable( !this->suspended()  );
 
   if ( auto wf = this->get_workflow() ) 

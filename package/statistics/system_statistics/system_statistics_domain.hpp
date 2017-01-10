@@ -3,13 +3,14 @@
 #include <wfc/domain_object.hpp>
 #include <wfc/statistics/ibtp.hpp>
 #include "system_statistics_config.hpp"
+#include "system_statistics_options.hpp"
 #include <string>
 #include <memory>
 
 namespace wfc{  namespace core{
 
 class system_statistics_domain
-  : public domain_object<iinterface, system_statistics_config>
+  : public domain_object<iinterface, system_statistics_config, system_statistics_options>
 {
   //struct protostat;
 public:

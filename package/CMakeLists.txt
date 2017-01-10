@@ -28,8 +28,8 @@ SET(
   workflow/workflow/workflow_domain.cpp
 
   statistics/statistics_module.cpp
-  statistics/statistics/statistics_multiton.cpp
-  statistics/statistics/statistics_domain.cpp
+  statistics/statistics_aggregator/statistics_multiton.cpp
+  statistics/statistics_aggregator/statistics_domain.cpp
   statistics/system_statistics/system_statistics_multiton.cpp
   statistics/system_statistics/system_statistics_domain.cpp
   statistics/system_statistics/impl/get_procstat.cpp

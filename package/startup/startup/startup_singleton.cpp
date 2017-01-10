@@ -28,7 +28,6 @@ namespace
     | component_features::DisabledPriority 
     | component_features::DisabledSuspend 
     | component_features::DisabledWorkflow
-    | component_features::DisabledStatistics
   > {};
 }
 

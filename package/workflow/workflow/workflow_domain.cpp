@@ -41,16 +41,16 @@ void workflow_domain::reconfigure()
 
 void workflow_domain::initialize()
 {
-  auto opt = this->options();
+  auto opt = this->statistics_options();
   if ( auto core = this->global()->workflow )
   {
     core->release_timer(_stat_timer);
     if ( auto stat = this->get_statistics() )
     {
-      if ( !opt.stat.queue.empty() )
-        _meter_size = stat->create_value_prototype(this->name() + opt.stat.queue);
-      if ( !opt.stat.dropped.empty() )
-        _meter_drop = stat->create_value_prototype(this->name() + opt.stat.dropped);
+      if ( !opt.queue.empty() )
+        _meter_size = stat->create_value_prototype(this->name() + opt.queue);
+      if ( !opt.dropped.empty() )
+        _meter_drop = stat->create_value_prototype(this->name() + opt.dropped);
 
       /*
       if ( !opt.stat.thread.empty() )
@@ -69,7 +69,7 @@ void workflow_domain::initialize()
       if ( _meter_size == nullptr && _meter_drop==nullptr /*&& _meters_threads.empty()*/ )
         return;
 
-      _stat_timer = core->create_timer( std::chrono::milliseconds(opt.stat.interval_ms), [this, stat]()->bool
+      _stat_timer = core->create_timer( std::chrono::milliseconds(opt.interval_ms), [this, stat]()->bool
       {
         size_t dropped = this->_workflow->dropped();
         size_t diffdrop = dropped - this->_dropped;
@@ -105,6 +105,8 @@ void workflow_domain::start()
 void workflow_domain::ready() 
 {
   auto opt = this->options();
+  auto statopt = this->statistics_options();
+
   auto g = this->global();
   auto name = this->name();
   opt.id = name;
@@ -128,7 +130,7 @@ void workflow_domain::ready()
     value_meter_ptr proto_total;
     /*value_meter_ptr proto_count;*/
     auto tcount = std::make_shared< std::atomic<int> >();
-    opt.statistics_handler  = [wthis, proto_time, proto_total, tcount, opt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
+    opt.statistics_handler  = [wthis, proto_time, proto_total, tcount, statopt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
     {
       if ( auto pthis = wthis.lock() )
       {
@@ -138,7 +140,7 @@ void workflow_domain::ready()
           {
             size_t id = tcount->fetch_add(1);
             std::stringstream ss;
-            ss << pthis->name() << opt.stat.thread << id;
+            ss << pthis->name() << statopt.thread << id;
             proto_time = stat->create_value_prototype( ss.str());
             std::stringstream ss1;
             ss1 << pthis->name() << ".threads";

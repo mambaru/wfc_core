@@ -17,7 +17,8 @@ namespace {
     ::wfc::instance<workflow_domain>,
     workflow_config_json,
       component_features::DisabledSuspend 
-    | component_features::DisabledWorkflow 
+    | component_features::DisabledWorkflow, 
+    workflow_statistics_json
   >
   {};
 }

@@ -36,12 +36,12 @@ struct statistics_config_json
   typedef json::object<
     statistics_config,
     json::member_list<
-      json::base<stat_options_json>,
-      json::member< n_timeout_ms, statistics_config, time_t,         &statistics_config::timeout_ms>,
-      json::member< n_btp_delay_ms, statistics_config, time_t,         &statistics_config::btp_delay_ms>,
-      json::member< n_btp_target, statistics_config, std::string, &statistics_config::btp_target>,
-      json::member< n_log,        statistics_config, std::string, &statistics_config::log>,
-      json::member< n_log_metric, statistics_config, int,         &statistics_config::log_metric, enum_json>
+      //json::base<stat_options_json>,
+      json::member< n_timeout_ms,   statistics_config, time_t,      &statistics_config::timeout_ms>,
+      json::member< n_btp_delay_ms, statistics_config, time_t,      &statistics_config::btp_delay_ms>,
+      json::member< n_btp_target,   statistics_config, std::string, &statistics_config::btp_target>,
+      json::member< n_log,          statistics_config, std::string, &statistics_config::log>,
+      json::member< n_log_metric,   statistics_config, int,         &statistics_config::log_metric, enum_json>
      >
   > type;
   
