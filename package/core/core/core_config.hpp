@@ -15,7 +15,6 @@ struct core_config
   std::set<int> unreg_cpu;
   bool enable_callback_check = true;
   workflow_options core_workflow;
-  core_config() { /*core_workflow.enabled = true;*/ }
 };
 
 }}
