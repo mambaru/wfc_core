@@ -110,19 +110,20 @@ void workflow_domain::ready()
   auto g = this->global();
   auto name = this->name();
   opt.id = name;
+
   g->threads.set_reg_cpu(name, opt.cpu);
   opt.startup_handler = [g, name](std::thread::id id)
   {
-    /*std::cout << name << std::endl;
-    abort();*/
     COMMON_LOG_MESSAGE( "Start workflow thread " << id )
     g->threads.reg_thread(name);
   };
+
   opt.finish_handler = [g](std::thread::id id)
   {
     COMMON_LOG_MESSAGE( "Finish workflow thread " << id )
     g->threads.unreg_thread();
   }; 
+
   if ( this->get_statistics() != nullptr )
   {
     std::weak_ptr<workflow_domain> wthis = this->shared_from_this();
