@@ -33,6 +33,10 @@ void workflow_domain::reconfigure()
     _workflow = std::make_shared<impl>( this->global()->io_service, opt );
     if ( auto g = this->global() )
       g->registry.set( "workflow", name, _workflow );
+    // Стартуем сразу, чтобы запросы не терять не 
+    //_workflow->start();
+    //this->ready();
+    
   }
   else
     _workflow->reconfigure(opt);
@@ -98,8 +102,10 @@ void workflow_domain::initialize()
 
 void workflow_domain::start()
 {
+  
   this->ready();
   _workflow->start();
+  
 }
 
 void workflow_domain::ready() 
