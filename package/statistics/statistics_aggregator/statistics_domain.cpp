@@ -33,8 +33,6 @@ void statistics_domain::reconfigure()
   _impl = std::make_shared<impl>( this->statistics_options() );
   _impl->enable( !this->suspended()  );
 
-  if ( auto wf = this->get_workflow() ) 
-    wf->release_timer(_stat_wf_id);
   
   if ( auto g = this->global() )
   {
@@ -86,6 +84,8 @@ void statistics_domain::initialize()
 
   if ( auto wf = this->get_workflow() ) 
   {
+    wf->release_timer(_stat_wf_id);
+
     std::weak_ptr<statistics_domain::impl> wimpl = _impl;
     auto wbtp = _wbtp;
     auto log = opt.log;
