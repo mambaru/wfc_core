@@ -91,7 +91,7 @@ int core::run()
   qopt.wrnsize = 10;
   qopt.maxsize = 100;
   qopt.threads = 0;
-  _core_timer = std::make_shared< ::iow::workflow >( this->global()->io_service, qopt );
+  _core_workflow = std::make_shared< ::iow::workflow >( this->global()->io_service, qopt );
   return this->_main_loop();
 }
 
@@ -181,7 +181,7 @@ int core::_main_loop()
   this->global()->workflow->start();
   std::weak_ptr<core> wthis = this->shared_from_this();
 
-  _core_timer->create_timer(
+  _core_workflow->create_timer(
     std::chrono::milliseconds(this->options().idle_timeout_ms),
     [wthis]()->bool 
     {
@@ -194,7 +194,7 @@ int core::_main_loop()
     }
   );
   
-  _core_timer->create_timer(
+  _core_workflow->create_timer(
     std::chrono::milliseconds(this->options().core_timeout_ms),
     [wthis]()->bool 
     {

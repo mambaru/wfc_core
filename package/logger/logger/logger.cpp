@@ -21,6 +21,13 @@ logger::~logger()
   this->unreg_loggers_();
 }
 
+logger::config_type logger::generate(const std::string&) 
+{
+  logger::config_type conf;
+  conf.custom["log-name"]=writer_options();
+  return conf;
+}
+
 void logger::start()
 {
   _summary = 0;

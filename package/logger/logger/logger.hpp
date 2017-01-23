@@ -39,7 +39,7 @@ public:
   virtual void reconfigure() override;
   virtual void stop() override;
   virtual void start() override;
-  
+  virtual logger::config_type generate(const std::string&) override;
 //iinterface
   virtual void perform_io(data_ptr d, io_id_t io_id, outgoing_handler_t callback);
   
