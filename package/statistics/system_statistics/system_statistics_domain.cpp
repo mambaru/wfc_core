@@ -138,30 +138,6 @@ void system_statistics_domain::ready()
   auto stat = this->get_statistics();
   if ( stat == nullptr )
     return;
-  /*
-  auto g = this->global();
-  auto thread_stats = std::make_shared<procmeter>(stat, this->options().prefix);
-  g->threads.update_thread_list();
-  thread_stats->initialize();
-  thread_stats->add_threads( ".unreg.", g->threads.get_unreg_pids() );
-  size_t counter = 0;
-  _timer_id = this->get_workflow()->create_timer( 
-    std::chrono::milliseconds( this->options().interval_ms ),
-    [thread_stats, g, counter]()mutable->bool 
-    {
-      ++counter;
-      if ( counter == 10 || counter%100==0 )
-      {
-        g->threads.update_thread_list();
-        thread_stats->initialize();
-        thread_stats->add_threads( ".unreg.", g->threads.get_unreg_pids() );
-      }
-      thread_stats->perform();
-      return true;
-    }
-  );
-  */
-  //auto this->global()->threads.get_
   
   auto prefix = this->statistics_options().prefix;
   auto proto = std::make_shared<protostat>();
