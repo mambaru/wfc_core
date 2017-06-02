@@ -14,7 +14,9 @@ class workflow_domain
   , public std::enable_shared_from_this<workflow_domain>
 {
   class impl;
+  typedef domain_object<iinterface, workflow_config, workflow_statistics> self;
 public:
+  
   typedef std::shared_ptr< ::wfc::value_meter > value_meter_ptr;
   typedef std::shared_ptr< ::wfc::time_meter > time_meter_ptr;
   typedef ::wfc::workflow domain_interface;

@@ -14,7 +14,7 @@ struct workflow_statistics
 
 struct workflow_config: workflow_options
 {
-  std::set<int> cpu;
+//  std::set<int> cpu;
 //  statistics_params stat;
 };
 

@@ -34,8 +34,8 @@ struct workflow_config_json
   typedef json::object<
     workflow_config,
     json::member_list<
-      json::base< workflow_options2_json >,
-      json::member<n_cpu, workflow_config, std::set<int>, &workflow_config::cpu, json::array< std::set< json::value<int> > > >
+      json::base< workflow_options2_json >/*,
+      json::member<n_cpu, workflow_config, std::set<int>, &workflow_config::cpu, json::array< std::set< json::value<int> > > >*/
     >
   > type;
   typedef type::target target;

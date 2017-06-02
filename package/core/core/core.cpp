@@ -8,6 +8,7 @@
 #include <wfc/logger.hpp>
 #include <wfc/memory.hpp>
 
+#include <boost/filesystem.hpp>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -28,6 +29,49 @@ namespace
     std::clog << "Stop signal handler" << std::endl;
     gs_stop_signal = true;
   }
+  
+  std::set<pid_t> get_threads()
+  {
+    std::set<pid_t> pids;
+    std::stringstream ss;
+    ss << "/proc/" << ::getpid() << "/task";
+    std::string dirname = ss.str();
+    boost::system::error_code ec;
+    boost::filesystem::directory_iterator beg( dirname, ec), end;
+    if (ec)
+      return pids;
+  
+    std::for_each(beg, end, [&pids](const boost::filesystem::directory_entry& de)
+    {
+      boost::filesystem::path p(de);
+      if ( boost::filesystem::is_directory(p) )
+      {
+        pid_t pid = ::atoi( p.filename().c_str() );
+        if ( pid > 0 )
+          pids.insert(pid);
+      }
+    });
+    return std::move(pids);
+  }
+  
+  std::string setaffinity(pid_t pid, const std::set<int>& cpu)
+  {
+    std::string ss = "[";
+    cpu_set_t  mask;
+    CPU_ZERO(&mask);
+    
+    for (int id : cpu )
+    {
+      ss += std::to_string(id) +  ",";
+      CPU_SET(id, &mask);
+    }
+    if ( !cpu.empty() )
+      ss.pop_back();
+    ss+="]";
+    ::sched_setaffinity( pid, sizeof(mask), &mask);
+    return ss;
+  }
+
 } // namespace
 
 core::~core()
@@ -164,8 +208,6 @@ bool core::_idle()
     return false;
   }
 
-  //this->global()->idle.fire();
-
   if ( _reconfigure_flag )
   {
     _reconfigure_flag = false;
@@ -173,6 +215,34 @@ bool core::_idle()
     DOMAIN_LOG_MESSAGE("Daemon reconfigured!")
   }
 
+  if ( !_stop_flag )
+  {
+    ::wfc::cpuset& cpumgr = this->global()->cpu;
+    if ( cpumgr.clean_dirty() )
+    {
+      DOMAIN_LOG_BEGIN("CPU threads reconfiguring...")
+      auto all_pids = ::wfc::core::get_threads();
+      auto wfc_cpu = this->options().cpu;
+      auto sys_cpu = this->options().unreg_cpu;
+      auto pids = cpumgr.get_pids();
+      for ( pid_t p : pids )
+      {
+        all_pids.erase(p);
+        auto cpu = cpumgr.get_cpu(p);
+        if ( cpu.empty() )
+          cpu = wfc_cpu;
+        std::string scpu = setaffinity( p, cpu );
+        COMMON_LOG_MESSAGE("For WFC thread " << p << " ('" << cpumgr.get_name(p) << "') CPU set " << scpu )
+      }
+      
+      for ( pid_t p : all_pids )
+      {
+        std::string scpu = setaffinity( p, sys_cpu );
+        COMMON_LOG_MESSAGE("For UNK thread " << p << " CPU set " << scpu )
+      }
+      DOMAIN_LOG_END("CPU threads reconfigured.")
+    }
+  }
   return !_stop_flag;
 }
 
@@ -386,10 +456,10 @@ void core::_start()
   }
 
   auto opt = this->options();
-  this->global()->threads.set_reg_cpu( opt.cpu );
-  this->global()->threads.set_unreg_cpu( opt.unreg_cpu );
+  ///!!! this->global()->threads.set_reg_cpu( opt.cpu );
+  ///!!! this->global()->threads.set_unreg_cpu( opt.unreg_cpu );
   // TODO: сделать по таймауту
-  this->global()->threads.update_thread_list();
+  ///!!!  this->global()->threads.update_thread_list();
   /*
   if ( !opt.cpu.empty() )
   {
