@@ -68,7 +68,10 @@ namespace
     if ( !cpu.empty() )
       ss.pop_back();
     ss+="]";
-    ::sched_setaffinity( pid, sizeof(mask), &mask);
+    if ( 0 != ::sched_setaffinity( pid, sizeof(mask), &mask) )
+    {
+      DOMAIN_LOG_ERROR("sched_setaffinity: " << strerror(errno) << " for pid=" << pid);
+    }
     return ss;
   }
 
@@ -189,7 +192,7 @@ void core::start()
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
   }
-
+  this->global()->cpu.set_current_thread( this->name() );
 }
 
 bool core::_idle()
@@ -217,6 +220,7 @@ bool core::_idle()
 
   if ( !_stop_flag )
   {
+    DEBUG_LOG_MESSAGE("CPU thread check")
     ::wfc::cpuset& cpumgr = this->global()->cpu;
     if ( cpumgr.clean_dirty() )
     {
@@ -231,14 +235,19 @@ bool core::_idle()
         auto cpu = cpumgr.get_cpu(p);
         if ( cpu.empty() )
           cpu = wfc_cpu;
+        if ( cpu.empty() )
+          continue;
         std::string scpu = setaffinity( p, cpu );
         COMMON_LOG_MESSAGE("For WFC thread " << p << " ('" << cpumgr.get_name(p) << "') CPU set " << scpu )
       }
       
-      for ( pid_t p : all_pids )
+      if ( !sys_cpu.empty() )
       {
-        std::string scpu = setaffinity( p, sys_cpu );
-        COMMON_LOG_MESSAGE("For UNK thread " << p << " CPU set " << scpu )
+        for ( pid_t p : all_pids )
+        {
+          std::string scpu = setaffinity( p, sys_cpu );
+          COMMON_LOG_MESSAGE("For UNK thread " << p << " CPU set " << scpu )
+        }
       }
       DOMAIN_LOG_END("CPU threads reconfigured.")
     }
