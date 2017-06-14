@@ -14,10 +14,10 @@ namespace
   WFC_NAME2(module_name, "statistics")
 
   class impl: public ::wfc::component_list<
-    module_name,
-    statistics_multiton,
-    system_statistics_multiton,
-    btp_gateway_multiton
+    module_name
+    ,statistics_multiton
+    ,system_statistics_multiton
+    ,btp_gateway_multiton
   >
   {};
 }

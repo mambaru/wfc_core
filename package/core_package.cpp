@@ -19,8 +19,10 @@ namespace
       core::config_module,
       core::core_module,
       core::logger_module,
-      core::workflow_module,
-      core::statistics_module
+      core::workflow_module
+#ifdef WFC_ENABLE_STAT
+      ,core::statistics_module
+#endif
   >
   {};
 }
