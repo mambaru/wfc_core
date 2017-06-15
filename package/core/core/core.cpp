@@ -95,7 +95,6 @@ void core::create()
   this->global()->workflow->start();
 }
 
-
 void core::core_reconfigure()
 {
   _reconfigure_flag = true;
@@ -465,41 +464,6 @@ void core::_start()
   }
 
   auto opt = this->options();
-  ///!!! this->global()->threads.set_reg_cpu( opt.cpu );
-  ///!!! this->global()->threads.set_unreg_cpu( opt.unreg_cpu );
-  // TODO: сделать по таймауту
-  ///!!!  this->global()->threads.update_thread_list();
-  /*
-  if ( !opt.cpu.empty() )
-  {
-      std::vector<int> ids;
-      ids.push_back(::getpid());
-      this->global()->registry.for_each<workflow>("workflow", 
-        [&ids](const std::string&, std::shared_ptr<workflow> wrk)
-        {
-          std::vector<int> cids = wrk->manager()->get_ids();
-          std::copy( cids.begin(), cids.end(), std::back_inserter( ids) );
-        }
-      );
-
-      for (int tid : ids)
-      {
-        cpu_set_t  mask;
-        CPU_ZERO(&mask);
-        for ( int cpu : opt.cpu )
-        {
-          CONFIG_LOG_MESSAGE("CPU_SET: " << cpu << " for " << tid )
-          CPU_SET(cpu, &mask);
-        }
-        int result = ::sched_setaffinity( tid, sizeof(mask), &mask);
-        if ( result == -1 )
-        {
-          CONFIG_LOG_ERROR("sched_setaffinity: " << strerror(errno) )
-        }
-      }
-  }
-  */
-
 }
 
 void core::_stop()
