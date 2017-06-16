@@ -47,7 +47,7 @@ void config::ready()
   {
     _timer_id = this->global()->workflow->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
-      this->wrap( std::bind(&config::timer_handler_, this) )
+      this->wrap( std::bind(&config::timer_handler_, this), nullptr )
     );
   }
 }

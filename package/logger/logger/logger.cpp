@@ -68,7 +68,7 @@ void logger::reconfigure()
         }
       }
       return false;
-    }); // wrap
+    }, nullptr); // wrap
     ::iow::init_log(logfun);
   }
   else
