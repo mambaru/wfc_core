@@ -15,6 +15,8 @@
 
 namespace wfc{ namespace core{
 
+static std::mutex stdout_mutex;
+
 writer_options writer::options() const
 {
   return _conf;
@@ -38,15 +40,15 @@ void writer::write(const std::string& name, const std::string& ident,  std::stri
   
   while ( aux::replace(str, "\r\n", "\\r\\n") );
 
-  std::lock_guard<mutex_type> lk( _logger->_mutex);
-  
   if ( !_conf.path.empty() )
   {
+    std::lock_guard<mutex_type> lk( _logger->_mutex);
     this->write_to_file_(name, ident, str);
   }
   
   if ( !_conf.stdout.empty() )
   {
+    std::lock_guard< std::mutex> lk(stdout_mutex);
     this->write_to_stdout_(name, ident, str);
   }
   

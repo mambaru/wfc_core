@@ -27,6 +27,8 @@ namespace
   static void signal_sigint_handler(int)
   {
     std::clog << "Stop signal handler" << std::endl;
+    if ( auto g = ::wfc::wfcglobal::static_global )
+      g->stop_signal_flag = true;
     gs_stop_signal = true;
   }
   
