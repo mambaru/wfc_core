@@ -370,21 +370,29 @@ void core::_initialize()
   if ( g == nullptr)
     return;
 
-  if ( !g->registry.dirty() )
+  /*if ( !g->registry.dirty() )
   {
     CONFIG_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
     return;
-  }
+  }*/
 
   typedef std::shared_ptr<iinstance> instance_ptr;
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
   instances.reserve(100);
-  g->registry.for_each<iinstance>("instance", [&instances](const std::string& /*name*/, std::shared_ptr<iinstance> obj)
+  bool dirty_flag = g->registry.dirty();
+  g->registry.for_each<iinstance>("instance", [&instances, dirty_flag](const std::string& /*name*/, std::shared_ptr<iinstance> obj)
   {
-    instances.push_back(obj);
+    if ( dirty_flag || obj->is_reconfigured() )
+      instances.push_back(obj);
   });
 
+  if ( instances.empty() )
+  {
+    CONFIG_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
+    return;
+  }
+  
   std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool
   {
     return left->startup_priority() < right->startup_priority();
@@ -410,11 +418,11 @@ void core::_initialize()
   
   if ( auto d = g->registry.reset_dirty() )
   {
-    CONFIG_LOG_MESSAGE("Initialization finished for " << d << " registry changed")
+    CONFIG_LOG_MESSAGE("Full initialization finished for " << d << " registry changed.")
   }
   else
   {
-    CONFIG_LOG_MESSAGE("Initialization finished. No registry changed")
+    CONFIG_LOG_MESSAGE("Partial initialization finished for " << instances.size() << " reconfigured object.")
   }
 }
 
@@ -456,6 +464,7 @@ void core::_start()
     g->io_service.reset();
   });
 
+  /*
   if ( auto d = g->registry.reset_dirty() )
   {
     CONFIG_LOG_MESSAGE(" ----------- DEBUG: Started finished for " << d << " registry changed")
@@ -466,6 +475,7 @@ void core::_start()
   }
 
   auto opt = this->options();
+  */
 }
 
 void core::_stop()
