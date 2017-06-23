@@ -120,7 +120,7 @@ int core::run()
   {
     DOMAIN_LOG_BEGIN("After start handlers... ")
     this->global()->after_start.fire();
-    DOMAIN_LOG_BEGIN("After start handlers")
+    DOMAIN_LOG_END("After start handlers")
   }
 
   if ( !_stop_flag )
