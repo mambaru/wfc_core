@@ -23,14 +23,14 @@ public:
   virtual void stop() override;
   
   // iconfig
-  virtual void reload_and_reconfigure() override;
-  virtual void load_and_parse(std::string path) override;
+  virtual bool reload_and_reconfigure() override;
+  virtual bool load_and_parse(std::string path) override;
   virtual std::string get_config(std::string name) override;
   virtual bool generate_config( const iconfig::generate_options& go, const std::string& path, std::string& result) override;
   
 private:
   bool timer_handler_();
-  void parse_configure_(std::string source, std::string strconf, configuration& mainconf);
+  bool parse_configure_(std::string source, std::string strconf, configuration& mainconf);
   std::string load_from_file_(const std::string& path);
   void save_to_file_(const std::string& path, const std::string& strconf);
   

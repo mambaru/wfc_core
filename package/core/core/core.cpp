@@ -7,6 +7,7 @@
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 #include <wfc/memory.hpp>
+#include <wfc/json.hpp>
 
 #include <boost/filesystem.hpp>
 #include <vector>
@@ -315,7 +316,9 @@ void core::_sunrise()
     this->_start();
   }
   
-  if ( _stop_flag ) return;
+  if ( _stop_flag ) 
+    return;
+
   if ( !_abort_flag )
   {
     SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
@@ -326,12 +329,12 @@ void core::_sunrise()
   }
 }
 
-void core::_configure()
+bool core::_configure()
 {
   auto g = this->global();
 
   if ( g == nullptr)
-    return;
+    return true;
 
   if ( auto conf = g->registry.get<iconfig>("config") )
   {
@@ -346,7 +349,17 @@ void core::_configure()
       if ( !confstr.empty() )
       {
         CONFIG_LOG_BEGIN("Configure component '" << name << "'...")
-        obj->configure(confstr, std::string() );
+        json::json_error er;
+        if ( !obj->configure(confstr, &er ) )
+        {
+          auto message = json::strerror::message( er);
+          auto trace = json::strerror::trace( er, confstr.begin(), confstr.end() );
+          CONFIG_LOG_ERROR(
+            "Json unserialize error for component '" << name << "':" 
+            << message << ". " << std::endl << trace
+          )
+          this->_abort_flag = true;
+        }
         
         if ( !this->_abort_flag ) { CONFIG_LOG_END("Configure component '" << name << "'...Done") }
         else { CONFIG_LOG_END("Configure component '" << name << "'...aborted!") }
@@ -361,6 +374,7 @@ void core::_configure()
   {
     DOMAIN_LOG_WARNING("Configure module is not set")
   }
+  return true;
 }
 
 void core::_initialize()

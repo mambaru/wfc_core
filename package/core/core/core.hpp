@@ -34,7 +34,7 @@ public:
 private:
   
   void _sunrise();
-  void _configure();
+  bool _configure();
   void _initialize();
   void _start();
   void _stop();

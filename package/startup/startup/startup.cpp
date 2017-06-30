@@ -133,7 +133,11 @@ bool startup_domain::perform_start_( )
 
     if ( auto c = g->registry.get<iconfig>("config") )
     {
-      c->load_and_parse(_pa.config_path);
+      if ( !c->load_and_parse(_pa.config_path) )
+      {
+        std::cerr << "Configuration FAIL!" << std::endl;
+        return false;
+      }
     }
   }
 

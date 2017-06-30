@@ -69,11 +69,15 @@ void config::stop()
   this->global()->workflow->release_timer(_timer_id);
 }
 
-void config::reload_and_reconfigure()
+bool config::reload_and_reconfigure()
 {
   CONFIG_LOG_BEGIN("Reload Configuration And Reconfigure")
   std::string confstr = load_from_file_(_path);
   configuration mainconf;
+  
+  if ( !parse_configure_(_path, confstr, mainconf) )
+    return false;
+  /*
   try
   {
     parse_configure_(_path, confstr, mainconf);
@@ -84,6 +88,7 @@ void config::reload_and_reconfigure()
     CONFIG_LOG_ERROR("Configuration ignored!")
     return;
   }
+  */
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
   {
@@ -95,14 +100,17 @@ void config::reload_and_reconfigure()
     CONFIG_LOG_ERROR("Core module not found")
   }
   CONFIG_LOG_END("Reload Configuration And Reconfigure")
+  return true;
 }
 
 
-void config::load_and_parse(std::string path)
+bool config::load_and_parse(std::string path)
 {
   std::string confstr = load_from_file_(path);
   configuration mainconf;
-  try
+  if ( !parse_configure_(path, confstr, mainconf) )
+    return false;
+  /*try
   {
     parse_configure_(path, confstr, mainconf);
   }
@@ -111,9 +119,11 @@ void config::load_and_parse(std::string path)
     std::cerr << e.what() << std::endl;
     throw e;
   }
+  */
 
   _mainconf = mainconf;
   _path = path;
+  return true;
 }
 
 
@@ -135,7 +145,6 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     result = "the system is not initialized";
     return false;
   }
-
   
   if ( go.empty() )
   {
@@ -180,7 +189,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   return true;
 }
 
-void config::parse_configure_(std::string source, std::string confstr, configuration& mainconf)
+bool config::parse_configure_(std::string source, std::string confstr, configuration& mainconf)
 {
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
@@ -192,20 +201,37 @@ void config::parse_configure_(std::string source, std::string confstr, configura
   
   if ( e )
   {
+    CONFIG_LOG_ERROR( "Invalid json configuration from '" << source << "': " 
+        << std::endl << json::strerror::message_trace(e, jsonbeg, jsonend )  )
+    return false;
+    /*
     std::stringstream ss;
     ss << "Invalid json configuration from '" << source << "':" << std::endl;
     ss << json::strerror::message_trace(e, jsonbeg, jsonend );
     throw std::domain_error(ss.str());
+    */
   }
 
   for ( auto& mconf : mainconf)
   {
-    if ( auto m = this->global()->registry.get<icomponent>("component", mconf.first) )
+    if ( auto m = this->global()->registry.get<icomponent>("component", mconf.first, true) )
     {
+      if ( !m->parse( mconf.second, &e) )
+      {
+        CONFIG_LOG_ERROR(
+          "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl
+          << json::strerror::message(e) << std::endl
+          << json::strerror::trace(e, mconf.second.begin(), mconf.second.end() ) << std::endl
+          << "^^^^ Configuration is not valid! see documentation for module"
+        )
+        return false;
+      }
+      /*
       jsonbeg = mconf.second.begin();
       jsonend = mconf.second.end();
       try
       {
+        
         jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
         if ( e ) throw e;
         e.reset();
@@ -231,15 +257,23 @@ void config::parse_configure_(std::string source, std::string confstr, configura
         ss << e.what();
         throw std::domain_error(ss.str());
       }
+      */
     }
     else
     {
+      /*
       std::stringstream ss;
       ss << "Invalid json configuration from '" << source << "':" << std::endl;
       ss << "Module '" << mconf.first << "' not found"; 
       throw std::domain_error(ss.str());
+      */
+      CONFIG_LOG_ERROR( "Invalid json configuration from '" << source << "'" )
+      CONFIG_LOG_ERROR( "Module '" << mconf.first << "' not found")
+
+      return false;
     }
   }
+  return true;
 }
 
 bool config::timer_handler_()
