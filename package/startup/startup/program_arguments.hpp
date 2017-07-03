@@ -22,6 +22,9 @@ struct program_arguments
   std::string errorstring;
   std::string helpstring;
 
+  std::string user_name;
+  std::string working_directory;
+
   std::string program_name;
   std::string instance_name;
   std::string config_path;

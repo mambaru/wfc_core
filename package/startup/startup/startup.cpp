@@ -122,15 +122,9 @@ namespace {
 
 bool startup_domain::perform_start_( )
 {
+
   if ( auto g = this->global() )
   {
-    std::clog << "Program name: " << g->program_name << std::endl;
-    std::clog << "Instance name: " << g->instance_name << std::endl;
-    if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )
-    {
-      return false;
-    }
-
     if ( auto c = g->registry.get<iconfig>("config") )
     {
       if ( !c->load_and_parse(_pa.config_path) )
@@ -139,6 +133,34 @@ bool startup_domain::perform_start_( )
         return false;
       }
     }
+    std::clog << "Program name: " << g->program_name << std::endl;
+    std::clog << "Instance name: " << g->instance_name << std::endl;
+
+  }
+  
+  if ( !_pa.user_name.empty() )
+  {
+    if ( !::wfc::change_user(_pa.user_name) )
+    {
+      std::cerr << "FAIL: cannot set new user name '"<< _pa.user_name <<"'" << std::endl;
+      return false;
+    }
+    std::clog << "New user name: " << _pa.user_name << std::endl;
+  }
+    
+  if ( !_pa.working_directory.empty() )
+  {
+    if ( !::wfc::change_working_directory(_pa.working_directory) )
+    {
+      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory <<"'" << std::endl;
+      return false;
+    }
+    std::clog << "New working directory: " << _pa.user_name << std::endl;
+  }
+
+  if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )
+  {
+    return false;
   }
 
   if ( _pa.daemonize )
@@ -188,8 +210,11 @@ bool startup_domain::perform_start_( )
     });
   }
 
+
   if ( _pa.coredump )
     ::wfc::dumpable();
+  
+  
   return true;
 
 }
