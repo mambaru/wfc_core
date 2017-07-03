@@ -21,7 +21,7 @@ struct logger_config_json
 
   typedef json::object<
     writer_options,
-    fas::type_list_n<
+    json::member_list<
       json::member<n_milliseconds,    writer_options, bool,      &writer_options::milliseconds>,
       json::member<n_limit,    writer_options, size_t,      &writer_options::limit>,
       json::member<n_stdout,   writer_options, std::string, &writer_options::stdout>,
@@ -30,7 +30,8 @@ struct logger_config_json
       json::member<n_deny,   writer_options, std::vector<std::string>, &writer_options::deny,
         json::array<std::vector< json::value<std::string> > >
       >
-    >::type
+    >,
+    json::strict_mode
   > writer_options_json;
   
   JSON_NAME(single)
@@ -38,13 +39,14 @@ struct logger_config_json
   
   typedef json::object<
     logger_config,
-    fas::type_list_n<
+    json::member_list<
       json::base<writer_options_json>,
       json::member<n_single,   logger_config, bool,        &logger_config::single>,
       json::member<n_custom,   logger_config, logger_config::custom_map, &logger_config::custom,
         json::dict< std::unordered_map< json::value<std::string>, writer_options_json > >
       >
-    >::type
+    >,
+    json::strict_mode
   > type;
   
   typedef type::serializer serializer;
