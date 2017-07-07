@@ -18,6 +18,7 @@
 #include <syslog.h>
 #include <sys/resource.h>
 #include <sched.h>
+#include <iow/io/aux/global_pool.hpp>
 
 namespace wfc{  namespace core{
 
@@ -195,6 +196,8 @@ void core::start()
     }
   }
   this->global()->cpu.set_current_thread( this->name() );
+  
+  ::iow::io::global_pool::initialize( opt.datapool );
 }
 
 bool core::_idle()
