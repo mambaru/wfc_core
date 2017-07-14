@@ -104,6 +104,11 @@ void core::core_reconfigure()
   _reconfigure_flag = true;
 }
 
+void core::reconfigure()
+{
+  ::iow::io::global_pool::initialize( this->options().datapool );
+}
+
 
 int core::run()
 {
@@ -195,8 +200,7 @@ void core::start()
       CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
     }
   }
-  this->global()->cpu.set_current_thread( this->name() );
-  
+  this->reg_thread();
   ::iow::io::global_pool::initialize( opt.datapool );
 }
 
@@ -231,8 +235,8 @@ bool core::_idle()
     {
       DOMAIN_LOG_BEGIN("CPU threads reconfiguring...")
       auto all_pids = ::wfc::core::get_threads();
-      auto wfc_cpu = this->options().cpu;
-      auto sys_cpu = this->options().unreg_cpu;
+      auto wfc_cpu = this->options().wfc_cpu;
+      auto sys_cpu = this->options().sys_cpu;
       auto pids = cpumgr.get_pids();
       for ( pid_t p : pids )
       {
