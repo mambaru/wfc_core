@@ -217,9 +217,6 @@ void core::core_abort( std::string message )
 
 void core::start()
 {
-  std::cout << "========================================" << std::endl;
-  std::cout << "========================================" << std::endl;
-  auto opt = this->options();
 
 }
 
