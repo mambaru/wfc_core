@@ -95,9 +95,53 @@ core::core()
 
 void core::create()
 {
-  this->global()->workflow->reconfigure(this->options().core_workflow);
-  this->global()->workflow->start();
+  //std::cout << "!!!!!!!! core::create !!!!!!!!!!! " << this->options().core_workflow.threads << std::endl;
+  //this->global()->workflow->reconfigure(this->options().core_workflow);
+  //this->global()->workflow->start();
+  
 }
+
+/*
+void core::configure()
+{
+  std::cout << "!!!!!!!! core::configure() !!!!!!!!!!!" << std::endl;
+}
+*/
+void core::reconfigure()
+{
+  //std::cout << "!!!!!!!! core::reconfigure() !!!!!!!!!!!" << std::endl;
+  //this->global()->workflow->start();
+  auto opt = this->options();
+  //opt.core_workflow.workflow_ptr = _core_workflow;
+  this->global()->workflow->reconfigure( opt.common_workflow);
+  //this->global()->workflow->start();
+  
+  if ( opt.rlimit_as_mb != 0 )
+  {
+    rlim_t limit = opt.rlimit_as_mb*1024*1024;
+    rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};
+    if ( 0 == getrlimit( RLIMIT_AS, &rlim ) )
+    {
+      CONFIG_LOG_MESSAGE("current RLIMIT_DATA: " << rlim.rlim_cur << ", " << rlim.rlim_max)
+      CONFIG_LOG_MESSAGE("rlimit_as_mb: " << opt.rlimit_as_mb << "Mb")
+
+      rlim.rlim_cur = limit;
+      if ( 0 != setrlimit( RLIMIT_AS, &rlim ) )
+      {
+        CONFIG_LOG_ERROR("setrlimit: " << strerror(errno) )
+      }
+    }
+    else
+    {
+      CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
+    }
+  }
+  this->global()->cpu.set_current_thread( this->name() );
+  
+  ::iow::io::global_pool::initialize( opt.datapool );
+  
+}
+
 
 void core::core_reconfigure()
 {
@@ -173,31 +217,10 @@ void core::core_abort( std::string message )
 
 void core::start()
 {
+  std::cout << "========================================" << std::endl;
+  std::cout << "========================================" << std::endl;
   auto opt = this->options();
-  
-  if ( opt.rlimit_as_mb != 0 )
-  {
-    rlim_t limit = opt.rlimit_as_mb*1024*1024;
-    rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};
-    if ( 0 == getrlimit( RLIMIT_AS, &rlim ) )
-    {
-      CONFIG_LOG_MESSAGE("current RLIMIT_DATA: " << rlim.rlim_cur << ", " << rlim.rlim_max)
-      CONFIG_LOG_MESSAGE("rlimit_as_mb: " << opt.rlimit_as_mb << "Mb")
 
-      rlim.rlim_cur = limit;
-      if ( 0 != setrlimit( RLIMIT_AS, &rlim ) )
-      {
-        CONFIG_LOG_ERROR("setrlimit: " << strerror(errno) )
-      }
-    }
-    else
-    {
-      CONFIG_LOG_ERROR("getrlimit: " << strerror(errno) )
-    }
-  }
-  this->global()->cpu.set_current_thread( this->name() );
-  
-  ::iow::io::global_pool::initialize( opt.datapool );
 }
 
 bool core::_idle()
@@ -231,8 +254,8 @@ bool core::_idle()
     {
       DOMAIN_LOG_BEGIN("CPU threads reconfiguring...")
       auto all_pids = ::wfc::core::get_threads();
-      auto wfc_cpu = this->options().cpu;
-      auto sys_cpu = this->options().unreg_cpu;
+      auto wfc_cpu = this->options().wfc_cpu;
+      auto sys_cpu = this->options().sys_cpu;
       auto pids = cpumgr.get_pids();
       for ( pid_t p : pids )
       {
@@ -251,7 +274,7 @@ bool core::_idle()
         for ( pid_t p : all_pids )
         {
           std::string scpu = setaffinity( p, sys_cpu );
-          COMMON_LOG_MESSAGE("For UNK thread " << p << " CPU set " << scpu )
+          COMMON_LOG_MESSAGE("For SYS thread " << p << " CPU set " << scpu )
         }
       }
       DOMAIN_LOG_END("CPU threads reconfigured.")

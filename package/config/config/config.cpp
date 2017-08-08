@@ -77,18 +77,6 @@ bool config::reload_and_reconfigure()
   
   if ( !parse_configure_(_path, confstr, mainconf) )
     return false;
-  /*
-  try
-  {
-    parse_configure_(_path, confstr, mainconf);
-  }
-  catch(const std::domain_error& e)
-  {
-    CONFIG_LOG_ERROR(e.what())
-    CONFIG_LOG_ERROR("Configuration ignored!")
-    return;
-  }
-  */
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
   {
@@ -110,17 +98,6 @@ bool config::load_and_parse(std::string path)
   configuration mainconf;
   if ( !parse_configure_(path, confstr, mainconf) )
     return false;
-  /*try
-  {
-    parse_configure_(path, confstr, mainconf);
-  }
-  catch(const std::domain_error& e)
-  {
-    std::cerr << e.what() << std::endl;
-    throw e;
-  }
-  */
-
   _mainconf = mainconf;
   _path = path;
   return true;
@@ -204,12 +181,6 @@ bool config::parse_configure_(std::string source, std::string confstr, configura
     CONFIG_LOG_ERROR( "Invalid json configuration from '" << source << "': " 
         << std::endl << json::strerror::message_trace(e, jsonbeg, jsonend )  )
     return false;
-    /*
-    std::stringstream ss;
-    ss << "Invalid json configuration from '" << source << "':" << std::endl;
-    ss << json::strerror::message_trace(e, jsonbeg, jsonend );
-    throw std::domain_error(ss.str());
-    */
   }
 
   for ( auto& mconf : mainconf)
@@ -219,54 +190,16 @@ bool config::parse_configure_(std::string source, std::string confstr, configura
       if ( !m->parse( mconf.second, &e) )
       {
         CONFIG_LOG_ERROR(
-          "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl
+          "Invalid json configuration from '" << source << "' for '"<< mconf.first << "':" << std::endl
           << json::strerror::message(e) << std::endl
           << json::strerror::trace(e, mconf.second.begin(), mconf.second.end() ) << std::endl
-          << "^^^^ Configuration is not valid! see documentation for module"
+          << "^^^^ Configuration is not valid!"
         )
         return false;
       }
-      /*
-      jsonbeg = mconf.second.begin();
-      jsonend = mconf.second.end();
-      try
-      {
-        
-        jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
-        if ( e ) throw e;
-        e.reset();
-        if ( !m->parse( std::string(jsonbeg, jsonend)) )
-        {
-          std::stringstream ss;
-          ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-          ss << "Configuration is not valid! see documentation for module";
-          throw std::domain_error(ss.str());  
-        }
-      }
-      catch(const json::json_error& e)
-      {
-        std::stringstream ss;
-        ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-        ss << json::strerror::message_trace(e, jsonbeg, jsonend );
-        throw std::domain_error(ss.str());
-      }
-      catch(const std::exception& e)
-      {
-        std::stringstream ss;
-        ss << "Invalid json configuration from '" << source << "' for module '"<< mconf.first << "':" << std::endl;
-        ss << e.what();
-        throw std::domain_error(ss.str());
-      }
-      */
     }
     else
     {
-      /*
-      std::stringstream ss;
-      ss << "Invalid json configuration from '" << source << "':" << std::endl;
-      ss << "Module '" << mconf.first << "' not found"; 
-      throw std::domain_error(ss.str());
-      */
       CONFIG_LOG_ERROR( "Invalid json configuration from '" << source << "'" )
       CONFIG_LOG_ERROR( "Module '" << mconf.first << "' not found")
 

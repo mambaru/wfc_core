@@ -19,7 +19,9 @@ struct workflow_statistics_json
       json::member<n_queue, workflow_statistics, std::string, &workflow_statistics::queue >,
       json::member<n_dropped, workflow_statistics, std::string, &workflow_statistics::dropped >,
       json::member<n_thread, workflow_statistics, std::string, &workflow_statistics::thread >
-    >
+    >,
+    ::wjson::strict_mode
+
   > type;
 
   typedef type::target target;
@@ -34,9 +36,9 @@ struct workflow_config_json
   typedef json::object<
     workflow_config,
     json::member_list<
-      json::base< workflow_options2_json >/*,
-      json::member<n_cpu, workflow_config, std::set<int>, &workflow_config::cpu, json::array< std::set< json::value<int> > > >*/
-    >
+      json::base< workflow_options_advance_json >
+    >,
+    ::wjson::strict_mode
   > type;
   typedef type::target target;
   typedef type::serializer serializer; 

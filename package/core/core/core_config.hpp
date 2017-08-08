@@ -14,9 +14,9 @@ struct core_config
   size_t rlimit_as_mb = 0;
   bool enable_callback_check = true;
   ::iow::io::data_map_options datapool;
-  std::set<int> cpu;
-  std::set<int> unreg_cpu;
-  workflow_options core_workflow;
+  std::set<int> wfc_cpu;
+  std::set<int> sys_cpu;
+  workflow_options common_workflow;
 };
 
 }}

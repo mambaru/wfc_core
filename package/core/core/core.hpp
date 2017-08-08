@@ -27,6 +27,8 @@ public:
   
   /// domain_object
   virtual void create() override;
+  //virtual void configure() override;
+  virtual void reconfigure() override;
   virtual void start() override;
   virtual void stop() override;
 
