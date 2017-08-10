@@ -41,7 +41,7 @@ public:
   virtual void start() override;
   virtual logger::config_type generate(const std::string&) override;
 //iinterface
-  virtual void perform_io(data_ptr d, io_id_t io_id, outgoing_handler_t callback);
+  virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback);
   
 private:
   ilogger_ptr get_or_create_(const std::string& name, const std::string& type);

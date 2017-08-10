@@ -82,7 +82,7 @@ void logger::reconfigure()
   }
 }
 
-void logger::perform_io(data_ptr d, io_id_t /*io_id*/, outgoing_handler_t callback)
+void logger::perform_io(data_ptr d, io_id_t /*io_id*/, output_handler_t callback)
 {
 
   std::stringstream ss;
