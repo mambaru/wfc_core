@@ -72,7 +72,7 @@ namespace
     if ( !cpu.empty() )
       ss.pop_back();
     ss+="]";
-    if ( 0 != ::sched_setaffinity( pid, sizeof(mask), &mask) )
+    if ( 0 != ::sched_setaffinity( pid, sizeof(cpu_set_t), &mask) )
     {
       DOMAIN_LOG_ERROR("sched_setaffinity: " << strerror(errno) << " for pid=" << pid);
     }
@@ -249,7 +249,7 @@ bool core::_idle()
     ::wfc::cpuset& cpumgr = this->global()->cpu;
     if ( cpumgr.clean_dirty() )
     {
-      DOMAIN_LOG_BEGIN("CPU threads reconfiguring...")
+      DOMAIN_LOG_BEGIN("CPU threads reconfiguring... ProcID=" << ::getpid() << " ParentId=" << ::getppid() )
       auto all_pids = ::wfc::core::get_threads();
       auto wfc_cpu = this->options().wfc_cpu;
       auto sys_cpu = this->options().sys_cpu;
