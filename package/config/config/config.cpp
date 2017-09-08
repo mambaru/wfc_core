@@ -147,14 +147,30 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     configuration mainconf;
     for ( const auto& opt: go )
     {
-      if ( auto obj = g->registry.get<icomponent>("component", opt.first) )
+      if ( auto obj = g->registry.get<icomponent>("component", opt.first, true) )
       {
         mainconf[opt.first] = obj->generate(opt.second);
       }
       else
       {
         std::stringstream ss;
-        ss << "WFC generate error! object '"<< opt.first << "' not found";
+        ss << "WFC generate error! component '"<< opt.first << "' not found." << std::endl;
+        ss << "Available components:" << std::endl;
+        g->registry.for_each<ipackage>("package", [&ss](const std::string& name, std::shared_ptr<ipackage> pkg)
+        {
+          if ( pkg == nullptr )
+            return;
+          auto modules = pkg->modules();
+          for (auto m : modules)
+          {
+            auto components = m->components();
+            for (auto c : components )
+            {
+              ss << std::setw(20) << c->name()  << "\t[" << name << " " << m->name() << " ]: " << c->description() << std::endl;
+            }
+          }
+        });
+
         result=ss.str();
         return false;
       }

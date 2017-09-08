@@ -62,9 +62,10 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
     }
     else
     {
+      bool flag = true;
       for ( const std::string& i : _pa.info_options )
       {
-        this->show_info_(i);
+        flag = flag && this->show_info_(i);
       }
     }
   }
@@ -232,19 +233,20 @@ void startup_domain::show_usage_()
   std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
 }
 
-void startup_domain::show_info_(const std::string& name)
+bool startup_domain::show_info_(const std::string& name)
 {
   auto g = this->global();
 
   if ( g==nullptr )
-    return;
+    return false;
   
   if ( !name.empty() )
   {
-    if ( auto p = g->registry.get<ipackage>("package", name) )
+    if ( auto p = g->registry.get<ipackage>("package", name, true) )
     {
       std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
+      std::cout << "\tList of modules:" << std::endl;
       auto modules = p->modules();
       for( auto m: modules ) 
       {
@@ -256,6 +258,17 @@ void startup_domain::show_info_(const std::string& name)
                         << "]. " << o->description() << std::endl;
           }
       }
+    }
+    else
+    {
+      std::cout << "Information about the package is not available." << std::endl;
+      std::cout << "Package '" << name << "' Not Found!" << std::endl;
+      std::cout << "Available packages: " << std::endl;
+      g->registry.for_each<ipackage>("package", [this](const std::string& name, std::shared_ptr<ipackage>)
+      {
+        std::cout << "\t" << name << std::endl;
+      });
+      return false;
     }
   }
   else
@@ -270,6 +283,7 @@ void startup_domain::show_info_(const std::string& name)
       this->show_build_info_(p->build_info(), true);
     });
   }
+  return true;
 }
 
 void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool shortinfo)
@@ -300,7 +314,7 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
     std::cout << "\tCommit Message: " << b->commit_message() << std::endl;
     std::cout << "\tAll Authors: "    << b->all_authors()    << std::endl;
     std::cout << "\tInitial Author: " << b->initial_author() << std::endl;
-    std::cout << std::endl;
+    //std::cout << std::endl;
   }
 }
 
