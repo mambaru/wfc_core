@@ -35,17 +35,18 @@ try
 
   desc.add_options()
     ("help,h", value<bool>(&pa.help)->zero_tokens(), "produce help message")
-    ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "show build info [package-list]")
-    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "generate configuration [object-name [arg]]. Use -C option for write to file. Use formatter: python -mjson.tool")
+    ("version,v", value<bool>(&pa.help)->zero_tokens(), "Display program version information")
+    ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
+    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name [arg]]. Use -C option for write to file.")
     ;
 
   vstrings instance_options;
 
   desc_startup.add_options()
-    ("user,u", value<std::string>(&pa.user_name)->default_value(""), "change user name")
+    ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
     ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "change working directory")
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "run as daemon")
-    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [minimum uptime in sec] with fail")
+    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [minimum uptime in sec]")
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "allow core dump")
     ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "auto restart daemon with success")
     ("name,n", value<std::string>(&pa.instance_name), "unique daemon instance name")
@@ -61,6 +62,7 @@ try
   notify(vm);
 
   pa.help = vm.count("help");
+  pa.version = vm.count("version");
   pa.generate = vm.count("generate");
   pa.info = vm.count("info");
   pa.autoup = ( pa.autoup_timeout!=-1 );
@@ -101,11 +103,11 @@ try
     pa.instance_name = pa.program_name + "-" + ::boost::filesystem::path(pa.config_path).filename().native();
   }
 }
-catch( ::boost::program_options::error e)
+catch( const ::boost::program_options::error& e)
 {
   pa.errorstring = e.what();
 }
-catch(std::exception e)
+catch( const std::exception& e)
 {
   pa.errorstring = e.what();
 }

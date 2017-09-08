@@ -50,9 +50,14 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
   {
     if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
     std::cout << _pa.helpstring << std::endl;
-    std::cout << "Для генерации и форматировани конфигурации используете: " << std::endl;
+    std::cout << "To generate and format the configuration, use: " << std::endl;
     std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
     std::cout << std::endl;
+  }
+  else if ( _pa.version )
+  {
+    if ( auto g = this->global() )
+      std::cout << _pa.program_name << " " << g->program_build_info->version() << std::endl;
   }
   else if ( _pa.info )
   {
@@ -230,7 +235,7 @@ void startup_domain::show_usage_()
   std::cout <<  "  " << this->global()->program_name << " --help" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " --info [<module name>]" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " -G [<component name>] [-C <path>]" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <path>" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <config path>" << std::endl;
 }
 
 bool startup_domain::show_info_(const std::string& name)
@@ -293,16 +298,18 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
   
   if ( shortinfo )
   {
-    std::cout << '\t' << b->name() << "\t" << b->version() << " " << b->initial_author() << std::endl;
+    std::cout << std::setw(20) << std::right << b->name() 
+              << " " << std::setw(15) << std::left << b->version() 
+              << " " << b->initial_author() << std::endl;
   }
   else
   {
     std::cout << "\tEnabled: " << b->enabled()  << std::endl;
     std::cout << "\tName: "    << b->name()     << std::endl;
-    std::cout << "\tVersion: " << b->version();
-    if ( !b->verex().empty() )
+    std::cout << "\tVersion: " << b->version() << std::endl;
+    /*if ( !b->verex().empty() )
       std::cout << "[" << b->verex() << "]";
-    std::cout << "-" << b->build_count() << std::endl;
+    std::cout << "-" << b->build_count() << std::endl;*/
 
     std::cout << "\tBuild Type: "     << b->build_type()     << std::endl;
     std::cout << "\tBuild Date: "     << b->build_date()     << std::endl;

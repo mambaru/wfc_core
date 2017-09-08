@@ -11,6 +11,7 @@ struct program_arguments
   bool help = false;
   bool usage = false;
   bool generate = false;
+  bool version = false;
   bool info = false;
 
   bool daemonize = false;
