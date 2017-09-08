@@ -57,7 +57,10 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
   else if ( _pa.version )
   {
     if ( auto g = this->global() )
-      std::cout << _pa.program_name << " " << g->program_build_info->version() << std::endl;
+      std::cout << _pa.program_name << " " << g->program_build_info->version() 
+                << " " << g->program_build_info->build_date() 
+                << " " << g->program_build_info->build_type() 
+                << std::endl;
   }
   else if ( _pa.info )
   {
