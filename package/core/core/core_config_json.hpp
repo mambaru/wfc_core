@@ -7,6 +7,25 @@
 
 namespace wfc{ namespace core{
 
+struct common_workflow_options_json
+{
+  JSON_NAME(cpu)
+  
+  typedef json::object<
+    common_workflow_options,
+    json::member_list<
+      json::base<workflow_options_json>,
+      json::member<n_cpu, common_workflow_options, std::set<int>, &common_workflow_options::cpu, json::array< std::set< json::value<int> > > >
+    >,
+    ::wjson::strict_mode
+  > type;
+  
+  typedef type::target target;
+  typedef type::serializer serializer;
+  typedef type::member_list member_list;
+
+};
+
 struct core_config_json
 {
   JSON_NAME(idle_timeout_ms)
@@ -15,7 +34,6 @@ struct core_config_json
   JSON_NAME(enable_callback_check)
   JSON_NAME2(n_wfc_cpu, "wfc-cpu")
   JSON_NAME2(n_sys_cpu, "sys-cpu")
-  // JSON_NAME(datapool)
   JSON_NAME2(n_workflow, "common-workflow")
   
   typedef json::object<
@@ -26,7 +44,7 @@ struct core_config_json
        json::member<n_rlimit_as_mb, core_config, size_t, &core_config::rlimit_as_mb >,
        json::member<n_enable_callback_check, core_config, bool, &core_config::enable_callback_check >,
        // json::member<n_datapool, core_config, ::iow::io::data_map_options, &core_config::datapool, ::iow::io::data_map_options_json >,
-       json::member<n_workflow, core_config, workflow_options, &core_config::common_workflow, workflow_options_json >,
+       json::member<n_workflow, core_config, common_workflow_options, &core_config::common_workflow, common_workflow_options_json >,
        json::member<n_wfc_cpu, core_config, std::set<int>, &core_config::wfc_cpu, json::array< std::set< json::value<int> > > >,
        json::member<n_sys_cpu, core_config, std::set<int>, &core_config::sys_cpu, json::array< std::set< json::value<int> > > >
     >,

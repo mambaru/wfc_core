@@ -109,11 +109,22 @@ void core::configure()
 */
 void core::reconfigure()
 {
-  //std::cout << "!!!!!!!! core::reconfigure() !!!!!!!!!!!" << std::endl;
   //this->global()->workflow->start();
   auto opt = this->options();
+  auto cw_opt = opt.common_workflow;
+  cw_opt.id = this->name();
+  if ( auto g = this->global() )
+  {
+    g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
+    cw_opt.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
+    cw_opt.finish_handler = [g]( std::thread::id ){ g->cpu.del_current_thread();};
+  }
+ /* cw_opt.startup_handler = std::bind( &core::reg_thread, this );
+  cw_opt.finish_handler = std::bind( &core::unreg_thread, this );
+  */
+  
   //opt.core_workflow.workflow_ptr = _core_workflow;
-  this->global()->workflow->reconfigure( opt.common_workflow);
+  this->global()->workflow->reconfigure(  cw_opt );
   //this->global()->workflow->start();
   
   if ( opt.rlimit_as_mb != 0 )
@@ -560,6 +571,11 @@ void core::_stop()
   CONFIG_LOG_BEGIN("After stop handlers run...")
   g->after_stop.fire();
   CONFIG_LOG_END("After stop handlers ... Done")
+
+  CONFIG_LOG_BEGIN("Stop common workflow...")
+  g->io_service.stop();
+  g->workflow->stop();
+  CONFIG_LOG_END("Stop common workflow ... Done")
 
   DOMAIN_LOG_END("Stop daemon '" << g->instance_name << "'...Done")
   _same = nullptr;

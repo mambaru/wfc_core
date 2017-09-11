@@ -7,6 +7,11 @@
 
 namespace wfc{ namespace core{
 
+struct common_workflow_options: workflow_options
+{
+  std::set<int> cpu;
+};
+
 struct core_config
 {
   time_t core_timeout_ms = 1000;
@@ -16,7 +21,7 @@ struct core_config
   ::iow::io::data_map_options datapool;
   std::set<int> wfc_cpu;
   std::set<int> sys_cpu;
-  workflow_options common_workflow;
+  common_workflow_options common_workflow;
 };
 
 }}
