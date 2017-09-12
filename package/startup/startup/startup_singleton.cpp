@@ -40,9 +40,6 @@ namespace
     {
       return "Рarsing the command line parameters and starting the daemon.";
     }
-
-    
-
   };
 }
 

@@ -22,7 +22,7 @@ namespace
   {
     virtual std::string description() const override
     {
-      return "Singleton. Оne-component module.";
+      return "Оne-component module.";
     }
   };
 }

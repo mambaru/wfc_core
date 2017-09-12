@@ -24,7 +24,12 @@ namespace
       ,core::statistics_module
 #endif
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "WFC core modules.";
+    }
+  };
 }
 
 core_package::core_package()

@@ -26,6 +26,11 @@ public:
   {
     return std::string("wfc::iconfig");
   }
+
+  virtual std::string description() const override
+  {
+    return std::string("Сonfiguration and dynamic reconfiguration.");
+  }
 };
 
 }

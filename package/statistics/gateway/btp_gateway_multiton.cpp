@@ -20,9 +20,14 @@ namespace {
     : public ::wfc::jsonrpc::gateway_multiton< component_name, gateway::btp_method_list, gateway::btp_interface> 
   {
   public:
-    virtual std::string interface_name() override
+    virtual std::string interface_name() const override
     {
       return std::string("wfc::btp::ibtp");
+    }
+
+    virtual std::string description() const override
+    {
+      return "Gateway for BTP system";
     }
   };
 }

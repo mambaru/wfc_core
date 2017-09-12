@@ -14,7 +14,12 @@ namespace
     module_name,
     workflow_multiton
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "Оne-component module.";
+    }
+  };
 }
 
 workflow_module::workflow_module()

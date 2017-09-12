@@ -27,6 +27,11 @@ namespace {
     {
       return std::string("wfc::iinterafce");
     }
+  
+    virtual std::string description() const override
+    {
+      return "Threads, queues, timers, etc.";
+    }
   };
 }
 

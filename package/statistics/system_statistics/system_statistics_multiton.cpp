@@ -22,9 +22,14 @@ namespace {
   >
   {
   public:
-    virtual std::string interface_name() override
+    virtual std::string interface_name() const override
     {
       return std::string("wfc::iinterafce");
+    }
+
+    virtual std::string description() const override
+    {
+      return "System memory and cpu-time statistics.";
     }
   };
 }

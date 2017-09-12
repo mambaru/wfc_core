@@ -15,7 +15,12 @@ namespace {
     module_name,
     config_singleton
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "Оne-component module.";
+    }
+  };
 
 }
 

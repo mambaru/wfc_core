@@ -28,8 +28,12 @@ namespace
     {
       return std::string("wfc::icore");
     }
+    
+    virtual std::string description() const override
+    {
+      return std::string("Сreate, configure, initialize, and launch components.");
+    }
   };
-
 }
 
 core_singleton::core_singleton()

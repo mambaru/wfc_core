@@ -31,6 +31,11 @@ namespace
     {
       return std::string("wfc::ilogger");
     }
+
+    virtual std::string description() const override
+    {
+      return std::string("Logging system.");
+    }
   };
 }
 

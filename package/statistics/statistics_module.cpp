@@ -19,7 +19,12 @@ namespace
     ,system_statistics_multiton
     ,btp_gateway_multiton
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "Collect, aggregate and send statistics to the BTP";
+    }
+  };
 }
 
 statistics_module::statistics_module()

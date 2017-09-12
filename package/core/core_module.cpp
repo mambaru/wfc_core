@@ -15,7 +15,12 @@ namespace
     module_name,
     core_singleton
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "Оne-component module.";
+    }
+  };
 }
 
 core_module::core_module()

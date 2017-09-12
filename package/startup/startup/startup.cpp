@@ -338,7 +338,7 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
   if ( shortinfo )
   {
     std::cout << std::setw(20) << std::right << b->name() 
-              << " " << std::setw(15) << std::left << b->version() 
+              << " " << std::setw(17) << std::left << b->version() 
               << " " << b->initial_author() << std::endl;
   }
   else

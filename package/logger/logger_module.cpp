@@ -20,7 +20,12 @@ namespace
     module_name,
     logger_singleton
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "Оne-component module.";
+    }
+  };
 }
 
 logger_module::logger_module()
