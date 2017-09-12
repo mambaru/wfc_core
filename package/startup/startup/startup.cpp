@@ -120,7 +120,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     std::cerr << "ERROR: для запуска необходимо указать файл конфигурации" << std::endl;
     this->show_usage_();
   }
-  return false;
+  return 0;
 }
 
 
@@ -167,7 +167,6 @@ namespace {
 
 int startup_domain::perform_start_( )
 {
-
   if ( auto g = this->global() )
   {
     if ( auto c = g->registry.get<iconfig>("config") )
@@ -259,7 +258,7 @@ int startup_domain::perform_start_( )
     ::wfc::dumpable();
 
   _ready = true;
-  return true;
+  return 0;
 }
 
 ///
