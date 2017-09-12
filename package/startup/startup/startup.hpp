@@ -15,22 +15,24 @@
 namespace wfc{ namespace core{
 
 class idle_timer;
-  
+
 class startup_domain
   : public ::wfc::domain_object<istartup, startup_config, nostat>
   , public std::enable_shared_from_this<startup_domain>
 {
 public:
   virtual ~startup_domain();
-  virtual bool startup( int argc, char* argv[], std::string helpstring) override;
+  virtual int startup( int argc, char* argv[], std::string helpstring) override;
+  virtual bool ready_for_run() override;
 private:
-  bool perform_start_();
+  int perform_start_();
   bool generate_();
   void show_usage_();
   bool show_info_(const std::string& name);
   void show_build_info_(std::shared_ptr<ibuild_info> b, bool shortinfo);
 private:
   program_arguments _pa;
+  bool _ready = false;
 };
 
 }}

@@ -19,7 +19,12 @@ namespace
     module_name,
     startup_singleton
   >
-  {};
+  {
+    virtual std::string description() const override
+    {
+      return "Singleton. Оne-component module.";
+    }
+  };
 }
 
 startup_module::startup_module()

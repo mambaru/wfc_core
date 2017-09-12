@@ -37,6 +37,8 @@ try
     ("help,h", value<bool>(&pa.help)->zero_tokens(), "produce help message")
     ("version,v", value<bool>(&pa.help)->zero_tokens(), "Display program version information")
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
+    ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
+    ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name [arg]]. Use -C option for write to file.")
     ;
 
@@ -175,7 +177,6 @@ namespace
     }
     return std::move(res);
   }
-
 }
 
 }}

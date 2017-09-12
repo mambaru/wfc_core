@@ -21,7 +21,13 @@ namespace {
     | component_features::EnableCPU, 
     workflow_statistics_json
   >
-  {};
+  {
+  public:
+    virtual std::string interface_name() const override
+    {
+      return std::string("wfc::iinterafce");
+    }
+  };
 }
 
 workflow_multiton::workflow_multiton()

@@ -25,7 +25,13 @@ namespace
       component_features::DisabledWorkflow
     | component_features::DisabledSuspend
   >
-  {};
+  {
+  public:
+    virtual std::string interface_name() const override
+    {
+      return std::string("wfc::ilogger");
+    }
+  };
 }
 
 logger_singleton::logger_singleton()

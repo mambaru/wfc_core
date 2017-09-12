@@ -18,7 +18,13 @@ namespace {
   WFC_NAME2(component_name, "btp-gateway")
   class impl
     : public ::wfc::jsonrpc::gateway_multiton< component_name, gateway::btp_method_list, gateway::btp_interface> 
-  {};
+  {
+  public:
+    virtual std::string interface_name() override
+    {
+      return std::string("wfc::btp::ibtp");
+    }
+  };
 }
 
 btp_gateway_multiton::btp_gateway_multiton()

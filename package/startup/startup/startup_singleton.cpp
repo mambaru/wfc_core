@@ -28,7 +28,22 @@ namespace
     | component_features::DisabledPriority 
     | component_features::DisabledSuspend 
     | component_features::DisabledWorkflow
-  > {};
+  > 
+  {
+  public:
+    virtual std::string interface_name() const override
+    {
+      return "wfc::istartup";
+    }
+
+    virtual std::string description() const override
+    {
+      return "Рarsing the command line parameters and starting the daemon.";
+    }
+
+    
+
+  };
 }
 
 startup_singleton::startup_singleton()

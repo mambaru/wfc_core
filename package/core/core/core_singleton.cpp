@@ -22,7 +22,13 @@ namespace
     | component_features::DisabledSuspend
     | component_features::DisabledWorkflow 
   >
-  {};
+  {
+  public:
+    virtual std::string interface_name() const override
+    {
+      return std::string("wfc::icore");
+    }
+  };
 
 }
 

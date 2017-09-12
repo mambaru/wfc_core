@@ -19,7 +19,7 @@ public:
   
   typedef std::shared_ptr< ::wfc::value_meter > value_meter_ptr;
   typedef std::shared_ptr< ::wfc::time_meter > time_meter_ptr;
-  typedef ::wfc::workflow domain_interface;
+  //typedef ::wfc::workflow domain_interface;
   virtual ~workflow_domain();
   //using domain_object<iinterface, workflow_config>::create;
   virtual void configure() override;

@@ -27,7 +27,7 @@ startup_domain::~startup_domain()
 {
 }
 
-bool startup_domain::startup(int argc, char** argv, std::string helpstring)
+int startup_domain::startup(int argc, char** argv, std::string helpstring)
 {
   parse_arguments( _pa, argc, argv);
   if ( auto g = this->global() )
@@ -41,10 +41,12 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
   {
     std::cerr << "*** ERROR ***" << std::endl;
     std::cerr << _pa.errorstring << std::endl;
+    return 1;
   }
   else if ( _pa.usage )
   {
     this->show_usage_();
+    return 0;
   }
   else if ( _pa.help )
   {
@@ -53,20 +55,26 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
     std::cout << "To generate and format the configuration, use: " << std::endl;
     std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
     std::cout << std::endl;
+    return 0;
   }
   else if ( _pa.version )
   {
     if ( auto g = this->global() )
+    {
       std::cout << _pa.program_name << " " << g->program_build_info->version() 
-                << " " << g->program_build_info->build_date() 
-                << " " << g->program_build_info->build_type() 
+                << std::endl << g->program_build_info->compiler_version() 
+                << std::endl << g->program_build_info->build_date() 
+                << std::endl << g->program_build_info->build_type() 
                 << std::endl;
+    }
+    return 0;
   }
   else if ( _pa.info )
   {
     if ( _pa.info_options.empty() )
     {
       this->show_info_("");
+      return 0;
     }
     else
     {
@@ -75,14 +83,33 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
       {
         flag = flag && this->show_info_(i);
       }
+      return flag ? 0 : 2;
+    }
+  }
+  else if ( _pa.module_list )
+  {
+    if ( auto g = this->global() )
+    {
+      g->registry.for_each<imodule>("module", [g](const std::string&, std::shared_ptr<imodule> m)
+      {
+        std::cout << "\t" << m->name() << std::endl;
+      });
+    }
+  }
+  else if ( _pa.component_list )
+  {
+    if ( auto g = this->global() )
+    {
+      g->registry.for_each<icomponent>("component", [g](const std::string&, std::shared_ptr<icomponent> c)
+      {
+        std::cout << "\t" << c->name() << " [" << c->interface_name() << "]"<< std::endl;
+      });
     }
   }
   else if ( _pa.generate )
   {
-    if ( !this->generate_() )
-    {
-      std::cerr << "the system is not initialized";
-    }
+    return this->generate_() ? 0 : 3;
+      
   }
   else if ( !_pa.config_path.empty() )
   {
@@ -95,6 +122,15 @@ bool startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   return false;
 }
+
+
+bool startup_domain::ready_for_run()
+{
+  return _ready;
+}
+
+
+
 
 namespace {
 
@@ -129,7 +165,7 @@ namespace {
   }
 }
 
-bool startup_domain::perform_start_( )
+int startup_domain::perform_start_( )
 {
 
   if ( auto g = this->global() )
@@ -139,12 +175,11 @@ bool startup_domain::perform_start_( )
       if ( !c->load_and_parse(_pa.config_path) )
       {
         std::cerr << "Configuration FAIL!" << std::endl;
-        return false;
+        return 5;
       }
     }
     std::clog << "Program name: " << g->program_name << std::endl;
     std::clog << "Instance name: " << g->instance_name << std::endl;
-
   }
   
   if ( !_pa.user_name.empty() )
@@ -152,7 +187,7 @@ bool startup_domain::perform_start_( )
     if ( !::wfc::change_user(_pa.user_name) )
     {
       std::cerr << "FAIL: cannot set new user name '"<< _pa.user_name <<"'" << std::endl;
-      return false;
+      return 6;
     }
     std::clog << "New user name: " << _pa.user_name << std::endl;
   }
@@ -162,14 +197,14 @@ bool startup_domain::perform_start_( )
     if ( !::wfc::change_working_directory(_pa.working_directory) )
     {
       std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory <<"'" << std::endl;
-      return false;
+      return 7;
     }
     std::clog << "New working directory: " << _pa.user_name << std::endl;
   }
 
   if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )
   {
-    return false;
+    return 8;
   }
 
   if ( _pa.daemonize )
@@ -222,10 +257,9 @@ bool startup_domain::perform_start_( )
 
   if ( _pa.coredump )
     ::wfc::dumpable();
-  
-  
-  return true;
 
+  _ready = true;
+  return true;
 }
 
 ///
@@ -236,9 +270,10 @@ void startup_domain::show_usage_()
 {
   std::cout <<  "Usage:" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " --help" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " --info [<module name>]" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " --version" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " --info [<package name>]" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " -G [<component name>] [-C <path>]" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <instance name>] -C <config path>" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <component name>] -C <config path>" << std::endl;
 }
 
 bool startup_domain::show_info_(const std::string& name)
@@ -254,6 +289,7 @@ bool startup_domain::show_info_(const std::string& name)
     {
       std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
+      std::cout << "\tDescription: " << p->description() << std::endl;
       std::cout << "\tList of modules:" << std::endl;
       auto modules = p->modules();
       for( auto m: modules ) 
@@ -310,10 +346,7 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
     std::cout << "\tEnabled: " << b->enabled()  << std::endl;
     std::cout << "\tName: "    << b->name()     << std::endl;
     std::cout << "\tVersion: " << b->version() << std::endl;
-    /*if ( !b->verex().empty() )
-      std::cout << "[" << b->verex() << "]";
-    std::cout << "-" << b->build_count() << std::endl;*/
-
+    std::cout << "\tCompiler: " << b->compiler_version() << std::endl;
     std::cout << "\tBuild Type: "     << b->build_type()     << std::endl;
     std::cout << "\tBuild Date: "     << b->build_date()     << std::endl;
     std::cout << "\tBuild Flags: "    << b->build_flags()    << std::endl;
@@ -324,7 +357,6 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
     std::cout << "\tCommit Message: " << b->commit_message() << std::endl;
     std::cout << "\tAll Authors: "    << b->all_authors()    << std::endl;
     std::cout << "\tInitial Author: " << b->initial_author() << std::endl;
-    //std::cout << std::endl;
   }
 }
 
@@ -335,32 +367,31 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
 /// @return false - модуль не найден
 bool startup_domain::generate_()
 {
-  auto g = this->global();
-  if ( g==nullptr )
-    return false;
-
-  auto c = g->registry.get<iconfig>("config");
-  if ( c==nullptr )
-    return false;
-
-  std::string genstr;
-  if ( c->generate_config(_pa.generate_options, _pa.config_path, genstr) )
+  if ( auto g = this->global() )
   {
-    if ( _pa.config_path.empty() )
+    if ( auto c = g->registry.get<iconfig>("config") )
     {
-      std::cout << genstr << std::endl;
-    }
-    else
-    {
-      std::clog << "generated write to file: " << _pa.config_path << std::endl;
-      std::clog << "For JSON format: cat "<< _pa.config_path << " | python -mjson.tool" << std::endl;
+      std::string genstr;
+      if ( c->generate_config(_pa.generate_options, _pa.config_path, genstr) )
+      {
+        if ( _pa.config_path.empty() )
+        {
+          std::cout << genstr << std::endl;
+        }
+        else
+        {
+          std::clog << "generated write to file: " << _pa.config_path << std::endl;
+          std::clog << "For JSON format: cat "<< _pa.config_path << " | python -mjson.tool" << std::endl;
+        }
+        return true;
+      }
+      else
+      {
+        std::cerr << genstr << std::endl;
+      }
     }
   }
-  else
-  {
-    std::cerr << genstr << std::endl;
-  }
-  return true;
+  return false;
 }
 
 }}

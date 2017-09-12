@@ -45,10 +45,14 @@ void config::ready()
   
   if ( this->options().reload_changed_ms != 0 )
   {
+    COMMON_LOG_DEBUG("=========================== void config::ready() ======================== ")
+    COMMON_LOG_DEBUG("=========================== void config::ready() ======================== ")
+    COMMON_LOG_DEBUG("=========================== void config::ready() ======================== ")
     _timer_id = this->global()->workflow->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
       this->wrap( std::bind(&config::timer_handler_, this), nullptr )
     );
+    COMMON_LOG_DEBUG("=========================== void config::ready() ======================== " << _timer_id)
   }
 }
 
@@ -227,7 +231,7 @@ bool config::parse_configure_(std::string source, std::string confstr, configura
 
 bool config::timer_handler_()
 {
-  //DEBUG_LOG_DEBUG("config::timer_handler_() " << this->_config_changed)
+  DEBUG_LOG_DEBUG("config::timer_handler_() " << this->_config_changed)
 
   if ( this->_config_changed!=0 )
   {

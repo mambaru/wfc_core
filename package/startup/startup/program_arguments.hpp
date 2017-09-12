@@ -13,6 +13,8 @@ struct program_arguments
   bool generate = false;
   bool version = false;
   bool info = false;
+  bool module_list = false;
+  bool component_list = false;
 
   bool daemonize = false;
   bool coredump = false;

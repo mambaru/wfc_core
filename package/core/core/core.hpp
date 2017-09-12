@@ -15,9 +15,12 @@ class core
   , public std::enable_shared_from_this<core>
 {
 public:
-
   virtual ~core();
   core();
+
+  /// domain_object
+  virtual void reconfigure() override;
+  virtual void stop() override;
   
   /// icore
   virtual int run() override;
@@ -25,15 +28,7 @@ public:
   virtual void core_stop( ) override;
   virtual void core_abort( std::string message ) override;
   
-  /// domain_object
-  virtual void create() override;
-  virtual void reconfigure() override;
-  virtual void start() override;
-  virtual void stop() override;
-
-  
 private:
-  
   void _sunrise();
   bool _configure();
   void _initialize();
@@ -43,7 +38,6 @@ private:
   bool _idle();
   
 private:
-
   std::atomic<bool> _reconfigure_flag;
   std::atomic<bool> _stop_flag;
   std::atomic<bool> _abort_flag;

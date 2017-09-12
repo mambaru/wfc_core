@@ -20,7 +20,13 @@ namespace {
     ::wfc::component_features::Defaults,
     stat_options_json
   >
-  {};
+  {
+  public:
+    virtual std::string interface_name() override
+    {
+      return std::string("wfc::iinterafce");
+    }
+  };
 }
 
 statistics_multiton::statistics_multiton()

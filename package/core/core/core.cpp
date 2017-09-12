@@ -93,40 +93,33 @@ core::core()
   gs_stop_signal = false;
 }
 
-void core::create()
-{
-  //std::cout << "!!!!!!!! core::create !!!!!!!!!!! " << this->options().core_workflow.threads << std::endl;
-  //this->global()->workflow->reconfigure(this->options().core_workflow);
-  //this->global()->workflow->start();
-  
-}
-
-/*
-void core::configure()
-{
-  std::cout << "!!!!!!!! core::configure() !!!!!!!!!!!" << std::endl;
-}
-*/
 void core::reconfigure()
 {
-  //this->global()->workflow->start();
   auto opt = this->options();
   auto cw_opt = opt.common_workflow;
   cw_opt.id = this->name();
   if ( auto g = this->global() )
   {
+    
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
     cw_opt.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
-    cw_opt.finish_handler = [g]( std::thread::id ){ g->cpu.del_current_thread();};
+    cw_opt.finish_handler = [g]( std::thread::id id)
+    {
+      COMMON_LOG_MESSAGE( "common_workflow thread finished. std::thread::id=" << id )
+      g->cpu.del_current_thread();
+    };
+    
+    if ( g->workflow==nullptr )
+    {
+      g->workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt );
+      g->workflow->start();
+    }
+    else
+      g->workflow->reconfigure(cw_opt);
+    
   }
- /* cw_opt.startup_handler = std::bind( &core::reg_thread, this );
-  cw_opt.finish_handler = std::bind( &core::unreg_thread, this );
-  */
   
-  //opt.core_workflow.workflow_ptr = _core_workflow;
-  this->global()->workflow->reconfigure(  cw_opt );
-  //this->global()->workflow->start();
-  
+
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
@@ -150,15 +143,14 @@ void core::reconfigure()
   this->global()->cpu.set_current_thread( this->name() );
   
   ::iow::io::global_pool::initialize( opt.datapool );
-  
 }
 
-
-void core::core_reconfigure()
+void core::stop() 
 {
-  _reconfigure_flag = true;
+  _same = this->shared_from_this();
+  DOMAIN_LOG_MESSAGE("************* void core::stop()  *****************")
+  _stop_flag = true;
 }
-
 
 int core::run()
 {
@@ -200,12 +192,9 @@ int core::run()
   return this->_main_loop();
 }
 
-
-void core::stop() 
+void core::core_reconfigure()
 {
-  _same = this->shared_from_this();
-  DOMAIN_LOG_MESSAGE("************* void core::stop()  *****************")
-  _stop_flag = true;
+  _reconfigure_flag = true;
 }
 
 void core::core_stop()
@@ -218,17 +207,12 @@ void core::core_abort( std::string message )
 {
   IOW_WRITE_LOG_FATAL("domain","")
   IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  IOW_WRITE_LOG_FATAL("domain","!!        АВАРИЙНОЕ ЗАВЕРШЕНИЕ")
+  IOW_WRITE_LOG_FATAL("domain","!!        ABNORMAL SHUTDOWN")
   IOW_WRITE_LOG_FATAL("domain","!!        " << message )
   IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   IOW_WRITE_LOG_FATAL("domain","")
   _stop_flag = true;
   _abort_flag = true;
-}
-
-void core::start()
-{
-
 }
 
 bool core::_idle()
@@ -418,12 +402,6 @@ void core::_initialize()
   if ( g == nullptr)
     return;
 
-  /*if ( !g->registry.dirty() )
-  {
-    CONFIG_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
-    return;
-  }*/
-
   typedef std::shared_ptr<iinstance> instance_ptr;
   typedef std::vector<instance_ptr> instance_list;
   instance_list instances;
@@ -511,24 +489,10 @@ void core::_start()
     g->io_service.poll();
     g->io_service.reset();
   });
-
-  /*
-  if ( auto d = g->registry.reset_dirty() )
-  {
-    CONFIG_LOG_MESSAGE(" ----------- DEBUG: Started finished for " << d << " registry changed")
-  }
-  else
-  {
-    CONFIG_LOG_MESSAGE("--------- DEBUG: Initialization finished. No registry changed")
-  }
-
-  auto opt = this->options();
-  */
 }
 
 void core::_stop()
 {
- 
   auto g = this->global();
 
   if ( g == nullptr)

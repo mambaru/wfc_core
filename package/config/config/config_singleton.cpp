@@ -21,6 +21,11 @@ class impl: public ::wfc::singleton<
   | component_features::DisabledPriority
 >
 {  
+public:
+  virtual std::string interface_name() const override
+  {
+    return std::string("wfc::iconfig");
+  }
 };
 
 }
