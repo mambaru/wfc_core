@@ -240,7 +240,6 @@ bool core::_idle()
 
   if ( !_stop_flag )
   {
-    DEBUG_LOG_MESSAGE("CPU thread check")
     ::wfc::cpuset& cpumgr = this->global()->cpu;
     if ( cpumgr.clean_dirty() )
     {
