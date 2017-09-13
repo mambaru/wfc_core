@@ -29,7 +29,7 @@ public:
 
   virtual std::string description() const override
   {
-    return std::string("Сonfiguration and dynamic reconfiguration.");
+    return std::string("Сonfiguration and dynamic reconfiguration");
   }
 };
 

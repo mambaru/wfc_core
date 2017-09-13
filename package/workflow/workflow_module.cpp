@@ -17,7 +17,7 @@ namespace
   {
     virtual std::string description() const override
     {
-      return "Оne-component module.";
+      return "Оne-component module";
     }
   };
 }

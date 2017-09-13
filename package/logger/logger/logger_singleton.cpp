@@ -34,7 +34,7 @@ namespace
 
     virtual std::string description() const override
     {
-      return std::string("Logging system.");
+      return std::string("Logging system");
     }
   };
 }

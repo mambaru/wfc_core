@@ -1,5 +1,5 @@
 //
-// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2015
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2017
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -21,10 +21,22 @@ logger::~logger()
   this->unreg_loggers_();
 }
 
-logger::config_type logger::generate(const std::string&) 
+logger::config_type logger::generate(const std::string& arg) 
 {
   logger::config_type conf;
-  conf.custom["log-name"]=writer_options();
+  if ( arg == "example" )
+  {
+    conf.startup_priority = -1000;
+    conf.shutdown_priority = 1000;
+    conf.custom["<<log-name>>"]=writer_options();
+    conf.custom["<<log-name>>"].deny.push_back("WARNING");
+    conf.custom["<<log-name>>"].path="path/to/log/file/<<log-name>>/without '.log'";
+    conf.custom["<<log-name>>"].milliseconds = true;
+    conf.custom["<<log-name>>"].limit = 12345;
+    conf.deny.push_back("TRACE");
+    conf.path="path/to/log/file/without '.log'";
+  }
+  
   return conf;
 }
 
@@ -234,7 +246,7 @@ auto logger::find_or_create_(const std::string& name) -> ilogger_ptr
 auto logger::create_(const std::string& name) -> ilogger_ptr
 {
   logger_config opt = this->options();
-  writer_ptr pwriter = std::make_shared<writer>( /*_summary, _mutex*/ this->shared_from_this());
+  writer_ptr pwriter = std::make_shared<writer>( this->shared_from_this() );
   writer_options wopt = static_cast<writer_options>(opt);
   
   this->customize_(name, wopt);

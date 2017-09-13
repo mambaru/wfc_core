@@ -31,7 +31,7 @@ namespace
     
     virtual std::string description() const override
     {
-      return std::string("Сreate, configure, initialize, and launch components.");
+      return std::string("Сreate, configure, initialize, and launch components");
     }
   };
 }

@@ -102,7 +102,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     {
       g->registry.for_each<icomponent>("component", [g](const std::string&, std::shared_ptr<icomponent> c)
       {
-        std::cout << "\t" << c->name() << " [" << c->interface_name() << "]"<< std::endl;
+        std::cout << "\t* " << c->name() << " [" << c->interface_name() << "] " << c->description() << std::endl;
       });
     }
   }
@@ -297,8 +297,9 @@ bool startup_domain::show_info_(const std::string& name)
           auto components = m->components();
           for( auto o: components ) 
           {
-              std::cout << "\t\t\t" << o->name() << " [" << o->interface_name() 
-                        << "]. " << o->description() << std::endl;
+            std::cout << "\t\t\t" << o->name() << " - " << o->description() << std::endl;
+              /*std::cout << "\t\t\t" << o->name() << " [" << o->interface_name() 
+                        << "]. " << o->description() << std::endl;*/
           }
       }
     }

@@ -38,7 +38,7 @@ namespace
 
     virtual std::string description() const override
     {
-      return "Рarsing the command line parameters and starting the daemon.";
+      return "Рarsing the command line parameters and starting the daemon";
     }
   };
 }

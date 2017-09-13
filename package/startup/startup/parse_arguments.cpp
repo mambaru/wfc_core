@@ -39,7 +39,7 @@ try
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
-    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name [arg]]. Use -C option for write to file.")
+    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
     ;
 
   vstrings instance_options;
@@ -75,6 +75,11 @@ try
     if ( pos == std::string::npos )
     {
       pa.generate_options[g] = "";
+    }
+    else
+    {
+      pa.generate_options[ std::string(g.begin(), g.begin() +  pos) ]
+        = std::string(g.begin() + pos + 1 , g.end() );
     }
   }
   

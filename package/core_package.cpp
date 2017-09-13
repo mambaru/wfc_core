@@ -27,7 +27,7 @@ namespace
   {
     virtual std::string description() const override
     {
-      return "WFC core modules.";
+      return "WFC core modules";
     }
   };
 }
