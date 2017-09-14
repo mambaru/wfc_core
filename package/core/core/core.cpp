@@ -154,6 +154,9 @@ void core::stop()
 
 int core::run()
 {
+  if ( this->global()->workflow==nullptr )
+    this->reconfigure();
+  
   gs_stop_signal = false;
 
   signal(SIGPIPE,  SIG_IGN);
