@@ -117,6 +117,10 @@ void core::reconfigure()
     else
       g->workflow->reconfigure(cw_opt);
     
+    g->nocall_callback_abort = opt.nocall_callback_abort;
+    g->nocall_callback_show = opt.nocall_callback_show;
+    g->double_callback_abort = opt.double_callback_abort;
+    g->double_callback_show = opt.double_callback_show;
   }
   
 
