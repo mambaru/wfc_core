@@ -212,6 +212,22 @@ void core::core_stop()
 
 void core::core_abort( std::string message ) 
 {
+    if ( auto g = ::wfc::wfcglobal::static_global )
+    {
+      if ( g->stop_signal_flag == false )
+      {
+        IOW_WRITE_LOG_FATAL("domain","")
+        IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        IOW_WRITE_LOG_FATAL("domain","!!        ABNORMAL SHUTDOWN")
+        IOW_WRITE_LOG_FATAL("domain","!!        " << message )
+        IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        IOW_WRITE_LOG_FATAL("domain","")
+      }
+      g->stop_signal_flag = true;
+    }
+    gs_stop_signal = true;
+
+  /*
   IOW_WRITE_LOG_FATAL("domain","")
   IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   IOW_WRITE_LOG_FATAL("domain","!!        ABNORMAL SHUTDOWN")
@@ -220,6 +236,7 @@ void core::core_abort( std::string message )
   IOW_WRITE_LOG_FATAL("domain","")
   _stop_flag = true;
   _abort_flag = true;
+  */
 }
 
 bool core::_idle()
