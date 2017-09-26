@@ -1,19 +1,5 @@
 include(BuildInfo)
 
-if ( WFC_ENABLE_STAT )
-  SET(
-    wfc_stat_source_list
-    statistics/statistics_module.cpp
-    statistics/statistics_aggregator/statistics_multiton.cpp
-    statistics/statistics_aggregator/statistics_domain.cpp
-    statistics/system_statistics/system_statistics_multiton.cpp
-    statistics/system_statistics/system_statistics_domain.cpp
-    statistics/system_statistics/impl/get_procstat.cpp
-    statistics/gateway/btp_gateway_multiton.cpp
-  )
-endif()
-
-
 SET(
   wfc_core_source_list
 
@@ -42,10 +28,24 @@ SET(
   workflow/workflow/workflow_domain.cpp
 )
 
+if ( WFC_ENABLE_STAT )
+  SET(
+    wfc_core_source_list
+    ${wfc_core_source_list}
+    statistics/statistics_module.cpp
+    statistics/statistics_aggregator/statistics_multiton.cpp
+    statistics/statistics_aggregator/statistics_domain.cpp
+    statistics/system_statistics/system_statistics_multiton.cpp
+    statistics/system_statistics/system_statistics_domain.cpp
+    statistics/system_statistics/impl/get_procstat.cpp
+    statistics/gateway/btp_gateway_multiton.cpp
+    statistics/gateway/deprecated/btp_deprecated_gateway_multiton.cpp
+  )
+endif()
+
 add_library(
   wfc_core 
   ${wfc_core_source_list}
-  ${wfc_stat_source_list}
 )
 
 build_info(wfc_core core)

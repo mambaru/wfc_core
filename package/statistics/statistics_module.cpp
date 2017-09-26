@@ -3,7 +3,7 @@
 #include "statistics_aggregator/statistics_multiton.hpp"
 #include "system_statistics/system_statistics_multiton.hpp"
 #include "gateway/btp_gateway_multiton.hpp"
-
+#include "gateway/deprecated/btp_deprecated_gateway_multiton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
@@ -18,6 +18,7 @@ namespace
     ,statistics_multiton
     ,system_statistics_multiton
     ,btp_gateway_multiton
+    ,btp_deprecated_gateway_multiton
   >
   {
     virtual std::string description() const override
