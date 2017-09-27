@@ -29,6 +29,11 @@ namespace
     {
       return "WFC core modules";
     }
+    
+    virtual int order() const override
+    {
+      return 0;
+    }
   };
 }
 

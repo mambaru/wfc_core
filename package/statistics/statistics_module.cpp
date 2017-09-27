@@ -1,6 +1,7 @@
 
 #include "statistics_module.hpp"
 #include "statistics_aggregator/statistics_multiton.hpp"
+#include "statistics_log/statlog_multiton.hpp"
 #include "system_statistics/system_statistics_multiton.hpp"
 #include "gateway/btp_gateway_multiton.hpp"
 #include "gateway/deprecated/btp_deprecated_gateway_multiton.hpp"
@@ -15,10 +16,11 @@ namespace
 
   class impl: public ::wfc::component_list<
     module_name
-    ,statistics_multiton
-    ,system_statistics_multiton
-    ,btp_gateway_multiton
-    ,btp_deprecated_gateway_multiton
+    , statistics_multiton
+    , system_statistics_multiton
+    , statlog_multiton
+    , btp_gateway_multiton
+    , btp_deprecated_gateway_multiton    
   >
   {
     virtual std::string description() const override

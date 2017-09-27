@@ -16,6 +16,7 @@ namespace wfc{ namespace core{
 namespace {
 
   WFC_NAME2(component_name, "btp-deprecated-gateway")
+
   class impl
     : public ::wfc::jsonrpc::gateway_multiton< 
         component_name, 

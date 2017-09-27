@@ -123,14 +123,17 @@ void statistics_domain::initialize()
               
               if ( diff > delay )
               {
-                // Структура aggregated в wfc немного отличается от btp 
+                typedef wrtstat::aggregated_data aggregated;
                 auto req = std::make_unique<btp::request::add>();
                 req->name = name;
+                static_cast<aggregated&>(*req) = std::move(*ag);
+                /*
                 // сначала переносим data
                 req->cl = std::move(ag->data);
                 // потом все остальное (req->ag.data не сериализуется! только req->cl )
                 req->ag = std::move(*ag);
                 req->ts = req->ag.ts;
+                */
                 pbtp->add( std::move(req), nullptr );
               }
             }

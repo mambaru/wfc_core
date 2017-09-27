@@ -90,9 +90,20 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   {
     if ( auto g = this->global() )
     {
-      g->registry.for_each<imodule>("module", [g](const std::string&, std::shared_ptr<imodule> m)
+      g->registry.for_each<ipackage>("package", [](const std::string&, std::shared_ptr<ipackage> pkg)
       {
-        std::cout << "\t" << m->name() << std::endl;
+        if ( pkg == nullptr )
+          return;
+        std::cout << pkg->name() << ":" << std::endl;
+        auto modules = pkg->modules();
+        for (auto m : modules)
+        {
+          std::cout << "\t" << m->name() << " " << m->description() << std::endl;
+        }
+      },
+      [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
+      {
+        return l->order() < r->order();
       });
     }
   }
@@ -100,9 +111,24 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   {
     if ( auto g = this->global() )
     {
-      g->registry.for_each<icomponent>("component", [g](const std::string&, std::shared_ptr<icomponent> c)
+      g->registry.for_each<ipackage>("package", [](const std::string& , std::shared_ptr<ipackage> pkg)
       {
-        std::cout << "\t* " << c->name() << " [" << c->interface_name() << "] " << c->description() << std::endl;
+        if ( pkg == nullptr )
+          return;
+        std::cout << pkg->name() << ":" << std::endl;
+        auto modules = pkg->modules();
+        for (auto m : modules)
+        {
+          auto components = m->components();
+          for (auto c : components )
+          {
+            std::cout << "\t" << c->name() << " [" << c->interface_name() << "] " << c->description() << std::endl;
+          }
+        }
+      },
+      [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
+      {
+        return l->order() < r->order();
       });
     }
   }
@@ -298,8 +324,6 @@ bool startup_domain::show_info_(const std::string& name)
           for( auto o: components ) 
           {
             std::cout << "\t\t\t" << o->name() << " - " << o->description() << std::endl;
-              /*std::cout << "\t\t\t" << o->name() << " [" << o->interface_name() 
-                        << "]. " << o->description() << std::endl;*/
           }
       }
     }
@@ -322,10 +346,17 @@ bool startup_domain::show_info_(const std::string& name)
     std::cout << "About WFC:" << std::endl;
     this->show_build_info_(g->wfc_build_info, false);
     std::cout << "Package List:" << std::endl;
-    g->registry.for_each<ipackage>("package", [this](const std::string& /*name*/, std::shared_ptr<ipackage> p)
-    {
-      this->show_build_info_(p->build_info(), true);
-    });
+
+    g->registry.for_each<ipackage>("package", 
+      [this](const std::string&, std::shared_ptr<ipackage> p)
+      {
+        this->show_build_info_(p->build_info(), true);
+      }, 
+      [](std::shared_ptr<ipackage> left, std::shared_ptr<ipackage> right)
+      {
+        return left->order() < right->order();
+      }
+    );
   }
   return true;
 }

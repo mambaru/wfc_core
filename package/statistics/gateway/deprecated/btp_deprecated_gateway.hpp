@@ -24,12 +24,31 @@ class btp_deprecated_interface
 {
 public:
   
-  virtual void add(request::add::ptr /*req*/, response::add::handler cb ) override
+  virtual void add(request::add::ptr req, response::add::handler cb ) override
   {
+    if ( req==nullptr )
+    {
+      if ( cb!=nullptr )
+        cb(nullptr);
+      return;
+    }
+    
     auto depr_add = std::make_unique<request::add_deprecated>();
-#error need init depr_add from req
-    response::add_deprecated::handler depr_cb 
-      = [cb](response::add_deprecated::ptr res)
+    depr_add->ts = req->ts;
+    depr_add->name = std::move( req->name);
+    depr_add->cl = std::move( req->data );
+    depr_add->ag.avg     = req->avg;
+    depr_add->ag.count   = req->count;
+    depr_add->ag.perc50  = req->perc50;
+    depr_add->ag.perc80  = req->perc80;
+    depr_add->ag.perc95  = req->perc95;
+    depr_add->ag.perc99  = req->perc99;
+    depr_add->ag.perc100 = req->perc100;
+
+    response::add_deprecated::handler depr_cb = nullptr;
+    if ( cb!=nullptr )
+    {
+      depr_cb = [cb](response::add_deprecated::ptr res)
       {
         auto orig_res = std::make_unique<response::add>();
         if (res!=nullptr)
@@ -37,6 +56,7 @@ public:
         if (cb!=nullptr)
           cb( std::move(orig_res) );
       };
+    }
       
     this->template call< _add_ >( 
       std::move(depr_add), 

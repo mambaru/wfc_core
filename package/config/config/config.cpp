@@ -139,7 +139,12 @@ bool config::generate_config( const generate_options& go, const std::string& pat
           vectconf.push_back( std::make_pair(c->name(), c->generate("") ) );
         }
       }
+    },
+    [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
+    {
+      return l->order() < r->order();
     });
+    
     json::dict_vector< json::raw_value<> >::serializer()(vectconf, std::back_inserter(result));
   }
   else
@@ -169,6 +174,10 @@ bool config::generate_config( const generate_options& go, const std::string& pat
               ss << std::setw(20) << c->name()  << "\t[" << name << " " << m->name() << " ]: " << c->description() << std::endl;
             }
           }
+        },
+        [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
+        {
+          return l->order() < r->order();
         });
 
         result=ss.str();
