@@ -12,6 +12,7 @@
 #include <memory>
 #include <iostream>
 #include <fstream>
+#include <boost/filesystem.hpp>
 
 namespace wfc{ namespace core{
 
@@ -74,6 +75,8 @@ void writer::write_to_file_(const std::string& name, const std::string& ident,  
     {
       _logger->_summary += size;
       oflog.close();
+      if ( _conf.save_old )
+        boost::filesystem::rename(_conf.path,_conf.path + ".old");
       oflog.open(_conf.path);
       oflog << "---------------- truncate with " << size 
             << " summary size " << _logger->_summary 

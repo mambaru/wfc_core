@@ -41,15 +41,28 @@ namespace
   }
 }
 
+void statlog_domain::initialize()
+{
+  _target = this->get_target<ibtp>( this->options().target );
+}
 
 void statlog_domain::add( request::add::ptr req, response::add::handler cb )
 {
+  if ( this->suspended() )
+  {
+    if ( auto t = _target.lock() )
+    {
+      t->add( std::move(req), cb);
+    }
+    return;
+  }
+  
   if ( this->bad_request<response::add>(req, cb) )
     return;
   
   auto opt = this->options();
-  auto log = opt.log_name;
   int metric = opt.log_metric;
+  auto log = opt.common_log;
   if ( !log.empty() )
   {
     std::stringstream ss;
@@ -64,7 +77,49 @@ void statlog_domain::add( request::add::ptr req, response::add::handler cb )
     WFC_LOG_MESSAGE(log, ss.str() )
   }
   
-  if ( auto res = this->create_response(cb) )
+  int id = 0;
+  log = opt.legend_log;
+  if ( !log.empty() )
+  {
+    std::lock_guard<mutex_type> lk(_mutex);
+    auto itr = _legend.find(req->name);
+    if ( itr == _legend.end() )
+    {
+      id = ++_id_counter;
+      _legend[req->name] = id;
+      WFC_LOG_MESSAGE(log, id << ":" << req->name );
+    }
+    else
+      id = itr->second;
+  }
+
+  log = opt.table_log;
+  if ( !log.empty() )
+  {
+    std::stringstream ss;
+    ss << "|" << id 
+       << "|" << req->count
+       << "|" << req->lossy
+       << "|" << req->min
+       // << "|" << req->perc0 TODO:
+       << "|" << req->perc50
+       << "|" << req->perc80
+       << "|" << req->perc95
+       << "|" << req->perc99
+       << "|" << req->perc100
+       << "|" << req->max
+       << "|" << req->avg
+       << "|" << req->ts
+       << "|";
+    WFC_LOG_MESSAGE(log, ss.str() )
+
+  }
+
+  if ( auto t = _target.lock() )
+  {
+    t->add( std::move(req), cb);
+  }
+  else if ( auto res = this->create_response(cb) )
   {
     res->result = true;
     this->send_response(res, cb);

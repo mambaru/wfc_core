@@ -17,6 +17,8 @@ struct writer_options
   bool milliseconds = false;
   /// Ограничение на размер файла в байтах
   size_t limit = 0;
+  /// Сохрянать лог перед очисткой в <<path>>.log.old
+  bool save_old = true;
   /// Перефикс пути к файлу лога. Пустая строка - в файл записи не будет
   std::string path = "";
   /// Вывод в stdout (cout, cerr, clog). Пустая строка - без вывода 

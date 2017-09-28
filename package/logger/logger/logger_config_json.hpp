@@ -13,6 +13,7 @@ namespace wfc{ namespace core{
 struct logger_config_json
 {
   JSON_NAME(limit)
+  JSON_NAME(save_old)
   JSON_NAME(milliseconds)
   JSON_NAME(syslog)
   JSON_NAME(stdout)
@@ -24,6 +25,7 @@ struct logger_config_json
     json::member_list<
       json::member<n_milliseconds,    writer_options, bool,      &writer_options::milliseconds>,
       json::member<n_limit,    writer_options, size_t,      &writer_options::limit>,
+      json::member<n_save_old,    writer_options, bool,      &writer_options::save_old>,
       json::member<n_stdout,   writer_options, std::string, &writer_options::stdout>,
       json::member<n_path,     writer_options, std::string, &writer_options::path>,
       json::member<n_syslog,   writer_options, std::string, &writer_options::syslog>,

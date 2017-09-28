@@ -10,7 +10,7 @@ namespace wfc{ namespace core{
 
 namespace {
 
-  WFC_NAME2(object_name, "statistic-log")
+  WFC_NAME2(object_name, "statistics-log")
 
   class impl: public ::wfc::multiton<
     object_name,

@@ -14,7 +14,15 @@ class statlog_domain
   : public domain_object<ibtp, statlog_config>
 {
 public:
+  virtual void initialize() override;
   virtual void add( request::add::ptr req, response::add::handler cb ) override;
+private:
+  typedef std::mutex mutex_type;
+  std::weak_ptr<ibtp> _target;
+  mutex_type _mutex;
+  int _id_counter = 0;
+  std::map< std::string, int > _legend;
+  
 };
 
 }}
