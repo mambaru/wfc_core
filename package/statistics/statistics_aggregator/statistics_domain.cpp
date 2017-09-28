@@ -30,7 +30,7 @@ void statistics_domain::reconfigure_basic()
 
 void statistics_domain::reconfigure()
 {
-  _impl = std::make_shared<impl>( this->statistics_options() );
+  _impl = std::make_shared<impl>( this->options() );
   _impl->enable( !this->suspended()  );
 
   
@@ -40,18 +40,57 @@ void statistics_domain::reconfigure()
   }
 }
 
+bool statistics_domain::handler_(int offset, int step)
+{
+  auto opt = this->options();
+  if ( !_started )
+  {
+    auto now = std::chrono::system_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - _start_point ).count();
+    _started = diff > opt.startup_ignore_ms;
+    if ( !_started ) return true;
+  }
+   
+  int count = _impl->count();
+  for ( int i = offset; i < count; i+=step)
+  {
+    std::string name = _impl->get_name(i);
+    while (auto ag = _impl->pop(i) )
+    {
+      if ( auto pbtp = _target.lock() )
+      {
+        typedef wrtstat::aggregated_data aggregated;
+        auto req = std::make_unique<btp::request::add>();
+        req->name = name;
+        static_cast<aggregated&>(*req) = std::move(*ag);
+        pbtp->add( std::move(req), nullptr );
+      }
+    }
+  }
+  return true;
+}
+
 void statistics_domain::initialize() 
 {
   auto opt = this->options();
-  _wbtp = this->get_target<ibtp>( opt.target );
+  _targets.reserve(64);
+  _targets.clear();
+  for ( auto target: this->options().targets )
+    _targets.push_back( this->get_target<ibtp>(target) );
+  _target = this->get_target<ibtp>( opt.target );
 
+  
   if ( auto wf = this->get_workflow() ) 
   {
     wf->release_timer(_stat_wf_id);
-
+    _stat_wf_id = wf->create_timer( 
+      std::chrono::milliseconds(opt.aggregate_timeout_ms), 
+      std::bind(&statistics_domain::handler_, this, 0, 1) 
+    );
+    /*
     std::weak_ptr<statistics_domain::impl> wimpl = _impl;
-    auto wbtp = _wbtp;
-    auto start = std::chrono::system_clock::now();
+    auto wbtp = _target;
+    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
     time_t delay = opt.startup_ignore_ms;
     _stat_wf_id = wf->create_timer( 
       std::chrono::milliseconds(opt.aggregate_timeout_ms), 
@@ -86,7 +125,13 @@ void statistics_domain::initialize()
         return false;
       return true;
     });
+    */
   }
+}
+
+void statistics_domain::start() 
+{
+  _start_point = std::chrono::system_clock::now();
 }
 
 void statistics_domain::stop() 
@@ -119,6 +164,13 @@ void statistics_domain::add( wfc::btp::request::add::ptr req, wfc::btp::response
     }
   }
   this->send_response( std::move(res), std::move(cb) );
+  
+  req->data.clear();
+  for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
+  {
+    t->add(std::make_unique<wfc::btp::request::add>(*req), nullptr);
+  }
+
 }
 
 }}
