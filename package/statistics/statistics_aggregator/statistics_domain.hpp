@@ -10,7 +10,7 @@
 namespace wfc{ namespace core{
 
 class statistics_domain
-  : public domain_object<iinterface, statistics_config, ::wfc::stat_options>
+  : public domain_object<ibtp, statistics_config, ::wfc::stat_options>
 {
   class impl;
 public:
@@ -19,6 +19,7 @@ public:
   virtual void reconfigure() override;
   virtual void initialize() override;
   virtual void stop() override;
+  virtual void add( wfc::btp::request::add::ptr req, wfc::btp::response::add::handler cb) override final;
 private:
   std::shared_ptr<impl> _impl;
   std::weak_ptr<ibtp> _wbtp;

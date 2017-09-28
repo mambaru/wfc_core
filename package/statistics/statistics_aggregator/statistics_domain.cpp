@@ -87,10 +87,6 @@ void statistics_domain::initialize()
       return true;
     });
   }
-  else
-  {
-    abort();
-  }
 }
 
 void statistics_domain::stop() 
@@ -102,6 +98,27 @@ void statistics_domain::stop()
   {
     g->registry.erase( "statistics", this->name());
   }
+}
+
+void statistics_domain::add( wfc::btp::request::add::ptr req, wfc::btp::response::add::handler cb) 
+{
+  if ( this->bad_request< wfc::btp::response::add>(req, cb) )
+    return;
+  
+  if ( req->ts == 0 )
+    req->ts = time(0) * 1000000;
+  
+  auto res = this->create_response(cb);
+  if ( auto st = _impl )
+  {
+    if ( auto handler = st->create_aggregator( req->name, req->ts ) )
+    {
+      if ( res!= nullptr )
+        res->result = true;
+      handler( *req );
+    }
+  }
+  this->send_response( std::move(res), std::move(cb) );
 }
 
 }}
