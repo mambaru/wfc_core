@@ -1,25 +1,25 @@
 #pragma once
 
-#include <wfc/statistics/ibtp.hpp>
+#include <wfc/statistics/istatistics.hpp>
 #include <wfc/statistics/api/push_json.hpp>
 #include <wfc/jsonrpc.hpp>
 
 
-namespace wfc{ namespace core{ namespace gateway{ 
+namespace wfc{ namespace core{ namespace statistics{ 
 
-using namespace ::wfc::btp;
+using namespace ::wfc::statistics;
 
 JSONRPC_TAG(push)
 
-struct btp_method_list: public ::wfc::jsonrpc::method_list
+struct gateway_method_list: public ::wfc::jsonrpc::method_list
 <
-  ::wfc::jsonrpc::interface_<ibtp>,
+  ::wfc::jsonrpc::interface_<istatistics>,
   ::wfc::jsonrpc::call_method< _push_, request::push_json, response::push_json>
 >
 {};
 
 template<typename Base>
-class btp_interface
+class gateway_interface
   : public Base
 {
 public:

@@ -43,7 +43,7 @@ namespace
 
 void statlog_domain::initialize()
 {
-  _target = this->get_target<ibtp>( this->options().target );
+  _target = this->get_target<istatistics>( this->options().target );
 }
 
 void statlog_domain::push( request::push::ptr req, response::push::handler cb )

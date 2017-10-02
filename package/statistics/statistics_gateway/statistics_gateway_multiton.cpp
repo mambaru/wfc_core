@@ -4,8 +4,8 @@
 // Copyright: See COPYING file that comes with this distribution
 //
 
-#include "btp_gateway_multiton.hpp"
-#include "btp_gateway.hpp"
+#include "statistics_gateway_multiton.hpp"
+#include "statistics_gateway.hpp"
 
 #include <wfc/module/multiton.hpp>
 #include <wfc/module/instance.hpp>
@@ -15,14 +15,14 @@ namespace wfc{ namespace core{
 
 namespace {
 
-  WFC_NAME2(component_name, "btp-gateway")
+  WFC_NAME2(component_name, "statistics-gateway")
   class impl
-    : public ::wfc::jsonrpc::gateway_multiton< component_name, gateway::btp_method_list, gateway::btp_interface> 
+    : public ::wfc::jsonrpc::gateway_multiton< component_name, statistics::gateway_method_list, statistics::gateway_interface> 
   {
   public:
     virtual std::string interface_name() const override
     {
-      return std::string("wfc::btp::ibtp");
+      return std::string("wfc::statistics::istatistics");
     }
 
     virtual std::string description() const override
@@ -32,7 +32,7 @@ namespace {
   };
 }
 
-btp_gateway_multiton::btp_gateway_multiton()
+statistics_gateway_multiton::statistics_gateway_multiton()
   : wfc::component( std::make_shared<impl>() )
 {
 }

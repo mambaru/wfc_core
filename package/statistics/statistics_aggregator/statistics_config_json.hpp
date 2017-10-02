@@ -35,7 +35,7 @@ struct statistics_config_json
   typedef json::object<
     statistics_config,
     json::member_list<
-      json::base<stat_options_json>,
+      json::base<statistics::stat_options_json>,
       json::member< n_target,   statistics_config, std::string, &statistics_config::target>,
       json::member< n_targets,  statistics_config, std::vector<std::string>, &statistics_config::targets, 
                     json::vector_of_strings<> >,

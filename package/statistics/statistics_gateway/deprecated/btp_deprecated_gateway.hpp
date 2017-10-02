@@ -1,20 +1,20 @@
 #pragma once
 
-#include <wfc/statistics/ibtp.hpp>
+#include <wfc/statistics/istatistics.hpp>
 #include <wfc/jsonrpc.hpp>
 #include "add_deprecated_json.hpp"
 
 
 namespace wfc{ namespace core{ namespace gateway{ 
 
-using namespace ::wfc::btp;
+using namespace ::wfc::statistics;
 
-JSONRPC_TAG(push)
+JSONRPC_TAG(add)
 
 struct btp_deprecated_method_list: public ::wfc::jsonrpc::method_list
 <
-  ::wfc::jsonrpc::interface_<ibtp>,
-  ::wfc::jsonrpc::call_method< _push_, request::add_deprecated_json, response::add_deprecated_json>
+  /*::wfc::jsonrpc::interface_<istatistics>,
+  ::wfc::jsonrpc::call_method< _push_, request::add_deprecated_json, response::add_deprecated_json>*/
 >
 {};
 
@@ -23,9 +23,10 @@ class btp_deprecated_interface
   : public Base
 {
 public:
-  
-  virtual void push(request::push::ptr req, response::push::handler cb ) override
+  /*
+  virtual void add(request::add::ptr req, response::add::handler cb ) override
   {
+    
     if ( req==nullptr )
     {
       if ( cb!=nullptr )
@@ -64,7 +65,7 @@ public:
       nullptr
     );
   }
-  
+  */
 };
 
 }}}

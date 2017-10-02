@@ -3,8 +3,9 @@
 #include "statistics_aggregator/statistics_multiton.hpp"
 #include "statistics_log/statlog_multiton.hpp"
 #include "system_statistics/system_statistics_multiton.hpp"
-#include "gateway/btp_gateway_multiton.hpp"
-#include "gateway/deprecated/btp_deprecated_gateway_multiton.hpp"
+#include "statistics_gateway/statistics_gateway_multiton.hpp"
+#include "statistics_service/statistics_service_multiton.hpp"
+#include "statistics_gateway/deprecated/btp_deprecated_gateway_multiton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
@@ -19,7 +20,8 @@ namespace
     , statistics_multiton
     , system_statistics_multiton
     , statlog_multiton
-    , btp_gateway_multiton
+    , statistics_gateway_multiton
+    , statistics_service_multiton
     , btp_deprecated_gateway_multiton    
   >
   {

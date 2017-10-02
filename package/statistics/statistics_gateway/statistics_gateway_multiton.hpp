@@ -10,11 +10,11 @@
 
 namespace wfc{ namespace core{
 
-class btp_gateway_multiton
+class statistics_gateway_multiton
   : public ::wfc::component
 {
 public:
-  btp_gateway_multiton();
+  statistics_gateway_multiton();
 };
 
 }}

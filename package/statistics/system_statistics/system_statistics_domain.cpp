@@ -23,7 +23,7 @@ class procmeter
   typedef protostat::meter_ptr meter_ptr;
   typedef std::mutex mutex_type;
 public:
-  procmeter(std::weak_ptr<wfc::statistics> stat,  std::string prefix)
+  procmeter(std::weak_ptr<wfc::statistics::statistics> stat,  std::string prefix)
     : _prefix(prefix)
     , _wstat(stat)
   {
@@ -109,7 +109,7 @@ private:
   }
 private:
   std::string _prefix;
-  std::weak_ptr<wfc::statistics> _wstat;
+  std::weak_ptr<wfc::statistics::statistics> _wstat;
   protostat _procstat;
   std::vector<protostat> _threads;
   mutex_type _mutext;

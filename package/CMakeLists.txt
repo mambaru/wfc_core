@@ -42,8 +42,10 @@ if ( WFC_ENABLE_STAT )
     statistics/system_statistics/system_statistics_multiton.cpp
     statistics/system_statistics/system_statistics_domain.cpp
     statistics/system_statistics/impl/get_procstat.cpp
-    statistics/gateway/btp_gateway_multiton.cpp
-    statistics/gateway/deprecated/btp_deprecated_gateway_multiton.cpp
+    
+    statistics/statistics_gateway/statistics_gateway_multiton.cpp
+    statistics/statistics_service/statistics_service_multiton.cpp
+    statistics/statistics_gateway/deprecated/btp_deprecated_gateway_multiton.cpp
   )
 endif()
 

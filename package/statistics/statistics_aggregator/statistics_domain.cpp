@@ -9,11 +9,11 @@ namespace wfc{ namespace core{
  
 
 class statistics_domain::impl
-  : public ::wfc::statistics
+  : public ::wfc::statistics::statistics
   , public ::wfc::iinterface
 {
 public:
-  impl(const ::wfc::stat_options& opt )
+  impl(const ::wfc::statistics::stat_options& opt )
     : statistics( opt)
   {}
 };
@@ -57,13 +57,13 @@ bool statistics_domain::handler_(int offset, int step)
     std::string name = _impl->get_name(i);
     while (auto ag = _impl->pop(i) )
     {
-      if ( auto pbtp = _target.lock() )
+      if ( auto pstatistics = _target.lock() )
       {
         typedef wrtstat::aggregated_data aggregated;
-        auto req = std::make_unique<btp::request::push>();
+        auto req = std::make_unique<statistics::request::push>();
         req->name = name;
         static_cast<aggregated&>(*req) = std::move(*ag);
-        pbtp->push( std::move(req), nullptr );
+        pstatistics->push( std::move(req), nullptr );
       }
     }
   }
@@ -76,8 +76,8 @@ void statistics_domain::initialize()
   _targets.reserve(64);
   _targets.clear();
   for ( auto target: this->options().targets )
-    _targets.push_back( this->get_target<ibtp>(target) );
-  _target = this->get_target<ibtp>( opt.target );
+    _targets.push_back( this->get_target<istatistics>(target) );
+  _target = this->get_target<istatistics>( opt.target );
 
   
   if ( auto wf = this->get_workflow() ) 
@@ -89,12 +89,12 @@ void statistics_domain::initialize()
     );
     /*
     std::weak_ptr<statistics_domain::impl> wimpl = _impl;
-    auto wbtp = _target;
+    auto wstatistics = _target;
     std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
     time_t delay = opt.startup_ignore_ms;
     _stat_wf_id = wf->create_timer( 
       std::chrono::milliseconds(opt.aggregate_timeout_ms), 
-      [this, wimpl, wbtp, start, delay]()
+      [this, wimpl, wstatistics, start, delay]()
     {
       if ( auto pimpl = wimpl.lock() )
       {
@@ -104,7 +104,7 @@ void statistics_domain::initialize()
           std::string name = pimpl->get_name(i);
           while (auto ag = pimpl->pop(i) )
           {
-            if ( auto pbtp = wbtp.lock() )
+            if ( auto pstatistics = wstatistics.lock() )
             {
               auto now = std::chrono::system_clock::now();
               auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - start).count();
@@ -112,10 +112,10 @@ void statistics_domain::initialize()
               if ( diff > delay )
               {
                 typedef wrtstat::aggregated_data aggregated;
-                auto req = std::make_unique<btp::request::push>();
+                auto req = std::make_unique<statistics::request::push>();
                 req->name = name;
                 static_cast<aggregated&>(*req) = std::move(*ag);
-                pbtp->push( std::move(req), nullptr );
+                pstatistics->push( std::move(req), nullptr );
               }
             }
           }
@@ -145,9 +145,9 @@ void statistics_domain::stop()
   }
 }
 
-void statistics_domain::push( wfc::btp::request::push::ptr req, wfc::btp::response::push::handler cb) 
+void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) 
 {
-  if ( this->bad_request< wfc::btp::response::push>(req, cb) )
+  if ( this->bad_request< wfc::statistics::response::push>(req, cb) )
     return;
   
   if ( req->ts == 0 )
@@ -168,7 +168,7 @@ void statistics_domain::push( wfc::btp::request::push::ptr req, wfc::btp::respon
   req->data.clear();
   for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
   {
-    t->push(std::make_unique<wfc::btp::request::push>(*req), nullptr);
+    t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
   }
 
 }
