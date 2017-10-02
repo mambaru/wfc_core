@@ -20,7 +20,7 @@ public:
   virtual void initialize() override;
   virtual void stop() override;
   virtual void start() override;
-  virtual void add( wfc::btp::request::add::ptr req, wfc::btp::response::add::handler cb) override final;
+  virtual void push( wfc::btp::request::push::ptr req, wfc::btp::response::push::handler cb) override final;
 private:
   bool handler_(int offset, int step);
 

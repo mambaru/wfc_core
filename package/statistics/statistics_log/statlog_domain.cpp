@@ -46,18 +46,18 @@ void statlog_domain::initialize()
   _target = this->get_target<ibtp>( this->options().target );
 }
 
-void statlog_domain::add( request::add::ptr req, response::add::handler cb )
+void statlog_domain::push( request::push::ptr req, response::push::handler cb )
 {
   if ( this->suspended() )
   {
     if ( auto t = _target.lock() )
     {
-      t->add( std::move(req), cb);
+      t->push( std::move(req), cb);
     }
     return;
   }
   
-  if ( this->bad_request<response::add>(req, cb) )
+  if ( this->bad_request<response::push>(req, cb) )
     return;
   
   auto opt = this->options();
@@ -117,7 +117,7 @@ void statlog_domain::add( request::add::ptr req, response::add::handler cb )
 
   if ( auto t = _target.lock() )
   {
-    t->add( std::move(req), cb);
+    t->push( std::move(req), cb);
   }
   else if ( auto res = this->create_response(cb) )
   {

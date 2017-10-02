@@ -15,7 +15,7 @@ class statlog_domain
 {
 public:
   virtual void initialize() override;
-  virtual void add( request::add::ptr req, response::add::handler cb ) override;
+  virtual void push( request::push::ptr req, response::push::handler cb ) override;
 private:
   typedef std::mutex mutex_type;
   std::weak_ptr<ibtp> _target;

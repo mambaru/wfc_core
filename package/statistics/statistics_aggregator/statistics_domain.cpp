@@ -60,10 +60,10 @@ bool statistics_domain::handler_(int offset, int step)
       if ( auto pbtp = _target.lock() )
       {
         typedef wrtstat::aggregated_data aggregated;
-        auto req = std::make_unique<btp::request::add>();
+        auto req = std::make_unique<btp::request::push>();
         req->name = name;
         static_cast<aggregated&>(*req) = std::move(*ag);
-        pbtp->add( std::move(req), nullptr );
+        pbtp->push( std::move(req), nullptr );
       }
     }
   }
@@ -112,10 +112,10 @@ void statistics_domain::initialize()
               if ( diff > delay )
               {
                 typedef wrtstat::aggregated_data aggregated;
-                auto req = std::make_unique<btp::request::add>();
+                auto req = std::make_unique<btp::request::push>();
                 req->name = name;
                 static_cast<aggregated&>(*req) = std::move(*ag);
-                pbtp->add( std::move(req), nullptr );
+                pbtp->push( std::move(req), nullptr );
               }
             }
           }
@@ -145,9 +145,9 @@ void statistics_domain::stop()
   }
 }
 
-void statistics_domain::add( wfc::btp::request::add::ptr req, wfc::btp::response::add::handler cb) 
+void statistics_domain::push( wfc::btp::request::push::ptr req, wfc::btp::response::push::handler cb) 
 {
-  if ( this->bad_request< wfc::btp::response::add>(req, cb) )
+  if ( this->bad_request< wfc::btp::response::push>(req, cb) )
     return;
   
   if ( req->ts == 0 )
@@ -168,7 +168,7 @@ void statistics_domain::add( wfc::btp::request::add::ptr req, wfc::btp::response
   req->data.clear();
   for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
   {
-    t->add(std::make_unique<wfc::btp::request::add>(*req), nullptr);
+    t->push(std::make_unique<wfc::btp::request::push>(*req), nullptr);
   }
 
 }
