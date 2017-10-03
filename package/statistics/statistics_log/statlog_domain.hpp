@@ -16,6 +16,7 @@ class statlog_domain
 public:
   virtual void initialize() override;
   virtual void push( request::push::ptr req, response::push::handler cb ) override;
+  virtual void del( request::del::ptr req, response::del::handler cb ) override;
 private:
   typedef std::mutex mutex_type;
   std::weak_ptr<istatistics> _target;

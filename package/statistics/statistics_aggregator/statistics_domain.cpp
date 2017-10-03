@@ -159,7 +159,7 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
     if ( auto handler = st->create_aggregator( req->name, req->ts ) )
     {
       if ( res!= nullptr )
-        res->result = true;
+        res->status = true;
       handler( *req );
     }
   }
@@ -170,7 +170,29 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   {
     t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
   }
+}
 
+void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) 
+{
+  if ( this->bad_request< wfc::statistics::response::del>(req, cb) )
+    return;
+
+  auto res = this->create_response(cb);
+  if ( auto st = _impl )
+  {
+    res->status = st->del(req->name);
+  }
+  this->send_response( std::move(res), std::move(cb) );
+  
+  for ( auto wt : _targets ) if ( auto t = wt.lock() )
+  {
+    auto rreq = std::make_unique<wfc::statistics::request::del>( *req );
+    t->del( std::move(rreq), nullptr );
+  }
+  if ( auto t = _target.lock() )
+  {
+    t->del( std::move(req), nullptr );
+  }
 }
 
 }}

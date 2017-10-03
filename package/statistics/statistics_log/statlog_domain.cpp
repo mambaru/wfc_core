@@ -112,7 +112,6 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
        << "|" << req->ts
        << "|";
     WFC_LOG_MESSAGE(log, ss.str() )
-
   }
 
   if ( auto t = _target.lock() )
@@ -121,9 +120,15 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
   }
   else if ( auto res = this->create_response(cb) )
   {
-    res->result = true;
+    res->status = true;
     this->send_response(res, cb);
   }
+}
+
+void statlog_domain::del( request::del::ptr, response::del::handler cb ) 
+{
+  if ( cb!=nullptr )
+    cb(nullptr);
 }
 
 

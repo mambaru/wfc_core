@@ -21,6 +21,7 @@ public:
   virtual void stop() override;
   virtual void start() override;
   virtual void push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) override final;
+  virtual void del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) override final;
 private:
   bool handler_(int offset, int step);
 
