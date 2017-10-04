@@ -57,7 +57,7 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
     return;
   }
   
-  if ( this->bad_request<response::push>(req, cb) )
+  if ( this->bad_request(req, cb) )
     return;
   
   auto opt = this->options();
@@ -121,7 +121,7 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
   else if ( auto res = this->create_response(cb) )
   {
     res->status = true;
-    this->send_response(res, cb);
+    this->send_response( std::move(res), cb);
   }
 }
 

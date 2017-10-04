@@ -126,7 +126,7 @@ void statistics_domain::stop()
 
 void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) 
 {
-  if ( this->bad_request< wfc::statistics::response::push>(req, cb) )
+  if ( this->bad_request(req, cb) )
     return;
   
   if ( req->ts == 0 )
@@ -153,7 +153,7 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
 
 void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) 
 {
-  if ( this->bad_request< wfc::statistics::response::del>(req, cb) )
+  if ( this->bad_request(req, cb) )
     return;
 
   auto res = this->create_response(cb);
