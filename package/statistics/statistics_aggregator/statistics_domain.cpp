@@ -78,66 +78,45 @@ void statistics_domain::initialize()
   for ( auto target: this->options().targets )
     _targets.push_back( this->get_target<istatistics>(target) );
   _target = this->get_target<istatistics>( opt.target );
+}
 
-  
+void statistics_domain::ready() 
+{
+  auto opt = this->options();
+  if ( opt.workers < 1 )
+    opt.workers = 1;
   if ( auto wf = this->get_workflow() ) 
   {
-    wf->release_timer(_stat_wf_id);
-    _stat_wf_id = wf->create_timer( 
-      std::chrono::milliseconds(opt.aggregate_timeout_ms), 
-      std::bind(&statistics_domain::handler_, this, 0, 1) 
-    );
-    /*
-    std::weak_ptr<statistics_domain::impl> wimpl = _impl;
-    auto wstatistics = _target;
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    time_t delay = opt.startup_ignore_ms;
-    _stat_wf_id = wf->create_timer( 
-      std::chrono::milliseconds(opt.aggregate_timeout_ms), 
-      [this, wimpl, wstatistics, start, delay]()
+    for ( int id : _timers)
+      wf->release_timer(id);
+    _timers.clear();
+    for (int i = 0; i < opt.workers; ++i)
     {
-      if ( auto pimpl = wimpl.lock() )
-      {
-        int count = pimpl->count();
-        for ( int i = 0; i < count; ++i)
-        {
-          std::string name = pimpl->get_name(i);
-          while (auto ag = pimpl->pop(i) )
-          {
-            if ( auto pstatistics = wstatistics.lock() )
-            {
-              auto now = std::chrono::system_clock::now();
-              auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - start).count();
-              
-              if ( diff > delay )
-              {
-                typedef wrtstat::aggregated_data aggregated;
-                auto req = std::make_unique<statistics::request::push>();
-                req->name = name;
-                static_cast<aggregated&>(*req) = std::move(*ag);
-                pstatistics->push( std::move(req), nullptr );
-              }
-            }
-          }
-        }
-      }
-      else
-        return false;
-      return true;
-    });
-    */
+      
+      int id = wf->create_timer( 
+        std::chrono::milliseconds(opt.aggregate_timeout_ms), 
+        std::bind(&statistics_domain::handler_, this, i, opt.workers) 
+      );
+      _timers.push_back(id);
+    }
+
   }
 }
 
 void statistics_domain::start() 
 {
   _start_point = std::chrono::system_clock::now();
+  this->ready();
 }
 
 void statistics_domain::stop() 
 {
   if ( auto wf = this->get_workflow() ) 
-    wf->release_timer(_stat_wf_id);
+  {
+    for ( int id : _timers)
+      wf->release_timer(id);
+    _timers.clear();
+  }
 
   if ( auto g = this->global() )
   {

@@ -18,6 +18,7 @@ public:
   virtual void reconfigure_basic() override;
   virtual void reconfigure() override;
   virtual void initialize() override;
+  virtual void ready() override;
   virtual void stop() override;
   virtual void start() override;
   virtual void push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) override final;
@@ -31,7 +32,7 @@ private:
   std::vector< statistics_wptr > _targets;
   statistics_wptr _target;
 
-  workflow_type::timer_id_t _stat_wf_id = -1;
+  std::vector<workflow_type::timer_id_t> _timers;
   std::string _log;
  
   std::atomic<bool> _started;

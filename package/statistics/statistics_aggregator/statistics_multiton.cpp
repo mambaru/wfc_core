@@ -17,7 +17,7 @@ namespace {
     object_name,
     ::wfc::instance<statistics_domain>,
     statistics_config_json,
-    ::wfc::component_features::Defaults/*,
+    ::wfc::component_features::EnableCPU/*,
     stat_options_json*/
   >
   {

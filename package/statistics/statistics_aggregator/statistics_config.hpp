@@ -10,6 +10,7 @@ struct statistics_config:
   std::string target;
   // куда отправить входящие данные без массива data
   std::vector< std::string > targets;
+  int workers = 0;
   time_t aggregate_timeout_ms = 1000;
   time_t startup_ignore_ms = 1000;
 };
