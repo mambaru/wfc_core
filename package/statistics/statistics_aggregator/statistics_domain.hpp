@@ -10,7 +10,7 @@
 namespace wfc{ namespace core{
 
 class statistics_domain
-  : public domain_object<istatistics, statistics_config>
+  : public domain_object<istatistics, statistics_config, defstat>
 {
   class impl;
 public:
@@ -37,6 +37,9 @@ private:
  
   std::atomic<bool> _started;
   std::chrono::system_clock::time_point _start_point;
+  
+  time_meter_ptr _push_meter;
+  size_meter_ptr _count_meter;
 };
 
 }}
