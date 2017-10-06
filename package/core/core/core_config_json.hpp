@@ -32,6 +32,7 @@ struct core_config_json
   JSON_NAME(core_timeout_ms)
   JSON_NAME(rlimit_as_mb)
   
+  JSON_NAME(disable_statistics)
   JSON_NAME(nocall_callback_abort)
   JSON_NAME(nocall_callback_show)
   JSON_NAME(double_callback_abort)
@@ -47,6 +48,7 @@ struct core_config_json
        json::member<n_core_timeout_ms, core_config, time_t, &core_config::core_timeout_ms>,
        json::member<n_idle_timeout_ms, core_config, time_t, &core_config::idle_timeout_ms>,
        json::member<n_rlimit_as_mb, core_config, size_t, &core_config::rlimit_as_mb >,
+       json::member<n_disable_statistics, core_config, bool, &core_config::disable_statistics >,
        json::member<n_nocall_callback_abort, core_config, bool, &core_config::nocall_callback_abort >,
        json::member<n_nocall_callback_show, core_config, bool, &core_config::nocall_callback_show >,
        json::member<n_double_callback_abort, core_config, bool, &core_config::double_callback_abort >,
