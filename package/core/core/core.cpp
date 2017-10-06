@@ -117,6 +117,7 @@ void core::reconfigure()
     else
       g->workflow->reconfigure(cw_opt);
     
+    g->disable_statistics = opt.disable_statistics;
     g->nocall_callback_abort = opt.nocall_callback_abort;
     g->nocall_callback_show = opt.nocall_callback_show;
     g->double_callback_abort = opt.double_callback_abort;
