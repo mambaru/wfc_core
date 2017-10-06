@@ -67,16 +67,26 @@ bool writer::is_deny_(const std::string& some) const
 void writer::write_to_file_(const std::string& name, const std::string& ident,  const std::string& str)
 {
   std::ofstream oflog( _conf.path, std::ios_base::app );
-   
+  if ( !oflog ) return;
   if ( _conf.limit > 0 )
   {
-    size_t size = oflog.tellp();
-    if ( size > _conf.limit )
+    std::ofstream::pos_type pos = oflog.tellp();
+    size_t size = static_cast<size_t>(pos);
+    if ( pos!=static_cast<std::ofstream::pos_type>(-1) && size > _conf.limit )
     {
       _logger->_summary += size;
       oflog.close();
       if ( _conf.save_old )
-        boost::filesystem::rename(_conf.path,_conf.path + ".old");
+      {
+        boost::system::error_code ec;
+        boost::filesystem::rename(_conf.path,_conf.path + ".old", ec);
+        if ( ec )
+        {
+          std::cerr << "_conf.limit=" <<  _conf.limit << " size=" << size << std::endl;
+          std::cerr << _conf.path << "->" << _conf.path + ".old" << std::endl;
+          std::cerr << ec.message() << std::endl;
+        }
+      }
       oflog.open(_conf.path);
       oflog << "---------------- truncate with " << size 
             << " summary size " << _logger->_summary 
