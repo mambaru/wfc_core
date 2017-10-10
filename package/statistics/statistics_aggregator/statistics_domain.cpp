@@ -57,20 +57,18 @@ bool statistics_domain::handler_(int offset, int step)
     std::string name = _impl->get_name(i);
     while (auto ag = _impl->pop(i) )
     {
-      if ( auto pstatistics = _target.lock() )
-      {
-        typedef wrtstat::aggregated_data aggregated;
-        auto req = std::make_unique<statistics::request::push>();
-        req->name = name;
-        static_cast<aggregated&>(*req) = std::move(*ag);
+      typedef wrtstat::aggregated_data aggregated;
+      auto req = std::make_unique<statistics::request::push>();
+      req->name = name;
+      static_cast<aggregated&>(*req) = std::move(*ag);
         
-        for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
-        {
-          t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
-        }
-
-        pstatistics->push( std::move(req), nullptr );
+      for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
+      {
+        t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
       }
+
+      if ( auto pstat = _target.lock() )
+        pstat->push( std::move(req), nullptr );
     }
   }
   return true;
