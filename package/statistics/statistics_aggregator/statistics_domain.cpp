@@ -154,16 +154,12 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   auto res = this->create_response(cb);
   if ( auto st = _impl )
   {
-    if ( opt.debug1==false){
     if ( auto handler = st->create_aggregator( req->name, req->ts ) )
     {
       if ( res!= nullptr )
         res->status = true;
-      if ( opt.debug2==false){
       handler( *req );
-      }//debug
     }
-    } //debug
   }
   this->send_response( std::move(res), std::move(cb) );
   /*
