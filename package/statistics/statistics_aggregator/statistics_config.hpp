@@ -13,6 +13,8 @@ struct statistics_config:
   int workers = 0;
   time_t aggregate_timeout_ms = 1000;
   time_t startup_ignore_ms = 1000;
+  bool debug1=false;
+  bool debug2=false;
 };
 
 }}
