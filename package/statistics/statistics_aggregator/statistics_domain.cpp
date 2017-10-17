@@ -3,17 +3,16 @@
 #include "statistics_domain.hpp"
 #include <wfc/statistics/statistics.hpp>
 #include <ctime>
-//#include <wrtstat/wrtstat.hpp>
 
 namespace wfc{ namespace core{
  
 
-class statistics_domain::impl
+class statistics_domain::stat_impl
   : public ::wfc::statistics::statistics
   , public ::wfc::iinterface
 {
 public:
-  impl(const ::wfc::statistics::stat_options& opt )
+  stat_impl(const ::wfc::statistics::stat_options& opt )
     : statistics( opt)
   {}
 };
@@ -25,58 +24,36 @@ statistics_domain::~statistics_domain()
 
 void statistics_domain::reconfigure_basic()
 {
-  _impl->enable( !this->suspended()  );
+  std::lock_guard<mutex_type> lk(_mutex);
+  _stat->enable( !this->suspended()  );
+  for (auto st : _stat_list)
+    st->enable( !this->suspended()  );
 }
 
 void statistics_domain::reconfigure()
 {
-  _impl = std::make_shared<impl>( this->options() );
-  _impl->enable( !this->suspended()  );
-
+  auto opt =  this->options();
+  std::lock_guard<mutex_type> lk(_mutex);
+  _stat = std::make_shared<stat_impl>( opt );
+  _stat->enable( !this->suspended()  );
+  _stat_list.clear();
+  _stat_list.reserve(opt.hash_size);
+  for (size_t i = 0 ; i < opt.hash_size; ++i)
+  {
+    _stat_list.push_back( std::make_shared<stat_impl>( opt ) );
+    _stat_list.back()->enable( !this->suspended() );
+  }
   
   if ( auto g = this->global() )
   {
-    g->registry.set( "statistics", this->name(), _impl, false);
+    g->registry.set( "statistics", this->name(), _stat, false);
   }
-}
-
-bool statistics_domain::handler_(int offset, int step)
-{
-  auto opt = this->options();
-  if ( !_started )
-  {
-    auto now = std::chrono::system_clock::now();
-    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - _start_point ).count();
-    _started = diff > opt.startup_ignore_ms;
-    if ( !_started ) return true;
-  }
-   
-  int count = _impl->count();
-  for ( int i = offset; i < count; i+=step)
-  {
-    std::string name = _impl->get_name(i);
-    while (auto ag = _impl->pop(i) )
-    {
-      typedef wrtstat::aggregated_data aggregated;
-      auto req = std::make_unique<statistics::request::push>();
-      req->name = name;
-      static_cast<aggregated&>(*req) = std::move(*ag);
-        
-      for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
-      {
-        t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
-      }
-
-      if ( auto pstat = _target.lock() )
-        pstat->push( std::move(req), nullptr );
-    }
-  }
-  return true;
 }
 
 void statistics_domain::initialize() 
 {
   auto opt = this->options();
+  std::lock_guard<mutex_type> lk(_mutex);
   _targets.reserve(64);
   _targets.clear();
   for ( auto target: this->options().targets )
@@ -89,21 +66,24 @@ void statistics_domain::ready()
   auto opt = this->options();
   if ( opt.workers < 1 )
     opt.workers = 1;
+  stat_list stats = _stat_list;
+  stats.insert(stats.begin(), _stat);
   if ( auto wf = this->get_workflow() ) 
   {
     for ( int id : _timers)
       wf->release_timer(id);
     _timers.clear();
-    for (int i = 0; i < opt.workers; ++i)
+    for ( auto st : stats )
     {
-      
-      int id = wf->create_timer( 
-        std::chrono::milliseconds(opt.aggregate_timeout_ms), 
-        std::bind(&statistics_domain::handler_, this, i, opt.workers) 
-      );
-      _timers.push_back(id);
+      for (int i = 0; i < opt.workers; ++i)
+      {
+        int id = wf->create_timer( 
+          std::chrono::milliseconds(opt.aggregate_timeout_ms), 
+          std::bind(&statistics_domain::handler_, this, st, i, opt.workers) 
+        );
+        _timers.push_back(id);
+      }
     }
-
   }
   
   if ( auto st = this->get_statistics() )
@@ -150,29 +130,14 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   if ( req->ts == 0 )
     req->ts = time(0) * 1000000;
   
-  const auto& opt = this->options();
   auto res = this->create_response(cb);
-  if ( auto st = _impl )
+  if ( auto st = this->get_stat_(req->name) )
   {
-    if ( auto handler = st->create_aggregator( req->name, req->ts ) )
-    {
-      if ( res!= nullptr )
-        res->status = true;
-      handler( *req );
-    }
+    bool status = st->add( req->name, *req);
+    if ( res!= nullptr )
+      res->status = status;
   }
   this->send_response( std::move(res), std::move(cb) );
-  /*
-  //!! req->data.clear();
-  if ( !_targets.empty() )
-  {
-    for ( size_t i = 1; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
-    {
-      t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
-    }
-    if ( auto t = _targets[0].lock() )
-      t->push( std::move(req), nullptr);
-  }*/
 }
 
 void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) 
@@ -181,7 +146,7 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
     return;
 
   auto res = this->create_response(cb);
-  if ( auto st = _impl )
+  if ( auto st = this->get_stat_(req->name) )
   {
     res->status = st->del(req->name);
   }
@@ -197,5 +162,50 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
     t->del( std::move(req), nullptr );
   }
 }
+
+
+bool statistics_domain::handler_(stat_ptr st, int offset, int step)
+{
+  auto opt = this->options();
+  if ( !_started )
+  {
+    auto now = std::chrono::system_clock::now();
+    auto diff = std::chrono::duration_cast<std::chrono::milliseconds>( now - _start_point ).count();
+    _started = diff > opt.startup_ignore_ms;
+    if ( !_started ) return true;
+  }
+   
+  int count = st->count();
+  for ( int i = offset; i < count; i+=step)
+  {
+    std::string name = st->get_name(i);
+    while (auto ag = st->pop(i) )
+    {
+      typedef wrtstat::aggregated_data aggregated;
+      auto req = std::make_unique<statistics::request::push>();
+      req->name = name;
+      static_cast<aggregated&>(*req) = std::move(*ag);
+        
+      for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
+      {
+        t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
+      }
+
+      if ( auto pstat = _target.lock() )
+        pstat->push( std::move(req), nullptr );
+    }
+  }
+  return true;
+}
+
+statistics_domain::stat_ptr statistics_domain::get_stat_(const std::string& name)
+{
+  read_lock<mutex_type> lk(_mutex);
+  if ( _stat_list.empty() )
+    return _stat;
+  size_t pos = std::hash<std::string>()(name) % _stat_list.size();
+  return _stat_list[pos];
+}
+
 
 }}

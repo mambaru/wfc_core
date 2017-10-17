@@ -30,6 +30,7 @@ struct statistics_config_json
   JSON_NAME(target)
   JSON_NAME(targets)
   JSON_NAME(workers)
+  JSON_NAME(hash_size)
   JSON_NAME(aggregate_timeout_ms)
   JSON_NAME(startup_ignore_ms)
 
@@ -42,6 +43,7 @@ struct statistics_config_json
       json::member< n_targets,  statistics_config, std::vector<std::string>, &statistics_config::targets, 
                     json::vector_of_strings<> >,
       json::member< n_workers,   statistics_config, int, &statistics_config::workers>,
+      json::member< n_hash_size,   statistics_config, size_t, &statistics_config::hash_size>,
       json::member< n_aggregate_timeout_ms, statistics_config, time_t, &statistics_config::aggregate_timeout_ms>,
       json::member< n_startup_ignore_ms, statistics_config, time_t,      &statistics_config::startup_ignore_ms>
       
