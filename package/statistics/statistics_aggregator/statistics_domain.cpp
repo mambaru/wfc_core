@@ -205,6 +205,7 @@ statistics_domain::stat_ptr statistics_domain::get_stat_(const std::string& name
   if ( _stat_list.empty() )
     return _stat;
   size_t pos = std::hash<std::string>()(name) % _stat_list.size();
+  COMMON_LOG_MESSAGE("HASH: " << name << "=" << std::hash<std::string>()(name)  << ", i=" << pos)
   return _stat_list[pos];
 }
 
