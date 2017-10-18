@@ -38,11 +38,21 @@ void statistics_domain::reconfigure()
   _stat = std::make_shared<stat_impl>( opt );
   _stat->enable( !this->suspended()  );
   _stat_list.clear();
-  _stat_list.reserve(opt.hash_size);
-  for (size_t i = 0 ; i < opt.hash_size; ++i)
+  for (auto w : _workflow_list)
+    w->stop();
+  _workflow_list.clear();
+  _stat_list.reserve(opt.workers);
+  _workflow_list.reserve(opt.workers);
+  workflow_options wopt;
+  wopt.threads = 1;
+  wopt.startup_handler=[this](std::thread::id){ this->reg_thread();};
+  wopt.finish_handler=[this](std::thread::id){ this->unreg_thread();};
+  for (size_t i = 0 ; i < opt.workers; ++i)
   {
-    _stat_list.push_back( std::make_shared<stat_impl>( opt ) );
+    _stat_list.push_back( std::make_shared<stat_push>( opt ) );
     _stat_list.back()->enable( !this->suspended() );
+    _workflow_list.push_back( std::make_shared<workflow_type>(wopt) );
+    _workflow_list.back()->start();
   }
   
   if ( auto g = this->global() )
@@ -65,11 +75,35 @@ void statistics_domain::initialize()
 void statistics_domain::ready() 
 {
   auto opt = this->options();
+  if ( auto wf = this->get_workflow() )
+  {
+    auto st = _stat;
+    wf->release_timer(_timer_id);
+    _timer_id = wf->create_timer( 
+      std::chrono::milliseconds(opt.aggregate_timeout_ms), 
+      std::bind(&statistics_domain::handler_<stat_ptr>, this, st, 0, 1) 
+    );
+  }
+  
+  for (size_t i = 0 ; i < opt.workers; ++i)
+  {
+    if (auto wf = _workflow_list[i] )
+    {
+      auto st = _stat_list[i];
+      wf->create_timer( 
+        std::chrono::milliseconds(opt.aggregate_timeout_ms), 
+        std::bind(&statistics_domain::handler_<stat_push_ptr>, this, st, 0, 1) 
+      );
+    }
+  }
+  
+  
+  /*
   if ( opt.workers < 1 )
     opt.workers = 1;
   stat_list stats = _stat_list;
   stats.insert(stats.begin(), _stat);
-  if ( auto wf = this->get_workflow() ) 
+  if ( auto wf = this->get_workflow() )
   {
     for ( int id : _timers)
       wf->release_timer(id);
@@ -86,6 +120,7 @@ void statistics_domain::ready()
       }
     }
   }
+  */
   
   if ( auto st = this->get_statistics() )
   {
@@ -132,12 +167,24 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
     req->ts = time(0) * 1000000;
   
   auto res = this->create_response(cb);
+  {
+    read_lock<mutex_type> lk(_mutex);
+    size_t pos = std::hash<std::string>()(req->name) % _stat_list.size();
+    if (auto wf = _workflow_list[pos] )
+    {
+      auto st = _stat_list[pos];
+      auto preq = std::make_shared<wfc::statistics::request::push>( std::move(*req) );
+      wf->post([st, preq](){ st->add( preq->name, *preq); }, nullptr);
+    }
+  }
+  /*
   if ( auto st = this->get_stat_(req->name) )
   {
     bool status = _suspend_push ? false : st->add( req->name, *req);
     if ( res!= nullptr )
       res->status = status;
   }
+  */
   this->send_response( std::move(res), std::move(cb) );
 }
 
@@ -147,10 +194,26 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
     return;
 
   auto res = this->create_response(cb);
+  
+  {
+    read_lock<mutex_type> lk(_mutex);
+    size_t pos = std::hash<std::string>()(req->name) % _stat_list.size();
+    if (auto wf = _workflow_list[pos] )
+    {
+      auto st = _stat_list[pos];
+      auto preq = std::make_shared<wfc::statistics::request::del>( std::move(*req) );
+      wf->post([st, preq](){ st->del( preq->name); }, nullptr);
+    }
+  }
+
+  if ( res != nullptr )
+    res->status = true;
+  /*
   if ( auto st = this->get_stat_(req->name) )
   {
     res->status = st->del(req->name);
   }
+  */
   this->send_response( std::move(res), std::move(cb) );
   
   for ( auto wt : _targets ) if ( auto t = wt.lock() )
@@ -165,7 +228,8 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
 }
 
 
-bool statistics_domain::handler_(stat_ptr st, int offset, int step)
+template<typename StatPtr>
+bool statistics_domain::handler_(StatPtr st, int offset, int step)
 {
   auto opt = this->options();
   if ( !_started )
@@ -199,15 +263,27 @@ bool statistics_domain::handler_(stat_ptr st, int offset, int step)
   return true;
 }
 
+/*
 statistics_domain::stat_ptr statistics_domain::get_stat_(const std::string& name)
 {
   read_lock<mutex_type> lk(_mutex);
   if ( _stat_list.empty() )
     return _stat;
   size_t pos = std::hash<std::string>()(name) % _stat_list.size();
-  COMMON_LOG_MESSAGE("HASH: " << name << "=" << std::hash<std::string>()(name)  << ", i=" << pos)
   return _stat_list[pos];
 }
+*/
+
+/*
+statistics_domain::workflow_ptr statistics_domain::get_workflow_(const std::string& name)
+{
+  read_lock<mutex_type> lk(_mutex);
+  if ( _wor_list.empty() )
+    return _stat;
+  size_t pos = std::hash<std::string>()(name) % _stat_list.size();
+  return _stat_list[pos];
+}
+*/
 
 
 }}
