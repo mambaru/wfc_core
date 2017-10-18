@@ -33,6 +33,7 @@ void statistics_domain::reconfigure_basic()
 void statistics_domain::reconfigure()
 {
   auto opt =  this->options();
+  _suspend_push = opt.suspend_push;
   std::lock_guard<mutex_type> lk(_mutex);
   _stat = std::make_shared<stat_impl>( opt );
   _stat->enable( !this->suspended()  );
@@ -133,7 +134,7 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   auto res = this->create_response(cb);
   if ( auto st = this->get_stat_(req->name) )
   {
-    bool status = st->add( req->name, *req);
+    bool status = _suspend_push ? false : st->add( req->name, *req);
     if ( res!= nullptr )
       res->status = status;
   }

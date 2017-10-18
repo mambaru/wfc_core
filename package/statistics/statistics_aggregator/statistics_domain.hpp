@@ -51,6 +51,8 @@ private:
   
   typedef rwlock<std::mutex> mutex_type;
   mutex_type _mutex;
+  
+  std::atomic<bool> _suspend_push;
 };
 
 }}
