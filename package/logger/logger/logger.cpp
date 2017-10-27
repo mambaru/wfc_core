@@ -59,6 +59,7 @@ void logger::reconfigure()
   std::lock_guard<mutex_type> lk(_mutex);
 
   auto opt = this->options();
+  bool awfm = opt.abort_with_fatal_message;
   _deny.clear();
   _deny.insert(opt.deny.begin(), opt.deny.end());
 
@@ -66,7 +67,7 @@ void logger::reconfigure()
   {
     std::weak_ptr<logger> wthis = this->shared_from_this();
 
-    ::iow::log_writer logfun = this->wrap([wthis](  
+    ::iow::log_writer logfun = this->wrap([wthis, awfm](  
         const std::string& name, 
         const std::string& type, 
         const std::string& str) -> bool
@@ -76,6 +77,10 @@ void logger::reconfigure()
         if (auto log = pthis->get_or_create_( name, type) )
         {
           log->write(name, type, str);
+          if ( awfm && ( type=="fatal" || type=="FATAL" ) )
+          {
+            
+          }
           return true;
         }
       }

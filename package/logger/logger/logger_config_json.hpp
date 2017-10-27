@@ -38,12 +38,14 @@ struct logger_config_json
   
   JSON_NAME(single)
   JSON_NAME(custom)
+  JSON_NAME(abort_with_fatal_message)
   
   typedef json::object<
     logger_config,
     json::member_list<
       json::base<writer_options_json>,
       json::member<n_single,   logger_config, bool,        &logger_config::single>,
+      json::member<n_abort_with_fatal_message,    logger_config, bool,      &logger_config::abort_with_fatal_message>,
       json::member<n_custom,   logger_config, logger_config::custom_map, &logger_config::custom,
         json::dict< std::unordered_map< json::value<std::string>, writer_options_json > >
       >

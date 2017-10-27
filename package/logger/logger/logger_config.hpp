@@ -18,6 +18,7 @@ struct logger_config
 {
   typedef std::unordered_map<std::string, writer_options> custom_map;
   bool single = true;
+  bool abort_with_fatal_message = false;
   custom_map custom;
 };
 
