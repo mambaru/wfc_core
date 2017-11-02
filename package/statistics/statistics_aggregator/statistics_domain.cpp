@@ -241,6 +241,7 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
   }
    
   int count = st->count();
+
   for ( int i = offset; i < count; i+=step)
   {
     std::string name = st->get_name(i);
@@ -257,7 +258,9 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
       }
 
       if ( auto pstat = _target.lock() )
+      {
         pstat->push( std::move(req), nullptr );
+      }
     }
   }
   return true;
