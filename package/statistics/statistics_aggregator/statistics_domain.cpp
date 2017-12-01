@@ -69,7 +69,7 @@ void statistics_domain::initialize()
   _targets.clear();
   for ( auto target: this->options().targets )
     _targets.push_back( this->get_target<istatistics>(target) );
-  _target = this->get_target<istatistics>( opt.target );
+  //_target = this->get_target<istatistics>( opt.target );
 }
 
 void statistics_domain::ready() 
@@ -92,7 +92,7 @@ void statistics_domain::ready()
       auto st = _stat_list[i];
       wf->create_timer( 
         std::chrono::milliseconds(opt.aggregate_timeout_ms), 
-        std::bind(&statistics_domain::handler_<stat_push_ptr>, this, st, 0, 1) 
+        std::bind(&statistics_domain::handler_<stat_push_ptr>, this, st, i, opt.workers) 
       );
     }
   }
@@ -221,10 +221,10 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
     auto rreq = std::make_unique<wfc::statistics::request::del>( *req );
     t->del( std::move(rreq), nullptr );
   }
-  if ( auto t = _target.lock() )
+  /*if ( auto t = _target.lock() )
   {
     t->del( std::move(req), nullptr );
-  }
+  }*/
 }
 
 
@@ -252,15 +252,25 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
       req->name = name;
       static_cast<aggregated&>(*req) = std::move(*ag);
         
-      for ( size_t i = 0; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
+      if ( !_targets.empty() )
       {
-        t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
+        for ( size_t i = 1; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
+        {
+          t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
+        }
+        
+        if ( auto t = _targets[0].lock() )
+        {
+          t->push(std::move(req), nullptr);
+        }
       }
 
+      /*
       if ( auto pstat = _target.lock() )
       {
         pstat->push( std::move(req), nullptr );
       }
+      */
     }
   }
   return true;
