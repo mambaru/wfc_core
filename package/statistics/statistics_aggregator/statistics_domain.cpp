@@ -174,7 +174,9 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
     {
       auto st = _stat_list[pos];
       auto preq = std::make_shared<wfc::statistics::request::push>( std::move(*req) );
-      wf->post([st, preq](){ st->add( preq->name, *preq); }, nullptr);
+      wf->post([st, preq](){ 
+        st->add( preq->name, *preq); 
+      }, nullptr);
     }
   }
   /*
@@ -241,7 +243,6 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
   }
    
   int count = st->count();
-
   for ( int i = offset; i < count; i+=step)
   {
     std::string name = st->get_name(i);
@@ -256,6 +257,7 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
       {
         for ( size_t i = 1; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
         {
+          std::cout << "TEST " << req->name << " ts " << req->ts << std::endl;
           t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
         }
         
