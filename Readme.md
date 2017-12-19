@@ -3,19 +3,15 @@
 Управляет системой логированя WFC. 
 
 ```
-2015-09-30 17:17:56.640 CONFIG END       core::start: module 'startup'...Done!
-2015-09-30 17:17:56.640 SYSLOG MESSAGE   daemon ./demod started!
-2015-09-30 17:17:56.640 DOMAIN MESSAGE   Daemon reconfigured!
-2015-09-30 17:17:59.628 CONFIG BEGIN     Reload Configuration And Reconfigure
-2015-09-30 17:17:59.629 CONFIG END       Reload Configuration And Reconfigure
-2015-09-30 17:17:59.629 CONFIG MESSAGE   ----------- configuration -------------
-2015-09-30 17:17:59.629 CONFIG BEGIN     core::configure: object 'client-tcp'...
+2017-12-19 18:37:03.049 CONFIG BEGIN Configure component 'server-tcp'...
+2017-12-19 18:37:03.049 CONFIG MESSAGE Instance 'server-tcp1' is initial configured
+2017-12-19 18:37:03.049 CONFIG END Configure component 'server-tcp'...Done
 ```
 Каждая строка лога систоит:
 
 * Дата 
-* Время 
-* Имя лога. В зависимости от настроек каждый лог может писаться в отдельный файл, или все логи в один файл (по умолчаню)
+* Время + доли секунды
+* Имя лога:
   * CONFIG - конфигурирование и инициализация системы
   * DOMIAN - прикладной лог (важные сообщения)
   * COMMON - общий лог (все остальное)
@@ -23,7 +19,7 @@
   * DEBUG  - лог отладки (отключаеться в релиз-версии на уровне компилятора )
   * JSONRPC - лог jsonrpc движка
   * IOW     - лог сетевого движка
-* Тип сообщения. 
+* ID сообщения:
   * ERROR   - ошибки, после которых система сохраняет работоспособность и консистентность 
   * WARNING - предупреждения, например о превышении размера очереди. 
   * MESSAGE - прочие уведомления
@@ -90,5 +86,4 @@
 ```
 
 * path - если не задан задан, то берется из основных настроек
-* deny - расширяет список для типов сообщений основных настроек. 
-
+* deny - расширяет список для типов сообщений основных настроек.
