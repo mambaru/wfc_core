@@ -7,9 +7,29 @@
 
 #include "logger_config.hpp"
 #include <wfc/json.hpp>
+#include <wlogjson/logger_options_json.hpp>
 
 namespace wfc{ namespace core{
 
+struct logger_config_json
+{
+  JSON_NAME(stop_with_fatal_log_entry)
+  
+  typedef json::object<
+    logger_config,
+    json::member_list<
+      json::member<n_stop_with_fatal_log_entry,    logger_config, bool,      &logger_config::stop_with_fatal_log_entry>,
+      json::base<wlog::logger_options_json>
+    >,
+    json::strict_mode
+  > type;
+  
+  typedef type::serializer serializer;
+  typedef type::target target;
+  typedef type::member_list member_list;
+};
+
+  /*
 struct logger_config_json
 {
   JSON_NAME(limit)
@@ -57,5 +77,6 @@ struct logger_config_json
   typedef type::target target;
   typedef type::member_list member_list;
 };
+  */
 
 }}

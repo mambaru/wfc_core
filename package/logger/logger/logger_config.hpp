@@ -6,20 +6,15 @@
 
 #pragma once
 
-#include "writer_options.hpp"
-
+#include <wlog/logger/logger_options.hpp>
 #include <string>
-#include <unordered_map>
+
 
 namespace wfc{ namespace core{
 
-struct logger_config
-  : writer_options
+struct logger_config: wlog::logger_options
 {
-  typedef std::unordered_map<std::string, writer_options> custom_map;
-  bool single = true;
-  bool abort_with_fatal_message = false;
-  custom_map custom;
+  bool stop_with_fatal_log_entry = true;
 };
 
 }}

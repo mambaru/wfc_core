@@ -272,7 +272,7 @@ int startup_domain::perform_start_( )
           DOMAIN_LOG_MESSAGE( ss.str() )
         }
         
-        SYSLOG_LOG_MESSAGE( ss.str() )
+        SYSLOG_NOTICE( ss.str() )
         return restart;
       }
       return false;

@@ -188,7 +188,7 @@ int core::run()
   }
   else if ( _abort_flag )
   {
-    DOMAIN_LOG_MESSAGE("!!! START ABORTED! Смотрите выше.")
+    DOMAIN_LOG_WARNING("!!! START ABORTED! Смотрите выше.")
   }
 
   ::iow::workflow_options qopt;
@@ -213,31 +213,17 @@ void core::core_stop()
 
 void core::core_abort( std::string message ) 
 {
-    if ( auto g = ::wfc::wfcglobal::static_global )
+  if ( auto g = ::wfc::wfcglobal::static_global )
+  {
+    if ( g->stop_signal_flag == false )
     {
-      if ( g->stop_signal_flag == false )
-      {
-        IOW_WRITE_LOG_FATAL("domain","")
-        IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        IOW_WRITE_LOG_FATAL("domain","!!        ABNORMAL SHUTDOWN")
-        IOW_WRITE_LOG_FATAL("domain","!!        " << message )
-        IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        IOW_WRITE_LOG_FATAL("domain","")
-      }
       g->stop_signal_flag = true;
+      DOMAIN_LOG_FATAL(message)
     }
-    gs_stop_signal = true;
-
-  /*
-  IOW_WRITE_LOG_FATAL("domain","")
-  IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  IOW_WRITE_LOG_FATAL("domain","!!        ABNORMAL SHUTDOWN")
-  IOW_WRITE_LOG_FATAL("domain","!!        " << message )
-  IOW_WRITE_LOG_FATAL("domain","!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  IOW_WRITE_LOG_FATAL("domain","")
+  }
+  gs_stop_signal = true;
   _stop_flag = true;
   _abort_flag = true;
-  */
 }
 
 bool core::_idle()
@@ -363,11 +349,11 @@ void core::_sunrise()
 
   if ( !_abort_flag )
   {
-    SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " started!")
+    SYSLOG_INFO("daemon " << this->global()->program_name << " started!")
   }
   else
   {
-    SYSLOG_LOG_MESSAGE("daemon " << this->global()->program_name << " start abort....")    
+    SYSLOG_ALERT("daemon " << this->global()->program_name << " fail at the starting ")    
   }
 }
 
@@ -452,7 +438,7 @@ void core::_initialize()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_MESSAGE("Initialize instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_WARNING("Initialize instance '" << m->name() << "' aborted!")
       return;
     }
 
@@ -460,7 +446,7 @@ void core::_initialize()
     m->initialize();
  
     if ( !this->_abort_flag ) { CONFIG_LOG_END("Initialize instance '" << m->name() << "'...Done") }
-    else { CONFIG_LOG_END("Initialize instance '" << m->name() << "'...aborted!") }
+    else { CONFIG_LOG_WARNING("Initialize instance '" << m->name() << "'...aborted!") }
 
     g->io_service.poll();
     g->io_service.reset();
@@ -501,14 +487,14 @@ void core::_start()
   {
     if ( this->_abort_flag )
     {
-      CONFIG_LOG_MESSAGE("Start instance '" << m->name() << "' aborted!")
+      CONFIG_LOG_WARNING("Start instance '" << m->name() << "' aborted!")
       return;
     }
 
     CONFIG_LOG_BEGIN("Start instance '" << m->name() << "'...")
     m->start(std::string());
     if ( !this->_abort_flag ) { CONFIG_LOG_END("Start instance '" <<  m->name() << "'...Done") }
-    else { CONFIG_LOG_END("Start instance '" <<  m->name() << "'...aborted!") }
+    else { CONFIG_LOG_WARNING("Start instance '" <<  m->name() << "'...aborted!") }
     
     g->io_service.poll();
     g->io_service.reset();
@@ -549,7 +535,7 @@ void core::_stop()
     DOMAIN_LOG_BEGIN("Stop instance '" << m->name() << "'...")
     if ( m->name()=="logger" && this->_abort_flag )
     {
-      DOMAIN_LOG_MESSAGE("!!! WFC ABORTED! Смотрите выше.")
+      DOMAIN_LOG_WARNING("!!! WFC ABORTED! Смотрите выше.")
     }
 
     m->stop(std::string());
@@ -564,6 +550,15 @@ void core::_stop()
   g->io_service.stop();
   g->workflow->stop();
   CONFIG_LOG_END("Stop common workflow ... Done")
+
+  if ( !_abort_flag )
+  {
+    SYSLOG_INFO("daemon " << this->global()->program_name << " stopped!")
+  }
+  else
+  {
+    SYSLOG_ALERT("daemon " << this->global()->program_name << "(" << this->global()->instance_name << ") Abnormal Shutdown!")    
+  }
 
   DOMAIN_LOG_END("Stop daemon '" << g->instance_name << "'...Done")
   _same = nullptr;

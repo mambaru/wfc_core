@@ -5,12 +5,11 @@
 //
 
 #include "logger.hpp"
-#include "writer.hpp"
-#include "aux.hpp"
-#include "writer_options.hpp"
-#include <iow/logger/global_log.hpp>
 #include <wfc/logger.hpp>
+#include <wfc/wfc_exit.hpp>
 #include <wfc/memory.hpp>
+#include <wlog/init_log.hpp>
+#include <wlog/formatter/formatter.hpp>
 #include <iostream>
 #include <memory>
 
@@ -18,46 +17,161 @@ namespace wfc{ namespace core{
 
 logger::~logger()
 {
-  this->unreg_loggers_();
+  // Логгер инициализируеться на этапе конфигурации
+  // Но если система не была запущщена из=за ошибки, 
+  // то метод stop не будет вызван
+  this->release();
+}
+
+logger::logger()
+{
+  //wlog::init_log();
 }
 
 logger::config_type logger::generate(const std::string& arg) 
 {
-  logger::config_type conf;
+  domain_object::config_type  conf;
   if ( arg == "example" )
   {
     conf.startup_priority = -1000;
     conf.shutdown_priority = 1000;
-    conf.custom["<<log-name>>"]=writer_options();
-    conf.custom["<<log-name>>"].deny.push_back("WARNING");
-    conf.custom["<<log-name>>"].path="path/to/log/file/<<log-name>>/without '.log'";
-    conf.custom["<<log-name>>"].milliseconds = true;
-    conf.custom["<<log-name>>"].limit = 12345;
-    conf.deny.push_back("TRACE");
-    conf.path="path/to/log/file/without '.log'";
+    conf.customize.resize(1);
+    conf.customize.back().names.push_back("<<log-name>>");
+    conf.customize.back().deny.insert("DEBUG");
+    conf.customize.back().path="$";
+    conf.customize.back().resolution = wlog::resolutions::milliseconds;
+    conf.customize.back().size_limit = 12345;
+    conf.deny.insert("TRACE");
+    conf.path="path/to/log/file.log";
   }
   
+  conf.finalize();
   return conf;
 }
 
-void logger::start()
+void logger::release()
 {
-  _summary = 0;
-  _starttime = aux::mkdate();
-}
+  std::unique_ptr<message_t> lm;
+  wlog::logger_fun log;
+  {
+    std::lock_guard<mutex_type> lk(_mutex);
+    log = wlog::release_log();
+    if ( _last_message!=nullptr)
+      lm = std::make_unique<message_t>( *_last_message );
+  }
+  // TODO: записать финальное сообщение 
+  if (lm != nullptr && log!=nullptr )
+  {
+    auto tp = wlog::time_point::clock::now();
+    log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    
+    {
+      std::stringstream ss;
+      ss << "Date: ";
+      wlog::formatter::date(ss, std::get<0>( *lm), this->options(), wlog::formatter_handlers() );
+      ss << "\n";
+      log(tp, "", "FINAL", ss.str() );
+    }
 
-void logger::stop()
-{
-  std::lock_guard<mutex_type> lk(_mutex);
-  this->unreg_loggers_();
-  iow::init_log(nullptr);
-  _writers.clear();
+    {
+      std::stringstream ss;
+      ss << "Time: ";
+      wlog::formatter::time(ss, std::get<0>( *lm), this->options(), wlog::formatter_handlers() );
+      wlog::formatter::fraction(ss, std::get<0>( *lm), this->options(), wlog::formatter_handlers() );
+      ss << "\n";
+      log(tp, "", "FINAL", ss.str() );
+    }
+
+    {
+      std::stringstream ss;
+      ss << "Name: ";
+      ss << std::get<1>( *lm);
+      ss << "\n";
+      log(tp, "", "FINAL", ss.str() );
+    }
+
+    {
+      std::stringstream ss;
+      ss << "Message: ";
+      ss << std::get<3>( *lm);
+      log(tp, "", "FINAL", ss.str() );
+    }
+    log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+  }
 }
 
 void logger::reconfigure()
 {
   std::lock_guard<mutex_type> lk(_mutex);
 
+  // TODO: 
+  // auto opt = _upgrated;
+  // auto opt <<= this->options();
+  auto opt = this->options();
+  bool fatal_found = false;
+  bool final_found = false;
+  bool syslog_found = false;
+  for ( const auto& c : opt.customize )
+  {
+    for ( const auto& n : c.names)
+    {
+      if ( !fatal_found && n == "FATAL")
+        fatal_found = true;
+      if ( !final_found && n == "FINAL")
+        final_found = true;
+      if ( !syslog_found && n == "SYSLOG")
+        syslog_found = true;
+    }
+  }
+  
+  if ( !fatal_found )
+  {
+    opt.customize.resize( opt.customize.size() + 1 );
+    opt.customize.back().names.push_back("FATAL");
+    opt.customize.back().stdout.color_map["$all"] = "red";
+  }
+    
+  if ( !final_found )
+  {
+    opt.customize.resize( opt.customize.size() + 1 );
+    opt.customize.back().names.push_back("FINAL");
+    opt.customize.back().stdout.color_map["$all"] = "light_red";
+  }
+  
+  if ( !syslog_found )
+  {
+    opt.customize.resize( opt.customize.size() + 1 );
+    opt.customize.back().names.push_back("SYSLOG");
+    opt.customize.back().syslog.name=this->global()->program_name;
+  }
+      
+    
+  wlog::logger_handlers dlh;
+  
+  bool stop_by_fatal = opt.stop_with_fatal_log_entry;
+  dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& name, const std::string& ident, const std::string& message)
+  {
+    if ( ident=="FATAL" )
+    {
+      if ( auto g = this->global())
+      {
+        {
+          std::lock_guard<mutex_type> lk( this->_mutex);
+          if ( _last_message == nullptr)
+            _last_message = std::make_unique<message_t>(tp, name, ident, message);
+        }
+
+        if ( stop_by_fatal && g->stop_signal_flag == false )
+        {
+          wfc_exit_with_error("Abnormal Shutdown by 'FATAL' message!");
+        }
+      }
+    }
+  });
+  
+  wlog::init_log( opt, dlh );
+  
+  /*
   auto opt = this->options();
   bool awfm = opt.abort_with_fatal_message;
   _deny.clear();
@@ -96,11 +210,12 @@ void logger::reconfigure()
       this->customize_(w.first, wopt);
       w.second->initialize(wopt);
     }
-  }
+  }*/
 }
 
-void logger::perform_io(data_ptr d, io_id_t /*io_id*/, output_handler_t callback)
+void logger::perform_io(data_ptr /*d*/, io_id_t /*io_id*/, output_handler_t /*callback*/)
 {
+  /*
 
   std::stringstream ss;
   ss << d;
@@ -214,93 +329,8 @@ void logger::perform_io(data_ptr d, io_id_t /*io_id*/, output_handler_t callback
     }
   }
   callback(std::make_unique<data_type>(result.begin(), result.end()) );
+  */
 }
 
-
-bool logger::is_deny_(const std::string& some) const
-{
-  return _deny.find(some) != _deny.end();
-}
-
-auto logger::get_or_create_(const std::string& name, const std::string& type) -> ilogger_ptr
-{
-  std::lock_guard<mutex_type> lk(_mutex);
-  
-  if ( is_deny_(name) || is_deny_(type) )
-    return nullptr;
-  
-  auto itr = _writers.find(name);
-  if ( itr != _writers.end() )
-    return itr->second;
-  
-  return find_or_create_(name);
-}
-
-auto logger::find_or_create_(const std::string& name) -> ilogger_ptr
-{
-  if ( auto g = this->global() )
-  {
-    if ( auto l = g->registry.get<ilogger>("logger", name, true) )
-    {
-      return l;
-    }
-  }
-  return create_(name);
-}
-
-auto logger::create_(const std::string& name) -> ilogger_ptr
-{
-  logger_config opt = this->options();
-  writer_ptr pwriter = std::make_shared<writer>( this->shared_from_this() );
-  writer_options wopt = static_cast<writer_options>(opt);
-  
-  this->customize_(name, wopt);
-
-  pwriter->initialize(wopt);
-  _writers[name] = pwriter;
-  
-  if ( auto g = this->global() )
-  {
-    g->registry.set("logger", name,  pwriter, true);
-  }
-  
-  return pwriter;
-}
-
-void logger::customize_(const std::string& name, writer_options& wopt) const
-{
-  const logger_config& opt = this->options();
-
-  auto itr = opt.custom.find(name);
-  if ( itr != opt.custom.end() )
-  {
-    wopt = itr->second;
-  }
-
-  if ( wopt.path.empty() )
-  {
-    wopt.path = std::string("./") + this->global()->instance_name;
-  }
-
-  if (opt.single)
-  {
-    wopt.path = wopt.path+ ".log";
-  }
-  else
-  {
-    wopt.path = wopt.path + "-" + name + ".log";
-  }
-}
-
-void logger::unreg_loggers_()
-{
-  if ( auto g = this->global() )
-  {
-    for ( const auto& m : _writers )
-    {
-      g->registry.erase("logger", m.first);
-    }
-  }
-}
 
 }}
