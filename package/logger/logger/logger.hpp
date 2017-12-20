@@ -36,7 +36,7 @@ public:
 //iinterface
   virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback);
 private:
-  void init_log_(wlog::logger_handlers dlh);
+  void init_log_(wlog::logger_options opt, wlog::logger_handlers dlh);
   virtual void release();
   typedef std::tuple<wlog::time_point, std::string, std::string, std::string> message_t;
   std::unique_ptr<message_t> _last_message;

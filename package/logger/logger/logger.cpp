@@ -102,12 +102,12 @@ void logger::release()
 
 void logger::reconfigure()
 {
-  this->init_log_( wlog::logger_handlers() );
+  this->init_log_( this->options(), wlog::logger_handlers() );
 }
 
-void logger::init_log_(wlog::logger_handlers dlh)
+void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
 {
-  auto opt = this->options();
+  /*
   bool fatal_found = false;
   bool final_found = false;
   bool syslog_found = false;
@@ -123,6 +123,11 @@ void logger::init_log_(wlog::logger_handlers dlh)
         syslog_found = true;
     }
   }
+  */
+  bool fatal_found = opt.get_customize("FATAL")!=nullptr;
+  bool final_found = opt.get_customize("FINAL")!=nullptr;
+  bool syslog_found = opt.get_customize("SYSLOG")!=nullptr;
+  
   
   if ( !fatal_found )
   {
@@ -145,7 +150,7 @@ void logger::init_log_(wlog::logger_handlers dlh)
     opt.customize.back().syslog.name=this->global()->program_name;
   }
   
-  bool stop_by_fatal = opt.stop_with_fatal_log_entry;
+  bool stop_by_fatal = this->options().stop_with_fatal_log_entry;
   dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& name, const std::string& ident, const std::string& message)
   {
     if ( ident=="FATAL" )
@@ -171,19 +176,37 @@ void logger::init_log_(wlog::logger_handlers dlh)
 
 void logger::initialize()
 {
-  bool has_handlers = false;
   auto logs= this->select_targets<ilogger>("logger");
-  has_handlers |= !logs.empty();
-  if ( has_handlers )
+  if ( !logs.empty() )
   {
     wlog::logger_handlers dlh;
+    wlog::logger_options opt = this->options();
     for ( const auto& fmt: logs )
     {
-      dlh.customize[fmt.first].file_formatter   = fmt.second->formatter();
-      dlh.customize[fmt.first].stdout_formatter = fmt.second->formatter();
-      dlh.customize[fmt.first].syslog_formatter = fmt.second->formatter();
+      dlh.customize[fmt.first].file_formatter   = fmt.second->file_formatter();
+      dlh.customize[fmt.first].stdout_formatter = fmt.second->stdout_formatter();
+      dlh.customize[fmt.first].syslog_formatter = fmt.second->syslog_formatter();
+
+      dlh.customize[fmt.first].file_writer   = fmt.second->file_writer();
+      dlh.customize[fmt.first].stdout_writer = fmt.second->stdout_writer();
+      dlh.customize[fmt.first].syslog_writer = fmt.second->syslog_writer();
+      
+      if ( auto log_ptr = fmt.second->options() )
+      {
+        if (wlog::custom_logger_options* cstm_opt = opt.get_customize(fmt.first) )
+        {
+          cstm_opt->upgrade(*log_ptr);
+        }
+        else
+        {
+          wlog::custom_logger_options cl_opt;
+          cl_opt.names.push_back(fmt.first);
+          static_cast<wlog::basic_logger_options&>(cl_opt) = *log_ptr;
+          opt.customize.push_back(cl_opt);
+        }
+      }
     }
-    this->init_log_(dlh);
+    this->init_log_(opt, dlh);
   }
 }
 
