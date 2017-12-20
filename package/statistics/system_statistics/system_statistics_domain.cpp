@@ -61,11 +61,9 @@ private:
   {
     if ( auto stat = _wstat.lock() )
     {
-      //COMMON_LOG_MESSAGE("Statistics for pid=" << proto->pid << "...");
       procstat ps;
       if ( 0==get_procstat(proto->pid, &ps) )
       {
-        //COMMON_LOG_MESSAGE("Получена статистика для pid=" << proto->pid);
         if ( proto->ps.utime != 0 || true)
           stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime);
         if ( proto->ps.stime != 0 )

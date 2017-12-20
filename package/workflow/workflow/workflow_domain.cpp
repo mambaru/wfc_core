@@ -117,24 +117,6 @@ void workflow_domain::ready()
   opt.id = this->name();
   opt.startup_handler = std::bind( &self::reg_thread, this );
   opt.finish_handler = std::bind( &self::unreg_thread, this );
-  /*
-  g->threads.set_reg_cpu(name, opt.cpu);
-  opt.startup_handler = [this, g, name](std::thread::id id)
-  {
-    COMMON_LOG_MESSAGE( "Start workflow thread " << id )
-    g->threads.reg_thread(name);
-    this->reg_thread();
-  };
-  */
-
-  /*
-  opt.finish_handler = [g, this](std::thread::id id)
-  {
-    COMMON_LOG_MESSAGE( "Finish workflow thread " << id )
-    g->threads.unreg_thread();
-    this->unreg_thread();
-  };
-  */
 
   if ( this->get_statistics() != nullptr )
   {

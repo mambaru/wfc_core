@@ -10,6 +10,7 @@
 
 #include <wfc/domain_object.hpp>
 #include <wfc/logger/ilogger.hpp>
+#include <wlog/logger/logger_handlers.hpp>
 
 #include <memory>
 #include <mutex>
@@ -29,11 +30,13 @@ public:
   virtual ~logger();
   logger();
 // domain_object
+  virtual void initialize() override;
   virtual void reconfigure() override;
   virtual config_type generate(const std::string&) override;
 //iinterface
   virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback);
 private:
+  void init_log_(wlog::logger_handlers dlh);
   virtual void release();
   typedef std::tuple<wlog::time_point, std::string, std::string, std::string> message_t;
   std::unique_ptr<message_t> _last_message;

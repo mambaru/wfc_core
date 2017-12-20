@@ -265,11 +265,11 @@ int startup_domain::perform_start_( )
 
         if ( status!= 0 )
         {
-          DOMAIN_LOG_FATAL( ss.str() )
+          SYSTEM_LOG_FATAL( ss.str() )
         }
         else
         {
-          DOMAIN_LOG_MESSAGE( ss.str() )
+          SYSTEM_LOG_MESSAGE( ss.str() )
         }
         
         SYSLOG_NOTICE( ss.str() )

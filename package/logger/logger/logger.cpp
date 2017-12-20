@@ -25,7 +25,7 @@ logger::~logger()
 
 logger::logger()
 {
-  //wlog::init_log();
+  wlog::init_log();
 }
 
 logger::config_type logger::generate(const std::string& arg) 
@@ -102,11 +102,11 @@ void logger::release()
 
 void logger::reconfigure()
 {
-  std::lock_guard<mutex_type> lk(_mutex);
+  this->init_log_( wlog::logger_handlers() );
+}
 
-  // TODO: 
-  // auto opt = _upgrated;
-  // auto opt <<= this->options();
+void logger::init_log_(wlog::logger_handlers dlh)
+{
   auto opt = this->options();
   bool fatal_found = false;
   bool final_found = false;
@@ -144,9 +144,6 @@ void logger::reconfigure()
     opt.customize.back().names.push_back("SYSLOG");
     opt.customize.back().syslog.name=this->global()->program_name;
   }
-      
-    
-  wlog::logger_handlers dlh;
   
   bool stop_by_fatal = opt.stop_with_fatal_log_entry;
   dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& name, const std::string& ident, const std::string& message)
@@ -170,47 +167,24 @@ void logger::reconfigure()
   });
   
   wlog::init_log( opt, dlh );
-  
-  /*
-  auto opt = this->options();
-  bool awfm = opt.abort_with_fatal_message;
-  _deny.clear();
-  _deny.insert(opt.deny.begin(), opt.deny.end());
+}
 
-  if ( !::iow::log_status() )
+void logger::initialize()
+{
+  bool has_handlers = false;
+  auto formatters = this->select_targets<wlog::formatter_fun>("logger-formatter");
+  has_handlers |= !formatters.empty();
+  if ( has_handlers )
   {
-    std::weak_ptr<logger> wthis = this->shared_from_this();
-
-    ::iow::log_writer logfun = this->wrap([wthis, awfm](  
-        const std::string& name, 
-        const std::string& type, 
-        const std::string& str) -> bool
+    wlog::logger_handlers dlh;
+    for ( const auto& fmt: formatters )
     {
-      if ( auto pthis = wthis.lock() )
-      {
-        if (auto log = pthis->get_or_create_( name, type) )
-        {
-          log->write(name, type, str);
-          if ( awfm && ( type=="fatal" || type=="FATAL" ) )
-          {
-            
-          }
-          return true;
-        }
-      }
-      return true;
-    }, nullptr); // wrap
-    ::iow::init_log(logfun);
-  }
-  else
-  {
-    for ( const auto& w : _writers  )
-    {
-      writer_options wopt = static_cast<writer_options>(opt);
-      this->customize_(w.first, wopt);
-      w.second->initialize(wopt);
+      dlh.customize[fmt.first].file_formatter =   *(fmt.second);
+      dlh.customize[fmt.first].stdout_formatter = *(fmt.second);
+      dlh.customize[fmt.first].syslog_formatter = *(fmt.second);
     }
-  }*/
+    this->init_log_(dlh);
+  }
 }
 
 void logger::perform_io(data_ptr /*d*/, io_id_t /*io_id*/, output_handler_t /*callback*/)

@@ -71,7 +71,7 @@ void config::stop()
 
 bool config::reload_and_reconfigure()
 {
-  CONFIG_LOG_BEGIN("Reload Configuration And Reconfigure")
+  SYSTEM_LOG_BEGIN("Reload Configuration And Reconfigure")
   std::string confstr = load_from_file_(_path);
   configuration mainconf;
   
@@ -80,14 +80,14 @@ bool config::reload_and_reconfigure()
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
   {
-    CONFIG_LOG_DEBUG("core_reconfigure")
+    SYSTEM_LOG_DEBUG("core_reconfigure")
     c->core_reconfigure();
   }
   else
   {
-    CONFIG_LOG_ERROR("Core module not found")
+    SYSTEM_LOG_ERROR("Core module not found")
   }
-  CONFIG_LOG_END("Reload Configuration And Reconfigure")
+  SYSTEM_LOG_END("Reload Configuration And Reconfigure")
   return true;
 }
 
@@ -203,7 +203,7 @@ bool config::parse_configure_(std::string source, std::string confstr, configura
   
   if ( e )
   {
-    CONFIG_LOG_ERROR( "Invalid json configuration from '" << source << "': " 
+    SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': " 
         << std::endl << json::strerror::message_trace(e, jsonbeg, jsonend )  )
     return false;
   }
@@ -214,7 +214,7 @@ bool config::parse_configure_(std::string source, std::string confstr, configura
     {
       if ( !m->parse( mconf.second, &e) )
       {
-        CONFIG_LOG_ERROR(
+        SYSTEM_LOG_ERROR(
           "Invalid json configuration from '" << source << "' for '"<< mconf.first << "':" << std::endl
           << json::strerror::message(e) << std::endl
           << json::strerror::trace(e, mconf.second.begin(), mconf.second.end() ) << std::endl
@@ -225,8 +225,8 @@ bool config::parse_configure_(std::string source, std::string confstr, configura
     }
     else
     {
-      CONFIG_LOG_ERROR( "Invalid json configuration from '" << source << "'" )
-      CONFIG_LOG_ERROR( "Module '" << mconf.first << "' not found")
+      SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "'" )
+      SYSTEM_LOG_ERROR( "Module '" << mconf.first << "' not found")
 
       return false;
     }
