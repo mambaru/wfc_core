@@ -172,16 +172,16 @@ void logger::init_log_(wlog::logger_handlers dlh)
 void logger::initialize()
 {
   bool has_handlers = false;
-  auto formatters = this->select_targets<wlog::formatter_fun>("logger-formatter");
-  has_handlers |= !formatters.empty();
+  auto logs= this->select_targets<ilogger>("logger");
+  has_handlers |= !logs.empty();
   if ( has_handlers )
   {
     wlog::logger_handlers dlh;
-    for ( const auto& fmt: formatters )
+    for ( const auto& fmt: logs )
     {
-      dlh.customize[fmt.first].file_formatter =   *(fmt.second);
-      dlh.customize[fmt.first].stdout_formatter = *(fmt.second);
-      dlh.customize[fmt.first].syslog_formatter = *(fmt.second);
+      dlh.customize[fmt.first].file_formatter   = fmt.second->formatter();
+      dlh.customize[fmt.first].stdout_formatter = fmt.second->formatter();
+      dlh.customize[fmt.first].syslog_formatter = fmt.second->formatter();
     }
     this->init_log_(dlh);
   }
