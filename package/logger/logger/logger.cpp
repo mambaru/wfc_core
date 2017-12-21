@@ -31,6 +31,8 @@ logger::logger()
 logger::config_type logger::generate(const std::string& arg) 
 {
   domain_object::config_type  conf;
+  conf.finalize();
+  conf.stdout.color_map.clear();
   if ( arg == "example" )
   {
     conf.startup_priority = -1000;
@@ -39,13 +41,12 @@ logger::config_type logger::generate(const std::string& arg)
     conf.customize.back().names.push_back("<<log-name>>");
     conf.customize.back().deny.insert("DEBUG");
     conf.customize.back().path="$";
+    conf.customize.back().stdout.color_map.clear();
     conf.customize.back().resolution = wlog::resolutions::milliseconds;
     conf.customize.back().size_limit = 12345;
     conf.deny.insert("TRACE");
     conf.path="path/to/log/file.log";
   }
-  
-  conf.finalize();
   return conf;
 }
 
@@ -63,8 +64,8 @@ void logger::release()
   if (lm != nullptr && log!=nullptr )
   {
     auto tp = wlog::time_point::clock::now();
-    log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    
+    log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    log(tp, "", "FINAL", "---------- Abnormal Shutdown! ----------\n");
     {
       std::stringstream ss;
       ss << "Date: ";
@@ -96,7 +97,7 @@ void logger::release()
       ss << std::get<3>( *lm);
       log(tp, "", "FINAL", ss.str() );
     }
-    log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   }
 }
 
@@ -206,6 +207,9 @@ void logger::initialize()
         }
       }
     }
+    // Это повторная инициализация, поэтому отключаем 
+    opt.startup_rotate = false;
+    for (auto& o : opt.customize ) o.startup_rotate = false;
     this->init_log_(opt, dlh);
   }
 }
