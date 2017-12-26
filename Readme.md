@@ -263,17 +263,15 @@ DEBUG_LOG_*
 <table>
   <tr> <th width="20%" >hide</th> <th width="20%">Пример отображения</th>  <th>Комментарий</th> </tr>
   <tr> <td> hours</td>                  <td>01m 55s.405 </td>    <td>Сомнительно. Например при поминутных слепках.</td> </tr>
-  <tr> <td> hours|minutes </td>         <td>1514304173.456 </td> <td> <b> Возможно. Если нужен unixtime.</b> </td> </tr>
-  <tr> <td> hours|minutes|fraction</td> <td>1514304173</td>      <td> <b> Возможно. Если нужен unixtime.</b> </td> </tr>
+  <tr> <td> hours|minutes </td>         <td>1514304173.456 </td> <td> <b> Если нужен unixtime.</b> </td> </tr>
+  <tr> <td> hours|minutes|fraction</td> <td>1514304173</td>      
+                                        <td><b>Если нужен unixtime</b>. Но лучше <b>hide=hours|minutes и resolution=seconds</b></td></tr>
   <tr> <td> hours|minutes|seconds </td> <td>.456 </td>           <td>Бесполезно.</td> </tr>
   <tr> <td> hours|seconds </td>         <td>26m.37642 </td>
                                         <td>Сомнительно (доли минуты в resolution). Например при поминутных слепках.</td> </tr>
   <tr> <td> minutes|seconds </td>       <td>19h.1631487 </td>
                                         <td>Сомнительно (доли часа в resolution). Например при часовых слепках.</td> </tr>
 </table>
-
-
-
 
 ### Кастомные настройки логов
 
