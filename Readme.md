@@ -245,12 +245,14 @@ DEBUG_LOG_*
 
 Значения частично скрывающие поля даты и времени влияют на формат отображения этих полей. Возможные комбинации с примерами
 
-| hide                     | resolution         | Пример отображения |
-| --------- | -------------      | ------------------ |
-|                          | milliseconds       | 18:36:12.805       |
-| fraction                 | seconds            | 18:36:12           |
-| fraction`|`seconds         | minutes            | 18:36              |
-| fraction`|`seconds`|`minutes | hours              | 18h                |
+<table>
+  <tr> <td>hide</td>                     <td>resolution</td>   <td>Пример отображения</td> </tr>
+  <tr> <td></td>                         <td>milliseconds</td> <td>18:36:12.805</td> </tr>
+  <tr> <td>fraction</td>                 <td>seconds</td>      <td>18:36:12</td> </tr>
+  <tr> <td>fraction|seconds</td>         <td>minutes</td>      <td>18:36</td> </tr>
+  <tr> <td>fraction|seconds|minutes</td> <td>hours</td>        <td>18h</td> </tr>
+</table>
+
 
 | hide                     | Пример отображения |
 | -------- | ------------------ |
