@@ -249,8 +249,8 @@ DEBUG_LOG_*
 | --------- | -------------      | ------------------ |
 |                          | milliseconds       | 18:36:12.805       |
 | fraction                 | seconds            | 18:36:12           |
-| fraction'seconds         | minutes            | 18:36              |
-| fraction'seconds'minutes | hours              | 18h                |
+| fraction`|`seconds         | minutes            | 18:36              |
+| fraction`|`seconds`|`minutes | hours              | 18h                |
 
 | hide                     | Пример отображения |
 | -------- | ------------------ |
