@@ -249,16 +249,16 @@ DEBUG_LOG_*
 | ------------------------ | -------------      | ------------------ |
 |                          | milliseconds       | 18:36:12.805       |
 | fraction                 | seconds            | 18:36:12           |
-| fraction||seconds         | minutes            | 18:36              |
-| fraction||seconds||minutes | hours              | 18h                |
+| fraction'seconds         | minutes            | 18:36              |
+| fraction'seconds'minutes | hours              | 18h                |
 
 | hide                     | Пример отображения |
 | ------------------------ | ------------------ |
 | hours                    | 01m 55s.405        |
-| hours||minutes            | 1514304173.456     |
-| hours||minutes||seconds    | .456               |
-| hours||seconds            | 26m.37642          |
-| minutes||seconds          | 19h.1631487        |
+| hours'minutes            | 1514304173.456     |
+| hours'minutes'seconds    | .456               |
+| hours'seconds            | 26m.37642          |
+| minutes'seconds          | 19h.1631487        |
 
 
 
