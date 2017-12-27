@@ -223,8 +223,11 @@ DEBUG_LOG_*
   "resolution": "milliseconds"
 }
 ```
-Также допустимы значения `minutes`, `hours`, `days`, `month`, `year` которые влияют на отображение информации также как опция `hide`.
-Опция `hide` позволяет скрыть несколько частей сообщения в любой комбинации. Таблица возможных значений поля `hide`:
+
+#### Форматирование даты и  времени 
+Изменить отображение даты и времени можно с помощью дополнительных значений `resolution`: `minutes`, `hours`, `days`, `month`, `year` 
+которые влияют на отображение информации также как опция `hide`. Опция `hide` позволяет скрыть несколько частей сообщения в любой комбинации. 
+Таблица возможных значений поля `hide`:
 
 | значение | что скрывает |
 | -------- | ------------ |
@@ -264,7 +267,7 @@ DEBUG_LOG_*
   <tr> <th width="20%" >hide</th> <th width="20%">Пример отображения</th>  <th>Комментарий</th> </tr>
   <tr> <td> hours</td>                  <td>01m 55s.405 </td>    <td>Сомнительно. Например при поминутных слепках.</td> </tr>
   <tr> <td> hours|minutes </td>         <td>1514304173.456 </td> <td> <b> Если нужен unixtime.</b> </td> </tr>
-  <tr> <td> hours|minutes|fraction</td> <td>1514304173</td>      
+  <tr> <td> hours|minutes|fraction</td> <td>1514304173</td>
                                         <td><b>Если нужен unixtime</b>. Но лучше <b>hide=hours|minutes и resolution=seconds</b></td></tr>
   <tr> <td> hours|minutes|seconds </td> <td>.456 </td>           <td>Бесполезно.</td> </tr>
   <tr> <td> hours|seconds </td>         <td>26m.37642 </td>
@@ -272,6 +275,70 @@ DEBUG_LOG_*
   <tr> <td> minutes|seconds </td>       <td>19h.1631487 </td>
                                         <td>Сомнительно (доли часа в resolution). Например при часовых слепках.</td> </tr>
 </table>
+
+
+Возможные комбинации для `hide` и анлогочные `resolution` для поля времени с примерами вывода:
+
+<table>
+  <tr> <th width="20%" >hide</th> <th width="20%">resolution</th>   <th>Пример отображения</th> </tr>
+  <tr> <td>time</td>              <td>days</td>                     <td> 2017-12-27 </td> </tr>
+  <tr> <td>time|days</td>         <td>month</td>                    <td>2017 Dec</td> </tr>
+  <tr> <td>time|days|month</td>   <td>year</td>                     <td>2017</td> </tr>
+</table>
+
+Следующий вывод даты можно добиться только с помощью `hide`:
+
+<table>
+  <tr> <th width="20%" >hide</th> <th width="20%">Пример отображения</th>  <th>Комментарий</th> </tr>
+  <tr> <td> year</td>                   <td>Wed Dec 27</td>    <td></td> </tr>
+  <tr> <td> year|month </td>            <td>Wed 27</td> <td>  </td> </tr>
+  <tr> <td> year|month|weekday</td>     <td>27</td> <td></td></tr>
+  <tr> <td> month </td>                 <td>27 Wed 2017</td>           <td></td> </tr>
+  <tr> <td> day </td>                   <td>2017 Dec </td><td></td> </tr>
+  <tr> <td> minutes|seconds </td>       <td>19h.1631487 </td><td></td> </tr>
+</table>
+
+Пример:
+
+```cpp
+{
+  "path": "/path/to/log/file.log",
+  "resolution": "milliseconds", 
+  "hide":"year|month|seconds"
+}
+Wed 27 17:53.17548 WLOG DEBUG Тестовое DEBUG сообщение №22000
+Wed 27 17:53.18734 WLOG ERROR Тестовое ERROR сообщение №23000
+Wed 27 17:53.19914 WLOG FATAL Тестовое FATAL сообщение №24000
+
+```
+
+#### Локализация даты и времени
+
+Пример:
+
+```cpp
+{
+  "path": "/path/to/log/file.log",
+  "resolution": "milliseconds",
+  "locale": "ru_RU.UTF-8"
+}
+
+Ср 27 дек 2017 18:03:29,864 EXAMPLE [DEBUG] Тестовое DEBUG сообщение №11000
+Ср 27 дек 2017 18:03:31,144 EXAMPLE [ERROR] Тестовое ERROR сообщение №12000
+Ср 27 дек 2017 18:03:32,426 EXAMPLE [FATAL] Тестовое FATAL сообщение №13000
+
+{
+  "path": "/path/to/log/file.log",
+  "resolution": "milliseconds",
+  "locale": "ru_RU.UTF-8"
+}
+
+Wed 27 Dec 2017 06:04:35 PM MSK.057 WLOG TRACE Тестовое TRACE сообщение №1000
+Wed 27 Dec 2017 06:04:36 PM MSK.331 WLOG DEBUG Тестовое DEBUG сообщение №2000
+Wed 27 Dec 2017 06:04:37 PM MSK.608 WLOG ERROR Тестовое ERROR сообщение №3000
+
+```
+Локализация не работает при использовании опции `hide`
 
 ### Кастомные настройки логов
 
