@@ -73,8 +73,9 @@ bool config::reload_and_reconfigure()
 {
   SYSTEM_LOG_BEGIN("Reload Configuration And Reconfigure")
   std::string confstr = load_from_file_(_path);
+  if ( confstr.empty() )
+    return false;
   configuration mainconf;
-  
   if ( !parse_configure_(_path, confstr, mainconf) )
     return false;
   _mainconf = mainconf;
@@ -95,6 +96,9 @@ bool config::reload_and_reconfigure()
 bool config::load_and_parse(std::string path)
 {
   std::string confstr = load_from_file_(path);
+  if ( confstr.empty() )
+    return false;
+
   configuration mainconf;
   if ( !parse_configure_(path, confstr, mainconf) )
     return false;
@@ -250,6 +254,8 @@ std::string config::load_from_file_(const std::string& path)
 {
   std::string confstr;
   std::ifstream fconf(path);
+  if ( !my_file.good() )
+    return std::string();
   std::copy(
     std::istreambuf_iterator<char>(fconf),
     std::istreambuf_iterator<char>(),
