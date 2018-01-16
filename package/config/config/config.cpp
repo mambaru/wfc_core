@@ -251,17 +251,26 @@ bool config::timer_handler_()
 }
 
 std::string config::load_from_file_(const std::string& path)
+try
 {
   std::string confstr;
   std::ifstream fconf(path);
-  if ( !my_file.good() )
+  if ( !fconf.good() )
+  {
+    SYSTEM_LOG_ERROR( "Bad json configuration file '" << path << "'" );
     return std::string();
+  }
   std::copy(
     std::istreambuf_iterator<char>(fconf),
     std::istreambuf_iterator<char>(),
     std::back_inserter(confstr)
   );
   return confstr;
+}
+catch(const std::exception& e)
+{
+  SYSTEM_LOG_ERROR( "Invalid json configuration file '" << path << "': " << e.what() );
+  return std::string();
 }
 
 void config::save_to_file_(const std::string& path, const std::string& strconf)
