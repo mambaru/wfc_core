@@ -191,12 +191,12 @@ int core::run()
     SYSTEM_LOG_WARNING("!!! START ABORTED! Смотрите выше.")
   }
 
-  ::iow::workflow_options qopt;
+  workflow_options qopt;
   qopt.use_io_service = true;
   qopt.wrnsize = 10;
   qopt.maxsize = 100;
   qopt.threads = 0;
-  _core_workflow = std::make_shared< ::iow::workflow >( this->global()->io_service, qopt );
+  _core_workflow = std::make_shared< workflow >( this->global()->io_service, qopt );
   return this->_main_loop();
 }
 

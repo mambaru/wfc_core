@@ -42,7 +42,7 @@ private:
   std::atomic<bool> _stop_flag;
   std::atomic<bool> _abort_flag;
   std::shared_ptr<core> _same;
-  std::shared_ptr< ::iow::workflow > _core_workflow;
+  std::shared_ptr< workflow > _core_workflow;
 };
 
 }}
