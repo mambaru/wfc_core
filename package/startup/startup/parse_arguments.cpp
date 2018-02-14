@@ -34,7 +34,7 @@ try
   options_description desc_startup("Startup options");
 
   desc.add_options()
-    ("help,h", value<bool>(&pa.help)->zero_tokens(), "produce help message")
+    ("help,h", value<bool>(&pa.help)->zero_tokens(), "Produce help message")
     ("version,v", value<bool>(&pa.help)->zero_tokens(), "Display program version information")
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
@@ -46,15 +46,15 @@ try
 
   desc_startup.add_options()
     ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
-    ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "change working directory")
-    ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "run as daemon")
-    ("wait-daemonize,W", value<bool>(&pa.wait_daemonize)->zero_tokens(), "do not leave the parent process until the start procedure is complete")
-    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [minimum uptime in sec]")
-    ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "allow core dump")
-    ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "auto restart daemon with success")
-    ("name,n", value<std::string>(&pa.instance_name), "unique daemon instance name")
-    ("config,C", value<std::string>(&pa.config_path)->default_value(""), "path to the configuration file")
-    ("pid-dir,P", value<std::string>(&pa.pid_dir), "directory for pid file")
+    ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "Change working directory")
+    ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "Run as daemon")
+    ("wait-daemonize,W", value<bool>(&pa.wait_daemonize)->zero_tokens(), "Do not leave the parent process until the start procedure is complete")
+    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "Auto restart daemon [minimum uptime in sec]")
+    ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "Allow core dump")
+    ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "Auto restart daemon with success")
+    ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
+    ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
+    ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
     ("instance-options,O", value< vstrings >(&instance_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom option for instance object");
 
   desc.add(desc_startup);
