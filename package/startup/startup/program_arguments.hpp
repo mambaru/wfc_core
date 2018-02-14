@@ -17,6 +17,7 @@ struct program_arguments
   bool component_list = false;
 
   bool daemonize = false;
+  bool wait_daemonize = false;
   bool coredump = false;
   bool autoup = false;
   bool success_autoup = false;

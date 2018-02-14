@@ -143,7 +143,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else
   {
-    std::cerr << "ERROR: для запуска необходимо указать файл конфигурации" << std::endl;
+    std::cerr << "ERROR: you must specify a configuration file (-C)" << std::endl;
     this->show_usage_();
   }
   return 0;
@@ -235,11 +235,20 @@ int startup_domain::perform_start_( )
   if ( _pa.daemonize )
   {
     if ( _pa.autoup )
-    {
       std::clog << "autoup process enabled" << std::endl;
-    }
+    
     std::clog << "daemonize... see log for startup status" << std::endl;
-    ::wfc::daemonize();
+    
+    if ( _pa.wait_daemonize )
+      std::clog << "wait for finalize daemon startup" << std::endl;
+    
+    if ( auto fun = ::wfc::daemonize(_pa.wait_daemonize) )
+    {
+      if ( auto g = this->global() )
+      {
+        g->after_start.insert( [fun](){ fun(); return false;} );
+      }
+    }
   } 
   else if ( _pa.autoup )
   {

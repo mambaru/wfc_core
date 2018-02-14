@@ -48,6 +48,7 @@ try
     ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
     ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "change working directory")
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "run as daemon")
+    ("wait-daemonize,W", value<bool>(&pa.wait_daemonize)->zero_tokens(), "do not leave the parent process until the start procedure is complete")
     ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "auto restart daemon [minimum uptime in sec]")
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "allow core dump")
     ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "auto restart daemon with success")
