@@ -250,19 +250,39 @@ int startup_domain::perform_start_( )
       }
     }
   } 
-  else if ( _pa.autoup )
+  else if ( _pa.autoup || _pa.wait_daemonize)
   {
-    std::clog << "WARNING: autoup argument ignored. Only with -d worked" << std::endl;
+    if ( _pa.autoup )
+      std::clog << "WARNING: autoup argument ignored. Only with -d worked" << std::endl;
+    if (_pa.wait_daemonize)
+      std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
 
   if ( _pa.daemonize && _pa.autoup )
   {
     bool success_autoup = _pa.success_autoup;
-    std::weak_ptr<startup_domain> wthis = this->shared_from_this();
-    ::wfc::autoup( _pa.autoup_timeout, [wthis, success_autoup](bool restart, int status, time_t work_time)->bool
-    {
-      if ( auto pthis = wthis.lock() )
+    ::wfc::autoup( 
+      _pa.autoup_timeout,
+      success_autoup,
+      nullptr,
+      [this](int count, int status, time_t work_time)
       {
+        if ( auto g = this->global() )
+        {
+          g->after_start.insert([count, status, work_time](){
+            if ( status != 0 )
+            {
+              SYSTEM_LOG_ERROR("Daemon stop with status: " << status << " after work time " << work_time << "sec. ")
+            }
+            else
+            {
+              SYSTEM_LOG_MESSAGE("Daemon was killed after work time " << work_time << "sec. ")
+            }
+            SYSTEM_LOG_MESSAGE("Restart №" << count)
+            return false;
+          });
+        }
+        /*
         std::stringstream ss;
         ss << "Daemon stop with status: " << status << " after work time " << work_time << "sec. " ;
         if ( !restart && status == 0 && success_autoup)
@@ -274,18 +294,18 @@ int startup_domain::perform_start_( )
 
         if ( status!= 0 )
         {
-          SYSTEM_LOG_FATAL( ss.str() )
+          SYSTEM_LOG_ERROR( ss.str() )
         }
         else
         {
           SYSTEM_LOG_MESSAGE( ss.str() )
         }
-        
+          
         SYSLOG_NOTICE( ss.str() )
         return restart;
+        */
       }
-      return false;
-    });
+    );
   }
 
 
