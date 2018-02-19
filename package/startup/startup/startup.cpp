@@ -267,47 +267,30 @@ int startup_domain::perform_start_( )
       nullptr,
       [this](int count, int status, time_t work_time)
       {
+        _pa.startup_options.clear();
         if ( auto g = this->global() )
         {
           g->after_start.insert([count, status, work_time](){
+            SYSTEM_LOG_BEGIN("------------------------------------------------")
             if ( status != 0 )
             {
               SYSTEM_LOG_ERROR("Daemon stop with status: " << status << " after work time " << work_time << "sec. ")
             }
             else
             {
-              SYSTEM_LOG_MESSAGE("Daemon was killed after work time " << work_time << "sec. ")
+              SYSTEM_LOG_WARNING("Daemon was killed after work time " << work_time << "sec. ")
             }
-            SYSTEM_LOG_MESSAGE("Restart №" << count)
+            SYSTEM_LOG_WARNING("Restart №" << count)
+            SYSTEM_LOG_END("------------------------------------------------")
             return false;
           });
         }
-        /*
-        std::stringstream ss;
-        ss << "Daemon stop with status: " << status << " after work time " << work_time << "sec. " ;
-        if ( !restart && status == 0 && success_autoup)
-          restart = true;
-        if ( restart )
-          ss << "Restarting...";
-        else
-          ss << "Do not restarted.";
-
-        if ( status!= 0 )
-        {
-          SYSTEM_LOG_ERROR( ss.str() )
-        }
-        else
-        {
-          SYSTEM_LOG_MESSAGE( ss.str() )
-        }
-          
-        SYSLOG_NOTICE( ss.str() )
-        return restart;
-        */
       }
     );
   }
-
+  
+  if ( auto g = this->global() )
+    g->args.insert(_pa.startup_options);
 
   if ( _pa.coredump )
     ::wfc::dumpable();

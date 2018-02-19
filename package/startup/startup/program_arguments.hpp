@@ -40,6 +40,7 @@ struct program_arguments
   std::vector<std::string> info_options;
   map1 generate_options; // Если не указан -C то индивидуальный запуск
   map2 instance_options;
+  map2 startup_options;
   
 };
 

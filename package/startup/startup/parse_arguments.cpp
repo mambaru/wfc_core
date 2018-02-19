@@ -43,6 +43,7 @@ try
     ;
 
   vstrings instance_options;
+  vstrings startup_options;
 
   desc_startup.add_options()
     ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
@@ -55,7 +56,8 @@ try
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
-    ("instance-options,O", value< vstrings >(&instance_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom option for instance object");
+    ("instance-options,O", value< vstrings >(&instance_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom options for instance objects")
+    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after autoup)");
 
   desc.add(desc_startup);
 
@@ -85,6 +87,7 @@ try
   }
   
   pa.instance_options = parse_custom_options( instance_options );
+  pa.startup_options = parse_custom_options( startup_options );
   
   if ( pa.help )
   {
@@ -99,7 +102,7 @@ try
         ss << "  " << ins.first << ":" << std::endl;
         for ( const auto& val : ins.second)
         {
-          ss << "\t" << val.first << " = '" << val.second << "'"<< std::endl;
+          ss << "\t" << val.first<<"=" << val.second <<  std::endl;
         }
       }
     }
