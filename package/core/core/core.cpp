@@ -563,6 +563,7 @@ void core::_stop()
   SYSTEM_LOG_END("Stop daemon '" << g->instance_name << "'...Done")
   _same = nullptr;
   SYSTEM_LOG_MESSAGE("==================== Bye! ====================")
+  SYSTEM_LOG_MESSAGE(std::endl)
 }
 
 }}
