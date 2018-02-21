@@ -34,7 +34,6 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   {
     g->program_name  = _pa.program_name;
     g->instance_name  = _pa.instance_name;
-    g->args.insert(_pa.instance_options);
   }
 
   if ( !_pa.errorstring.empty() )
@@ -191,6 +190,94 @@ namespace {
   }
 }
 
+namespace {
+  
+  struct checked_item
+  {
+    std::string name;
+  };
+  
+  struct checked_item_json
+  {
+    JSON_NAME(name)
+    typedef wjson::object<
+      checked_item,
+      wjson::member_list<
+        wjson::member<n_name, checked_item, std::string, &checked_item::name>
+      >
+    > type;
+    typedef type::serializer serializer;
+    typedef type::target target;
+    typedef type::member_list member_list;
+  };
+  
+  bool check_options(const std::string& path, const std::set<std::string>& required )
+  {
+    std::map<std::string, std::string> conf;
+    std::set<std::string> conf_names;
+    wjson::dict_map< wjson::raw_value<> >::serializer conf_json;
+    std::ifstream f(path);
+    wjson::json_error er;
+    std::string jsonconf;
+    std::copy(
+      std::istreambuf_iterator<char>(f),
+      std::istreambuf_iterator<char>(),
+      std::back_inserter(jsonconf)
+    );
+
+    conf_json(conf, std::begin(jsonconf), std::end(jsonconf), &er );
+    
+    if (er)
+    {
+      std::cerr << "ERROR: " << wjson::strerror::message(er) << std::endl;
+      return false;
+    }
+    
+    bool status = true;
+    for (const auto& item : conf )
+    {
+      if ( wjson::parser::is_object( item.second.begin(), item.second.end() ) )
+      {
+        if ( !conf_names.insert(item.first).second )
+        {
+          std::cerr << "ERROR: Item '" << item.first << "' already exist. Check the configuration for duplication of entities." << std::endl;
+          status = false;
+        }
+      }
+      else if ( wjson::parser::is_array( item.second.begin(), item.second.end() ) )
+      {
+        std::vector<checked_item> checked_list;
+        wjson::array< std::vector<checked_item_json> >::serializer checked_list_json;
+        wjson::json_error er;
+        checked_list_json(checked_list, item.second.begin(), item.second.end(), &er);
+        if (er)
+        {
+          std::cerr << wjson::strerror::message(er) << std::endl;
+          return false;
+        }
+        for (const auto& chk: checked_list )
+        {
+          if ( !conf_names.insert(chk.name).second )
+          {
+            std::cerr << "ERROR: Item '" << chk.name << "' already exist. Check the configuration for duplication of entities." << std::endl;
+            status = false;
+          }
+        }
+      }
+    }//
+    
+    for ( const auto& name : required )
+    {
+      if ( conf_names.count(name) == 0 )
+      {
+        std::cerr << "ERROR: Item '"<< name << "' is required for program args" << std::endl;
+        status = false;
+      }
+    }
+    return status;
+  }
+}
+
 int startup_domain::perform_start_( )
 {
   if ( auto g = this->global() )
@@ -202,6 +289,37 @@ int startup_domain::perform_start_( )
         std::cerr << "Configuration FAIL!" << std::endl;
         return 5;
       }
+
+      std::set<std::string> required;
+      for (auto& item : _pa.instance_options) required.insert(item.first);
+      for (auto& item : _pa.startup_options) required.insert(item.first);
+      if ( !check_options(_pa.config_path, required) )
+        return 5;
+      /*
+      bool error = false;
+      for (auto& item : _pa.instance_options)
+      {
+        if ( c->get_config(item.first).empty() )
+        {
+          error = true;
+          std::cerr << "Target '" << item.first << "' for instance option not found" << std::endl;
+        }
+        else
+          std::cout << c->get_config(item.first) << std::endl;
+      }
+      
+      for (auto& item : _pa.startup_options)
+      {
+        if ( c->get_config(item.first).empty() )
+        {
+          error = true;
+          std::cerr << "Target '" << item.first << "' for startup option not found" << std::endl;
+        }
+        else
+          std::cout << c->get_config(item.first) << std::endl;
+      }
+      if (error) return 5;*/
+      
     }
     std::clog << "Program name: " << g->program_name << std::endl;
     std::clog << "Instance name: " << g->instance_name << std::endl;
@@ -290,7 +408,11 @@ int startup_domain::perform_start_( )
   }
   
   if ( auto g = this->global() )
+  {
     g->args.insert(_pa.startup_options);
+    g->args.insert(_pa.instance_options);
+  }
+    
 
   if ( _pa.coredump )
     ::wfc::dumpable();
