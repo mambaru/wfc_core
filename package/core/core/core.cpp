@@ -349,11 +349,11 @@ void core::_sunrise()
 
   if ( !_abort_flag )
   {
-    SYSLOG_INFO("daemon " << this->global()->program_name << " started!")
+    WSYSLOG_INFO("daemon " << this->global()->program_name << " started!")
   }
   else
   {
-    SYSLOG_ALERT("daemon " << this->global()->program_name << " fail at the starting ")    
+    WSYSLOG_ALERT("daemon " << this->global()->program_name << " fail at the starting ")    
   }
 }
 
@@ -553,11 +553,11 @@ void core::_stop()
 
   if ( !_abort_flag )
   {
-    SYSLOG_INFO("daemon " << this->global()->program_name << " stopped!")
+    WSYSLOG_INFO("daemon " << this->global()->program_name << " stopped!")
   }
   else
   {
-    SYSLOG_ALERT("daemon " << this->global()->program_name << "(" << this->global()->instance_name << ") Abnormal Shutdown!")    
+    WSYSLOG_ALERT("daemon " << this->global()->program_name << "(" << this->global()->instance_name << ") Abnormal Shutdown!")    
   }
 
   SYSTEM_LOG_END("Stop daemon '" << g->instance_name << "'...Done")

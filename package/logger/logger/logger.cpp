@@ -8,7 +8,7 @@
 #include <wfc/logger.hpp>
 #include <wfc/wfc_exit.hpp>
 #include <wfc/memory.hpp>
-#include <wlog/init_log.hpp>
+#include <wlog/init.hpp>
 #include <wlog/formatter/formatter.hpp>
 #include <iostream>
 #include <memory>
@@ -25,7 +25,7 @@ logger::~logger()
 
 logger::logger()
 {
-  wlog::init_log();
+  wlog::init();
 }
 
 logger::config_type logger::generate(const std::string& arg) 
@@ -56,7 +56,7 @@ void logger::release()
   wlog::logger_fun log;
   {
     std::lock_guard<mutex_type> lk(_mutex);
-    log = wlog::release_log();
+    log = wlog::release();
     if ( _last_message!=nullptr)
       lm = std::make_unique<message_t>( *_last_message );
   }
@@ -172,7 +172,7 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
     }
   });
   
-  wlog::init_log( opt, dlh );
+  wlog::init( opt, dlh );
 }
 
 void logger::initialize()
