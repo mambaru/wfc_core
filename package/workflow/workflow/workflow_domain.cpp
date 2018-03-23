@@ -77,7 +77,7 @@ void workflow_domain::initialize()
       {
         size_t dropped = this->_workflow->dropped();
         size_t diffdrop = dropped - this->_dropped;
-        stat->create_meter( this->_meter_size, this->_workflow->queue_size(), 0 );
+        stat->create_meter( this->_meter_size, this->_workflow->unsafe_size(), 0 );
         stat->create_meter( this->_meter_drop, 0, diffdrop );
         this->_dropped = dropped;
         
