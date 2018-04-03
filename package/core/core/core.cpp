@@ -192,9 +192,9 @@ int core::run()
   }
 
   workflow_options qopt;
-  qopt.use_io_service = true;
-  qopt.wrnsize = 10;
-  qopt.maxsize = 100;
+  qopt.use_asio = true;
+  qopt.wrnsize = 0;
+  qopt.maxsize = 0;
   qopt.threads = 0;
   _core_workflow = std::make_shared< workflow >( this->global()->io_service, qopt );
   return this->_main_loop();

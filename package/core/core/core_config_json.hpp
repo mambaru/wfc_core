@@ -14,7 +14,7 @@ struct common_workflow_options_json
   typedef json::object<
     common_workflow_options,
     json::member_list<
-      json::base<workflow_options_json>,
+      json::base<workflow_options_basic_json>,
       json::member<n_cpu, common_workflow_options, std::set<int>, &common_workflow_options::cpu, json::array< std::set< json::value<int> > > >
     >,
     json::strict_mode

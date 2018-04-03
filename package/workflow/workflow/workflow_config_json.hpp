@@ -36,7 +36,7 @@ struct workflow_config_json
   typedef json::object<
     workflow_config,
     json::member_list<
-      json::base< workflow_options_advance_json >
+      json::base< workflow_options_json >
     >,
     ::wjson::strict_mode
   > type;
