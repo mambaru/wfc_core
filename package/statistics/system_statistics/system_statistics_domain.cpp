@@ -7,20 +7,20 @@ namespace wfc{ namespace core{
 
 struct protostat
 {
-  typedef std::shared_ptr< ::wfc::value_meter > meter_ptr;
-  meter_ptr utime;                    /** user mode jiffies **/
-  meter_ptr stime;                    /** kernel mode jiffies **/
+  typedef ::wfc::value_factory meter_type;
+  meter_type utime;                    /** user mode jiffies **/
+  meter_type stime;                    /** kernel mode jiffies **/
   // meter_ptr cutime;                   /** user mode jiffies with childs **/
   // meter_ptr cstime;                   /** kernel mode jiffies with childs **/
-  meter_ptr vsize;                    /** Virtual memory size **/
-  meter_ptr rss;                      /** Resident Set Size **/
+  meter_type vsize;                    /** Virtual memory size **/
+  meter_type rss;                      /** Resident Set Size **/
   int pid = 0;
   procstat ps;
 };
 
 class procmeter
 {
-  typedef protostat::meter_ptr meter_ptr;
+  typedef protostat::meter_type meter_type;
   typedef std::mutex mutex_type;
 public:
   procmeter(std::weak_ptr<wfc::statistics::statistics> stat,  std::string prefix)
@@ -65,16 +65,16 @@ private:
       if ( 0==get_procstat(proto->pid, &ps) )
       {
         if ( proto->ps.utime != 0 || true)
-          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime);
+          proto->utime.create(0, ps.utime - proto->ps.utime);
         if ( proto->ps.stime != 0 )
-          stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
+          proto->stime.create(0, ps.stime - proto->ps.stime );
         /*if ( proto->ps.cutime != 0 )
           stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
         if ( proto->ps.cstime != 0 )
           stat->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
         */
-        stat->create_meter(proto->vsize,  ps.vsize*getpagesize()/*/(1024*1024)*/, 0);
-        stat->create_meter(proto->rss,  ps.rss*getpagesize()/*/(1024*1024)*/, 0);
+        proto->vsize.create(ps.vsize*getpagesize()/*/(1024*1024)*/, 0);
+        proto->rss.create(ps.rss*getpagesize()/*/(1024*1024)*/, 0);
         proto->ps = ps;
       }
     }
@@ -92,7 +92,7 @@ private:
     return proto;
   }
 
-  meter_ptr create_meter_( int id, std::string group, std::string name)
+  value_factory create_meter_( int id, std::string group, std::string name)
   {
     if ( auto stat = _wstat.lock() )
     {
@@ -101,9 +101,9 @@ private:
       if ( id != -1 )
         ss << "thread" << id << ".";
       ss << name;
-      return stat->create_value_prototype(ss.str());
+      return stat->create_value_factory(ss.str());
     }
-    return nullptr;
+    return value_factory();
   }
 private:
   std::string _prefix;
@@ -139,12 +139,12 @@ void system_statistics_domain::ready()
   
   auto prefix = this->statistics_options().prefix;
   auto proto = std::make_shared<protostat>();
-  proto->utime = stat->create_value_prototype(prefix + "utime");
-  proto->stime = stat->create_value_prototype(prefix + "stime");
+  proto->utime = stat->create_value_factory(prefix + "utime");
+  proto->stime = stat->create_value_factory(prefix + "stime");
   /*proto->cutime = stat->create_value_prototype(prefix + "cutime");
   proto->cstime = stat->create_value_prototype(prefix + "cstime");*/
-  proto->vsize = stat->create_value_prototype(prefix + "vsize");
-  proto->rss= stat->create_value_prototype(prefix + "rss");
+  proto->vsize = stat->create_value_factory(prefix + "vsize");
+  proto->rss= stat->create_value_factory(prefix + "rss");
   
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->statistics_options().interval_ms ),
@@ -154,16 +154,16 @@ void system_statistics_domain::ready()
       if ( 0==get_procstat(&ps) )
       {
         if ( proto->ps.utime != 0 )
-          stat->create_meter(proto->utime,  0, ps.utime - proto->ps.utime );
+          proto->utime.create(0, ps.utime - proto->ps.utime );
         if ( proto->ps.stime != 0 )
-          stat->create_meter(proto->stime,  0, ps.stime - proto->ps.stime );
-        if ( proto->ps.cutime != 0 )
-          /*stat->create_meter(proto->cutime, 0, ps.cutime - proto->ps.cutime );
-        if ( proto->ps.cstime != 0 )
-          stat->create_meter(proto->cstime, 0, ps.cstime - proto->ps.cstime );
-        */
-        stat->create_meter(proto->vsize,  ps.vsize/(1024*1024), 0);
-        stat->create_meter(proto->rss,  ps.rss*getpagesize()/(1024*1024), 0);
+          proto->stime.create(0, ps.stime - proto->ps.stime );
+        /*if ( proto->ps.cutime != 0 )
+          proto->cutime.create( 0, ps.cutime - proto->ps.cutime );*/
+        /*if ( proto->ps.cstime != 0 )
+          proto->cstime.create_meter( 0, ps.cstime - proto->ps.cstime );*/
+
+        proto->vsize.create(ps.vsize/(1024*1024), 0);
+        proto->rss.create(ps.rss*getpagesize()/(1024*1024), 0);
         proto->ps = ps;
       }
       return true;

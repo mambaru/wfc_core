@@ -124,8 +124,8 @@ void statistics_domain::ready()
   
   if ( auto st = this->get_statistics() )
   {
-    _push_meter = st->create_time_prototype("push.time");
-    _count_meter = st->create_size_prototype("push.values");
+    _push_meter = st->create_time_factory("push.time");
+    _count_meter = st->create_size_factory("push.values");
   }
 }
 
@@ -155,12 +155,12 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   if ( this->bad_request(req, cb) )
     return;
   
-  time_meter_ptr tm;
-  size_meter_ptr vm;
+  time_meter tm;
+  size_meter vm;
   if ( auto st = this->get_statistics() )
   {
-    tm = st->create_meter(_push_meter, 1);
-    vm = st->create_meter(_count_meter, req->data.size() );
+    tm = _push_meter.create(1);
+    vm = _count_meter.create(req->data.size() );
   }
   
   if ( req->ts == 0 )
@@ -266,13 +266,6 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
           t->push(std::move(req), nullptr);
         }
       }
-
-      /*
-      if ( auto pstat = _target.lock() )
-      {
-        pstat->push( std::move(req), nullptr );
-      }
-      */
     }
   }
   return true;

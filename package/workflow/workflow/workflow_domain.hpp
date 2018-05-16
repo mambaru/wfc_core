@@ -17,8 +17,9 @@ class workflow_domain
   typedef domain_object<iinterface, workflow_config, workflow_statistics> self;
 public:
   
-  typedef std::shared_ptr< ::wfc::value_meter > value_meter_ptr;
-  typedef std::shared_ptr< ::wfc::time_meter > time_meter_ptr;
+  /*::wfc::value_meter > value_meter_ptr;
+  ::wfc::time_meter > time_meter_ptr;
+  */
   //typedef ::wfc::workflow domain_interface;
   virtual ~workflow_domain();
   //using domain_object<iinterface, workflow_config>::create;
@@ -31,9 +32,9 @@ public:
 private:
   std::shared_ptr<impl> _workflow;
   timer_id_t _stat_timer;
-  value_meter_ptr _meter_size;
-  value_meter_ptr _meter_drop;
-  //std::map< std::thread::id, time_meter_ptr> _meters_threads;
+  /*value_meter_ptr*/ value_factory _meter_size;
+  /*value_meter_ptr*/ value_factory _meter_drop;
+  //std::map< std::thread::id, time_factory> _meters_threads;
   
   size_t _dropped = 0;
   //std::vector<size_t> _counters;

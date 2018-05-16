@@ -49,12 +49,14 @@ void workflow_domain::initialize()
   if ( auto core = this->global()->workflow )
   {
     core->release_timer(_stat_timer);
+    if ( opt.queue.empty() || opt.dropped.empty() )
+        return;
     if ( auto stat = this->get_statistics() )
     {
       if ( !opt.queue.empty() )
-        _meter_size = stat->create_value_prototype(this->name() + opt.queue);
+        _meter_size = stat->create_value_factory(this->name() + opt.queue);
       if ( !opt.dropped.empty() )
-        _meter_drop = stat->create_value_prototype(this->name() + opt.dropped);
+        _meter_drop = stat->create_value_factory(this->name() + opt.dropped);
 
       /*
       if ( !opt.stat.thread.empty() )
@@ -70,15 +72,15 @@ void workflow_domain::initialize()
         }
       }*/
 
-      if ( _meter_size == nullptr && _meter_drop==nullptr /*&& _meters_threads.empty()*/ )
-        return;
+    /*  if ( _meter_size == nullptr && _meter_drop==nullptr && _meters_threads.empty() )
+        return;*/
 
       _stat_timer = core->create_timer( std::chrono::milliseconds(opt.interval_ms), [this, stat]()->bool
       {
         size_t dropped = this->_workflow->dropped();
         size_t diffdrop = dropped - this->_dropped;
-        stat->create_meter( this->_meter_size, this->_workflow->queue_size(), 0 );
-        stat->create_meter( this->_meter_drop, 0, diffdrop );
+        this->_meter_size.create( this->_workflow->queue_size(), 0 );
+        this->_meter_drop.create( 0, diffdrop );
         this->_dropped = dropped;
         
         /*
@@ -121,32 +123,38 @@ void workflow_domain::ready()
   if ( this->get_statistics() != nullptr )
   {
     std::weak_ptr<workflow_domain> wthis = this->shared_from_this();
-    value_meter_ptr proto_time;
-    value_meter_ptr proto_total;
-    /*value_meter_ptr proto_count;*/
+    
+    bool first = true;
+    value_factory proto_time;
+    value_factory proto_total;
     auto tcount = std::make_shared< std::atomic<int> >();
-    opt.statistics_handler  = [wthis, proto_time, proto_total, tcount, statopt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
+    opt.statistics_handler  = [wthis, first, proto_time, proto_total, tcount, statopt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
     {
       if ( auto pthis = wthis.lock() )
       {
         if ( auto stat = pthis->get_statistics() )
         {
-          if ( proto_time == nullptr )
+          if ( first == true )
           {
+            first=false;
             size_t id = tcount->fetch_add(1);
             std::stringstream ss;
             ss << pthis->name() << statopt.thread << id;
-            proto_time = stat->create_value_prototype( ss.str());
+            proto_time = stat->create_value_factory( ss.str());
             std::stringstream ss1;
             ss1 << pthis->name() << ".threads";
-            proto_total = stat->create_value_prototype( ss1.str());
+            proto_total = stat->create_value_factory( ss1.str());
           }
           else
           {
             auto span_mcs = std::chrono::duration_cast<std::chrono::microseconds>(span).count();
-            stat->create_meter(proto_time, span_mcs, count );
-            stat->create_meter(proto_total, span_mcs, count );
+            proto_time.create(span_mcs, count );
+            proto_total.create(span_mcs, count );
           }
+        }
+        else
+        {
+          first=true;
         }
       }
     };
