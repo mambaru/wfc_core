@@ -192,7 +192,7 @@ int core::run()
   }
 
   workflow_options qopt;
-  qopt.use_io_service = true;
+  
   qopt.wrnsize = 10;
   qopt.maxsize = 100;
   qopt.threads = 0;

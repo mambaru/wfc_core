@@ -79,7 +79,7 @@ void workflow_domain::initialize()
       {
         size_t dropped = this->_workflow->dropped();
         size_t diffdrop = dropped - this->_dropped;
-        this->_meter_size.create( this->_workflow->queue_size(), 0 );
+        this->_meter_size.create( this->_workflow->full_size(), 0 );
         this->_meter_drop.create( 0, diffdrop );
         this->_dropped = dropped;
         

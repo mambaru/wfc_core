@@ -4,7 +4,7 @@
 namespace wfc{ namespace core{
 
 struct statistics_config: 
-  ::wfc::statistics::stat_options
+  wrtstat::wrtstat_options
 {
   // куда отправить агррегированые данные 
   // std::string target;

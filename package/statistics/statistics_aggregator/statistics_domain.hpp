@@ -48,8 +48,8 @@ private:
   std::vector< statistics_wptr > _targets;
   //statistics_wptr _target;
 
-  //workflow_type::timer_id_t _timer_id;
-  //std::vector<workflow_type::timer_id_t> _timers; // удалить
+  workflow_type::timer_id_t _timer_id;
+  std::vector<workflow_type::timer_id_t> _timers; // удалить
   std::string _log;
  
   std::atomic<bool> _started;
