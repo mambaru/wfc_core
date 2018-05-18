@@ -242,7 +242,7 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
     if ( !_started ) return true;
   }
    
-  int count = st->count();
+  int count = st->aggregators_count();
   for ( int i = offset; i < count; i+=step)
   {
     std::string name = st->get_name(i);
