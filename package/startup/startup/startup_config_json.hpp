@@ -17,7 +17,8 @@ struct startup_config_json
   typedef json::object<
     startup_config,
     fas::type_list_n<
-    >::type
+    >::type,
+    json::strict_mode
   > type;
   typedef type::serializer serializer;
   typedef type::member_list member_list;

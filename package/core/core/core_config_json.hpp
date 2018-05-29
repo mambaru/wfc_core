@@ -14,10 +14,10 @@ struct common_workflow_options_json
   typedef json::object<
     common_workflow_options,
     json::member_list<
-      json::base<workflow_options_json>,
+      json::base<workflow_options_basic_json>,
       json::member<n_cpu, common_workflow_options, std::set<int>, &common_workflow_options::cpu, json::array< std::set< json::value<int> > > >
     >,
-    ::wjson::strict_mode
+    json::strict_mode
   > type;
   
   typedef type::target target;
@@ -58,7 +58,7 @@ struct core_config_json
        json::member<n_wfc_cpu, core_config, std::set<int>, &core_config::wfc_cpu, json::array< std::set< json::value<int> > > >,
        json::member<n_sys_cpu, core_config, std::set<int>, &core_config::sys_cpu, json::array< std::set< json::value<int> > > >
     >,
-    ::wjson::strict_mode
+    json::strict_mode
   > type;
   
   typedef type::target target;

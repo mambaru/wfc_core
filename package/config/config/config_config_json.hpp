@@ -12,10 +12,11 @@ struct config_config_json
   
   typedef json::object<
     config_config,
-    fas::type_list_n<
-       json::member<n_reload_sighup,  config_config, bool, &config_config::reload_sighup>,
-       json::member<n_reload_changed_ms, config_config, time_t, &config_config::reload_changed_ms>
-    >::type
+    json::member_list<
+        json::member<n_reload_sighup,  config_config, bool, &config_config::reload_sighup>,
+        json::member<n_reload_changed_ms, config_config, time_t, &config_config::reload_changed_ms>
+    >,
+    json::strict_mode
   > type; 
   
   typedef type::target target;

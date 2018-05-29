@@ -20,7 +20,7 @@ struct workflow_statistics_json
       json::member<n_dropped, workflow_statistics, std::string, &workflow_statistics::dropped >,
       json::member<n_thread, workflow_statistics, std::string, &workflow_statistics::thread >
     >,
-    ::wjson::strict_mode
+    json::strict_mode
 
   > type;
 

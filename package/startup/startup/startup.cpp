@@ -259,7 +259,8 @@ namespace {
         {
           if ( !conf_names.insert(chk.name).second )
           {
-            std::cerr << "ERROR: Item '" << chk.name << "' already exist. Check the configuration for duplication of entities." << std::endl;
+            std::cerr << "ERROR: instance '" << chk.name 
+                      << "' already exist. Check the configuration for duplication of entities." << std::endl;
             status = false;
           }
         }
@@ -270,7 +271,7 @@ namespace {
     {
       if ( conf_names.count(name) == 0 )
       {
-        std::cerr << "ERROR: Item '"<< name << "' is required for program args" << std::endl;
+        std::cerr << "ERROR: instance '"<< name << "' not found for program args" << std::endl;
         status = false;
       }
     }

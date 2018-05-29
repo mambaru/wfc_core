@@ -49,7 +49,8 @@ struct statistics_config_json
       json::member< n_aggregate_timeout_ms, statistics_config, time_t, &statistics_config::aggregate_timeout_ms>,
       json::member< n_startup_ignore_ms, statistics_config, time_t,      &statistics_config::startup_ignore_ms>
       
-     >
+     >,
+    json::strict_mode
   > type;
   
   typedef type::target target;
