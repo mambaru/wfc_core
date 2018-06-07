@@ -93,7 +93,7 @@ bool config::reload_and_reconfigure()
 }
 
 
-bool config::load_and_parse(std::string path)
+bool config::load_and_configure(std::string path)
 {
   std::string confstr = load_from_file_(path);
   if ( confstr.empty() )
@@ -107,6 +107,18 @@ bool config::load_and_parse(std::string path)
   return true;
 }
 
+
+bool config::load_and_check(std::string path) 
+{
+  std::string confstr = load_from_file_(path);
+  if ( confstr.empty() )
+    return false;
+
+  configuration mainconf;
+  if ( !parse_configure_(path, confstr, mainconf) )
+    return false;
+  return true;
+}
 
 std::string config::get_config(std::string name)
 {

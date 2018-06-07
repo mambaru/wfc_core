@@ -15,6 +15,7 @@ struct program_arguments
   bool info = false;
   bool module_list = false;
   bool component_list = false;
+  
 
   bool daemonize = false;
   bool wait_daemonize = false;
@@ -32,6 +33,7 @@ struct program_arguments
   std::string program_name;
   std::string instance_name;
   std::string config_path;
+  std::string check_config;
   std::string pid_dir;
 
   typedef std::map<std::string, std::string> map1;

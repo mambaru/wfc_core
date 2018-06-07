@@ -24,7 +24,8 @@ public:
   
   // iconfig
   virtual bool reload_and_reconfigure() override;
-  virtual bool load_and_parse(std::string path) override;
+  virtual bool load_and_configure(std::string path) override;
+  virtual bool load_and_check(std::string path) override;
   virtual std::string get_config(std::string name) override;
   virtual bool generate_config( const iconfig::generate_options& go, const std::string& path, std::string& result) override;
   

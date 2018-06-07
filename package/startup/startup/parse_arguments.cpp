@@ -40,6 +40,8 @@ try
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
+    ("check-config", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file without start")
+    
     ;
 
   vstrings instance_options;

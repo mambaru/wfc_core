@@ -134,7 +134,16 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   else if ( _pa.generate )
   {
     return this->generate_() ? 0 : 3;
-      
+  }
+  else if ( !_pa.check_config.empty() )
+  {
+    if ( auto g = this->global() )
+    {
+      if ( auto c = g->registry.get<iconfig>("config") )
+      {
+        return c->load_and_configure(_pa.check_config) ? 0 : 4;
+      }
+    }
   }
   else if ( !_pa.config_path.empty() )
   {
@@ -285,7 +294,7 @@ int startup_domain::perform_start_( )
   {
     if ( auto c = g->registry.get<iconfig>("config") )
     {
-      if ( !c->load_and_parse(_pa.config_path) )
+      if ( !c->load_and_configure(_pa.config_path) )
       {
         std::cerr << "Configuration FAIL!" << std::endl;
         return 5;
@@ -433,6 +442,7 @@ void startup_domain::show_usage_()
   std::cout <<  "  " << this->global()->program_name << " --version" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " --info [<package name>]" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " -G [<component name>] [-C <path>]" << std::endl;
+  std::cout <<  "  " << this->global()->program_name << " --check-config <path>" << std::endl;
   std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <component name>] -C <config path>" << std::endl;
 }
 
