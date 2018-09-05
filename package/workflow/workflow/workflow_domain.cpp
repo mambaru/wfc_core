@@ -54,9 +54,9 @@ void workflow_domain::initialize()
     if ( auto stat = this->get_statistics() )
     {
       if ( !opt.queue.empty() )
-        _meter_size = stat->create_value_factory(this->name() + opt.queue);
+        _meter_size = stat->create_value_meter(this->name() + opt.queue);
       if ( !opt.dropped.empty() )
-        _meter_drop = stat->create_value_factory(this->name() + opt.dropped);
+        _meter_drop = stat->create_value_meter(this->name() + opt.dropped);
 
       /*
       if ( !opt.stat.thread.empty() )
@@ -125,8 +125,8 @@ void workflow_domain::ready()
     std::weak_ptr<workflow_domain> wthis = this->shared_from_this();
     
     bool first = true;
-    value_factory proto_time;
-    value_factory proto_total;
+    value_meter proto_time;
+    value_meter proto_total;
     auto tcount = std::make_shared< std::atomic<int> >();
     opt.statistics_handler  = [wthis, first, proto_time, proto_total, tcount, statopt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
     {
@@ -140,10 +140,10 @@ void workflow_domain::ready()
             size_t id = tcount->fetch_add(1);
             std::stringstream ss;
             ss << pthis->name() << statopt.thread << id;
-            proto_time = stat->create_value_factory( ss.str());
+            proto_time = stat->create_value_meter( ss.str());
             std::stringstream ss1;
             ss1 << pthis->name() << ".threads";
-            proto_total = stat->create_value_factory( ss1.str());
+            proto_total = stat->create_value_meter( ss1.str());
           }
           else
           {
