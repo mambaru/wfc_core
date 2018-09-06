@@ -32,8 +32,8 @@ public:
 private:
   std::shared_ptr<impl> _workflow;
   timer_id_t _stat_timer;
-  /*value_meter_ptr*/ value_factory _meter_size;
-  /*value_meter_ptr*/ value_factory _meter_drop;
+  /*value_meter_ptr*/ value_meter _meter_size;
+  /*value_meter_ptr*/ value_meter _meter_drop;
   //std::map< std::thread::id, time_factory> _meters_threads;
   
   size_t _dropped = 0;
