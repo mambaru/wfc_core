@@ -337,9 +337,10 @@ int startup_domain::perform_start_( )
   
   if ( !_pa.user_name.empty() )
   {
-    if ( !::wfc::change_user(_pa.user_name) )
+    std::string err;
+    if ( !::wfc::change_user(_pa.user_name, &err) )
     {
-      std::cerr << "FAIL: cannot set new user name '"<< _pa.user_name <<"'" << std::endl;
+      std::cerr << "FAIL: cannot set new user name '"<< _pa.user_name <<"': " << err << std::endl;
       return 6;
     }
     std::clog << "New user name: " << _pa.user_name << std::endl;
@@ -347,9 +348,10 @@ int startup_domain::perform_start_( )
     
   if ( !_pa.working_directory.empty() )
   {
-    if ( !::wfc::change_working_directory(_pa.working_directory) )
+    std::string err;
+    if ( !::wfc::change_working_directory(_pa.working_directory, &err) )
     {
-      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory <<"'" << std::endl;
+      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory << "': " << err << std::endl;
       return 7;
     }
     std::clog << "New working directory: " << _pa.user_name << std::endl;

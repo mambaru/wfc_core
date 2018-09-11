@@ -16,7 +16,7 @@ class workflow_domain
   class impl;
   typedef domain_object<iinterface, workflow_config, workflow_statistics> self;
 public:
-  
+  typedef workflow_type::timer_id_t timer_id_t;
   /*::wfc::value_meter > value_meter_ptr;
   ::wfc::time_meter > time_meter_ptr;
   */

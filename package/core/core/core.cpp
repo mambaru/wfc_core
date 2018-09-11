@@ -109,13 +109,13 @@ void core::reconfigure()
       g->cpu.del_current_thread();
     };
     
-    if ( g->workflow==nullptr )
+    if ( g->common_workflow==nullptr )
     {
-      g->workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt );
-      g->workflow->start();
+      g->common_workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt );
+      g->common_workflow->start();
     }
     else
-      g->workflow->reconfigure(cw_opt);
+      g->common_workflow->reconfigure(cw_opt);
     
     g->disable_statistics = opt.disable_statistics;
     g->nocall_callback_abort = opt.nocall_callback_abort;
@@ -158,7 +158,7 @@ void core::stop()
 
 int core::run()
 {
-  if ( this->global()->workflow==nullptr )
+  if ( this->global()->common_workflow==nullptr )
     this->reconfigure();
   
   gs_stop_signal = false;
@@ -286,7 +286,7 @@ bool core::_idle()
 
 int core::_main_loop()
 {
-  this->global()->workflow->start();
+  this->global()->common_workflow->start();
   std::weak_ptr<core> wthis = this->shared_from_this();
 
   _core_workflow->create_timer(
@@ -547,7 +547,7 @@ void core::_stop()
 
   SYSTEM_LOG_BEGIN("Stop common workflow...")
   g->io_service.stop();
-  g->workflow->stop();
+  g->common_workflow->stop();
   SYSTEM_LOG_END("Stop common workflow ... Done")
 
   if ( !_abort_flag )

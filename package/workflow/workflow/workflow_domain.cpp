@@ -46,7 +46,7 @@ void workflow_domain::reconfigure()
 void workflow_domain::initialize()
 {
   auto opt = this->statistics_options();
-  if ( auto core = this->global()->workflow )
+  if ( auto core = this->global()->common_workflow )
   {
     core->release_timer(_stat_timer);
     if ( opt.queue.empty() || opt.dropped.empty() )
@@ -165,7 +165,7 @@ void workflow_domain::ready()
 
 void workflow_domain::stop() 
 {
-  if ( auto core = this->global()->workflow )
+  if ( auto core = this->global()->common_workflow )
     core->release_timer(_stat_timer);
   if ( auto g = this->global() )
     g->registry.erase("workflow", this->name() );

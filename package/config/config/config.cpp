@@ -2,7 +2,7 @@
 #include "configuration.hpp"
 #include "configuration_json.hpp"
 
-#include <wfc/core/global.hpp>
+#include <wfc/core/wfcglobal.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/system/system.hpp>
@@ -40,12 +40,12 @@ config::config()
 
 void config::ready()
 {
-  this->global()->workflow->release_timer(_timer_id);
+  this->global()->common_workflow->release_timer(_timer_id);
   _timer_id = 0;
   
   if ( this->options().reload_changed_ms != 0 )
   {
-    _timer_id = this->global()->workflow->create_timer( 
+    _timer_id = this->global()->common_workflow->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
       this->wrap( std::bind(&config::timer_handler_, this), [](){return false;} )
     );
@@ -66,7 +66,7 @@ void config::start()
 void config::stop()
 {
   signal(SIGHUP, nullptr);
-  this->global()->workflow->release_timer(_timer_id);
+  this->global()->common_workflow->release_timer(_timer_id);
 }
 
 bool config::reload_and_reconfigure()
