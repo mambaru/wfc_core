@@ -58,8 +58,8 @@ try
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
-    ("instance-options,O", value< vstrings >(&instance_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom options for instance objects")
-    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after autoup)");
+    ("object-options,O", value< vstrings >(&instance_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom options for instance objects")
+    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after restart by autoup)");
 
   desc.add(desc_startup);
 
