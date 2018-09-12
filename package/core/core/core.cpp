@@ -118,10 +118,49 @@ void core::reconfigure()
       g->common_workflow->reconfigure(cw_opt);
     
     g->disable_statistics = opt.disable_statistics;
+    
+    bool nca = opt.nocall_callback_abort;
+    bool ncs = opt.nocall_callback_show;
+    bool dca = opt.double_callback_abort;
+    bool dcs = opt.double_callback_show;
+    
+    g->nocall_handler = [g, nca, ncs](const std::string& name)
+    {
+      if ( g->stop_signal_flag )
+      {
+        DOMAIN_LOG_WARNING("The callback handler for the '" << name << "' was destroyed without a call after stop signal")
+      }
+      else if ( nca )
+      {
+        DOMAIN_LOG_FATAL("The callback handler for the '" << name << "' was destroyed without a call")
+      }
+      else if ( ncs )
+      {
+        DOMAIN_LOG_ERROR("The callback handler for the '" << name << "' was destroyed without a call")
+      }
+    };
+
+    g->doublecall_handler = [g, dca, dcs](const std::string& name)
+    {
+      if ( g->stop_signal_flag )
+      {
+        DOMAIN_LOG_WARNING("Double call callback functions for '" << name << "' after stop signal")
+      }
+      else if ( dca )
+      {
+        DOMAIN_LOG_FATAL("Double call callback functions for '" << name << "'")
+      }
+      else if ( dcs )
+      {
+        DOMAIN_LOG_ERROR("Double call callback functions for '" << name << "'")
+      }
+    };
+    /*
     g->nocall_callback_abort = opt.nocall_callback_abort;
     g->nocall_callback_show = opt.nocall_callback_show;
     g->double_callback_abort = opt.double_callback_abort;
     g->double_callback_show = opt.double_callback_show;
+    */
   }
   
 
@@ -281,7 +320,12 @@ bool core::_idle()
       SYSTEM_LOG_END("CPU threads reconfigured.")
     }
   }
-  return !_stop_flag;
+  else
+  {
+    SYSTEM_LOG_WARNING("Stop signal after reconfigure. Probably an initialization error" )
+    return this->_idle();
+  }
+  return true;
 }
 
 int core::_main_loop()
@@ -375,7 +419,7 @@ bool core::_configure()
       std::string confstr = conf->get_config(name);
       if ( !confstr.empty() )
       {
-        SYSTEM_LOG_BEGIN("Configure component '" << name << "'...")
+        //SYSTEM_LOG_BEGIN("Configure component '" << name << "'...")
         json::json_error er;
         if ( !obj->configure(confstr, &er ) )
         {
@@ -388,12 +432,12 @@ bool core::_configure()
           this->_abort_flag = true;
         }
         
-        if ( !this->_abort_flag ) { SYSTEM_LOG_END("Configure component '" << name << "'...Done") }
+        if ( !this->_abort_flag ) { /*SYSTEM_LOG_END("Configure component '" << name << "'...Done")*/ }
         else { SYSTEM_LOG_END("Configure component '" << name << "'...aborted!") }
       }
       else
       {
-        SYSTEM_LOG_MESSAGE("Configuration for '" << name << "' not set")
+        SYSTEM_LOG_MESSAGE("Configuration for '" << name << "' is not set")
       }
     });
   }
@@ -421,7 +465,7 @@ void core::_initialize()
     if ( dirty_flag || obj->is_reconfigured() )
       instances.push_back(obj);
   });
-
+  
   if ( instances.empty() )
   {
     SYSTEM_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")

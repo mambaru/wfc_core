@@ -81,7 +81,6 @@ bool config::reload_and_reconfigure()
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
   {
-    SYSTEM_LOG_DEBUG("core_reconfigure")
     c->core_reconfigure();
   }
   else
