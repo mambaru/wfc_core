@@ -28,9 +28,10 @@ logger::logger()
   wlog::init();
 }
 
-logger::config_type logger::generate(const std::string& arg) 
+logger::domain_config logger::generate(const std::string& arg) 
 {
-  domain_object::config_type  conf;
+  domain_config
+  conf;
   conf.finalize();
   conf.stdout.color_map.clear();
   if ( arg == "example" )
