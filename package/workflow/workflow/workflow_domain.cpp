@@ -8,6 +8,10 @@ class workflow_domain::impl
   , public workflow
 {
 public:
+  impl(io_service_type& io)
+    : workflow(io)
+  {}
+
   impl(io_service_type& io, const workflow_options& opt )
     : workflow(io, opt)
   {}
@@ -20,29 +24,23 @@ workflow_domain::~workflow_domain()
 
 void workflow_domain::configure() 
 {
-  this->reconfigure();
+  _workflow = std::make_shared<impl>( this->global()->io_service );
+  if ( auto g = this->global() )
+      g->registry.set( "workflow", this->name(), _workflow );
 }
 
 void workflow_domain::reconfigure() 
 {
-  auto name = this->name();
   auto opt = this->options();
-  opt.id = name;
-  if ( _workflow == nullptr )
-  {
-    _workflow = std::make_shared<impl>( this->global()->io_service, opt );
-    if ( auto g = this->global() )
-      g->registry.set( "workflow", name, _workflow );
-  }
-  else
-    _workflow->reconfigure(opt);
-
+  opt.id = this->name();
+  opt.control_workflow = this->get_common_workflow();
+  _workflow->reconfigure(opt);
 }
 
 void workflow_domain::initialize()
 {
   auto opt = this->statistics_options();
-  _workflow->set_control_workflow( this->get_common_workflow() );
+  this->reconfigure();
   if ( auto core = this->global()->common_workflow )
   {
     core->release_timer(_stat_timer);

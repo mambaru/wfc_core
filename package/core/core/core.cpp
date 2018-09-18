@@ -100,7 +100,6 @@ void core::reconfigure()
   cw_opt.id = this->name();
   if ( auto g = this->global() )
   {
-    
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
     cw_opt.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
     cw_opt.finish_handler = [g]( std::thread::id id)
