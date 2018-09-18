@@ -28,16 +28,11 @@ void workflow_domain::reconfigure()
   auto name = this->name();
   auto opt = this->options();
   opt.id = name;
-  opt.control_workflow = this->get_common_workflow();
   if ( _workflow == nullptr )
   {
     _workflow = std::make_shared<impl>( this->global()->io_service, opt );
     if ( auto g = this->global() )
       g->registry.set( "workflow", name, _workflow );
-    // Стартуем сразу, чтобы запросы не терять не 
-    //_workflow->start();
-    //this->ready();
-    
   }
   else
     _workflow->reconfigure(opt);
