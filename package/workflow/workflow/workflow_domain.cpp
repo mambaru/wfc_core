@@ -28,6 +28,7 @@ void workflow_domain::reconfigure()
   auto name = this->name();
   auto opt = this->options();
   opt.id = name;
+  opt.control_workflow = this->get_common_workflow();
   if ( _workflow == nullptr )
   {
     _workflow = std::make_shared<impl>( this->global()->io_service, opt );
@@ -46,6 +47,7 @@ void workflow_domain::reconfigure()
 void workflow_domain::initialize()
 {
   auto opt = this->statistics_options();
+  _workflow->set_control_workflow( this->get_common_workflow() );
   if ( auto core = this->global()->common_workflow )
   {
     core->release_timer(_stat_timer);
