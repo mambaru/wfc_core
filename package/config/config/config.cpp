@@ -38,7 +38,7 @@ config::config()
 {
 }
 
-void config::ready()
+void config::restart()
 {
   this->global()->common_workflow->release_timer(_timer_id);
   _timer_id = 0;
@@ -60,7 +60,7 @@ void config::start()
   }
   
   this->_config_changed = get_modify_time(this->_path);
-  this->ready();
+  this->restart();
 }
 
 void config::stop()

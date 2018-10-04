@@ -100,12 +100,12 @@ void workflow_domain::initialize()
 void workflow_domain::start()
 {
   
-  this->ready();
+  this->restart();
   _workflow->start();
   
 }
 
-void workflow_domain::ready() 
+void workflow_domain::restart() 
 {
   auto opt = this->options();
   auto statopt = this->statistics_options();

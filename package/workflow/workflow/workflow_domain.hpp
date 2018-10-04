@@ -27,7 +27,7 @@ public:
   virtual void reconfigure() override;
   virtual void initialize() override;
   virtual void start() override;
-  virtual void ready() override;
+  virtual void restart() override;
   virtual void stop() override;
 private:
   std::shared_ptr<impl> _workflow;
