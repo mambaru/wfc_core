@@ -49,11 +49,32 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( _pa.help )
   {
-    if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
-    std::cout << _pa.helpstring << std::endl;
-    std::cout << "To generate and format the configuration, use: " << std::endl;
-    std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
-    std::cout << std::endl;
+    if ( _pa.help_options.empty() )
+    {
+      if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
+      std::cout << _pa.helpstring << std::endl;
+      std::cout << "To generate and format the configuration, use: " << std::endl;
+      std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
+      std::cout << std::endl;
+    }
+    else
+    {
+      for (std::string name : _pa.help_options )
+      {
+        if ( auto g = this->global() )
+        {
+          if ( auto p = g->registry.get<icomponent>("component", name, true) )
+          {
+            std::cout << "*** " << name << " ***" << std::endl;
+            std::cout << p->help() << std::endl << std::endl;
+          }
+          else
+          {
+            std::cout << "ERROR: component '" << name << "' is not exist." << std::endl << std::endl;
+          }
+        }
+      }
+    }
     return 0;
   }
   else if ( _pa.version )
@@ -301,7 +322,7 @@ int startup_domain::perform_start_( )
       }
 
       std::set<std::string> required;
-      for (auto& item : _pa.instance_options) required.insert(item.first);
+      for (auto& item : _pa.object_options) required.insert(item.first);
       for (auto& item : _pa.startup_options) required.insert(item.first);
       if ( !check_options(_pa.config_path, required) )
         return 5;
@@ -422,7 +443,7 @@ int startup_domain::perform_start_( )
   if ( auto g = this->global() )
   {
     g->args.insert(_pa.startup_options);
-    g->args.insert(_pa.instance_options);
+    g->args.insert(_pa.object_options);
   }
     
 

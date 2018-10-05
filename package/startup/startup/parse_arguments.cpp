@@ -34,8 +34,8 @@ try
   options_description desc_startup("Startup options");
 
   desc.add_options()
-    ("help,h", value<bool>(&pa.help)->zero_tokens(), "Produce help message")
-    ("version,v", value<bool>(&pa.help)->zero_tokens(), "Display program version information")
+    ("help,h", value<vstrings>(&pa.help_options)->multitoken()->zero_tokens(), "Produce help message")
+    ("version,v", value<bool>(&pa.version)->zero_tokens(), "Display program version information")
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
@@ -44,7 +44,7 @@ try
     
     ;
 
-  vstrings instance_options;
+  vstrings object_options;
   vstrings startup_options;
 
   desc_startup.add_options()
@@ -58,7 +58,7 @@ try
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
-    ("object-options,O", value< vstrings >(&instance_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom options for instance objects")
+    ("object-options,O", value< vstrings >(&object_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom options for instance objects")
     ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after restart by autoup)");
 
   desc.add(desc_startup);
@@ -88,7 +88,7 @@ try
     }
   }
   
-  pa.instance_options = parse_custom_options( instance_options );
+  pa.object_options = parse_custom_options( object_options );
   pa.startup_options = parse_custom_options( startup_options );
   
   if ( pa.help )
@@ -96,10 +96,10 @@ try
     std::stringstream ss;
     desc.print(ss);
     
-    if ( !pa.instance_options.empty() )
+    if ( !pa.object_options.empty() )
     {
       ss << std::endl << "Instance options:" << std::endl;
-      for ( const auto& ins : pa.instance_options)
+      for ( const auto& ins : pa.object_options)
       {
         ss << "  " << ins.first << ":" << std::endl;
         for ( const auto& val : ins.second)
