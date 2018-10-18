@@ -59,18 +59,18 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     }
     else
     {
-      for (std::string name : _pa.help_options )
+      for (std::string helpname : _pa.help_options )
       {
         if ( auto g = this->global() )
         {
-          if ( auto p = g->registry.get<icomponent>("component", name, true) )
+          if ( auto p = g->registry.get<icomponent>("component", helpname , true) )
           {
-            std::cout << "*** " << name << " ***" << std::endl;
+            std::cout << "*** " << helpname  << " ***" << std::endl;
             std::cout << p->help() << std::endl << std::endl;
           }
           else
           {
-            std::cout << "ERROR: component '" << name << "' is not exist." << std::endl << std::endl;
+            std::cout << "ERROR: component '" << helpname  << "' is not exist." << std::endl << std::endl;
           }
         }
       }
@@ -278,7 +278,6 @@ namespace {
       {
         std::vector<checked_item> checked_list;
         wjson::array< std::vector<checked_item_json> >::serializer checked_list_json;
-        wjson::json_error er;
         checked_list_json(checked_list, item.second.begin(), item.second.end(), &er);
         if (er)
         {
@@ -444,16 +443,16 @@ void startup_domain::show_usage_()
   std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <component name>] -C <config path>" << std::endl;
 }
 
-bool startup_domain::show_info_(const std::string& name)
+bool startup_domain::show_info_(const std::string& package_name)
 {
   auto g = this->global();
 
   if ( g==nullptr )
     return false;
   
-  if ( !name.empty() )
+  if ( !package_name.empty() )
   {
-    if ( auto p = g->registry.get<ipackage>("package", name, true) )
+    if ( auto p = g->registry.get<ipackage>("package", package_name, true) )
     {
       std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
@@ -473,11 +472,11 @@ bool startup_domain::show_info_(const std::string& name)
     else
     {
       std::cout << "Information about the package is not available." << std::endl;
-      std::cout << "Package '" << name << "' Not Found!" << std::endl;
+      std::cout << "Package '" << package_name << "' Not Found!" << std::endl;
       std::cout << "Available packages: " << std::endl;
-      g->registry.for_each<ipackage>("package", [this](const std::string& name, std::shared_ptr<ipackage>)
+      g->registry.for_each<ipackage>("package", [this](const std::string& pkgname, std::shared_ptr<ipackage>)
       {
-        std::cout << "\t" << name << std::endl;
+        std::cout << "\t" << pkgname << std::endl;
       });
       return false;
     }

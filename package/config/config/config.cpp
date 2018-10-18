@@ -119,9 +119,9 @@ bool config::load_and_check(std::string path)
   return true;
 }
 
-std::string config::get_config(std::string name)
+std::string config::get_config(std::string component_name)
 {
-  auto itr = _mainconf.find(name);
+  auto itr = _mainconf.find(component_name);
   if (itr==_mainconf.end())
   {
     return std::string();

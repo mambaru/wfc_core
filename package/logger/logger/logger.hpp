@@ -34,7 +34,7 @@ public:
   virtual void reconfigure() override;
   virtual domain_config generate(const std::string&) override;
 //iinterface
-  virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback);
+  virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback) override;
 private:
   void init_log_(wlog::logger_options opt, wlog::logger_handlers dlh);
   virtual void release();

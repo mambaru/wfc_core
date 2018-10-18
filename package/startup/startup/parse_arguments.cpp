@@ -83,8 +83,8 @@ try
     }
     else
     {
-      pa.generate_options[ std::string(g.begin(), g.begin() +  pos) ]
-        = std::string(g.begin() + pos + 1 , g.end() );
+      pa.generate_options[ std::string(g.begin(), g.begin() +  static_cast<std::ptrdiff_t>(pos) ) ]
+        = std::string(g.begin() + static_cast<std::ptrdiff_t>(pos) + 1 , g.end() );
     }
   }
   
@@ -138,8 +138,8 @@ namespace
     std::string val ;
     if ( beg != std::string::npos )
     {
-      key = std::string(opt.begin(), opt.begin() + beg);
-      val = std::string(opt.begin() + beg + 1, opt.end() );
+      key = std::string(opt.begin(), opt.begin() + static_cast<std::ptrdiff_t>(beg));
+      val = std::string(opt.begin() + static_cast<std::ptrdiff_t>(beg) + 1, opt.end() );
     }
     res[key]=val;
   }
@@ -152,12 +152,12 @@ namespace
       size_t end = opt.find(":", beg);
       if ( end != std::string::npos)
       {
-        parse_pair(std::string(opt.begin()+beg, opt.begin()+end), res);
+        parse_pair(std::string(opt.begin()+static_cast<std::ptrdiff_t>(beg), opt.begin()+static_cast<std::ptrdiff_t>(beg)), res);
         beg = end+1;
       }
       else
       {
-        parse_pair(std::string(opt.begin()+beg, opt.end()), res);
+        parse_pair(std::string(opt.begin()+static_cast<std::ptrdiff_t>(beg), opt.end()), res);
         beg=end;
       }
     }
@@ -173,8 +173,8 @@ namespace
     }
     else
     {
-      std::string name(opt.begin(), opt.begin() + pos);
-      std::string value(opt.begin()+ pos + 1, opt.end());
+      std::string name(opt.begin(), opt.begin() + static_cast<std::ptrdiff_t>(pos));
+      std::string value(opt.begin()+ static_cast<std::ptrdiff_t>(pos) + 1, opt.end());
       parse_options(value, res[name]);
     }
   }
@@ -186,7 +186,7 @@ namespace
     {
       parse_instance(opt, res);
     }
-    return std::move(res);
+    return res;
   }
 }
 

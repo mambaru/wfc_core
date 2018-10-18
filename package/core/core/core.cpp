@@ -55,7 +55,7 @@ namespace
           pids.insert(pid);
       }
     });
-    return std::move(pids);
+    return pids;
   }
   
   std::string setaffinity(pid_t pid, const std::set<int>& cpu)
@@ -67,7 +67,7 @@ namespace
     for (int id : cpu )
     {
       ss += std::to_string(id) +  ",";
-      CPU_SET(id, &mask);
+      CPU_SET( size_t(id), &mask);
     }
     if ( !cpu.empty() )
       ss.pop_back();
