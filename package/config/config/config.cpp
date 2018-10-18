@@ -2,7 +2,7 @@
 #include "configuration.hpp"
 #include "configuration_json.hpp"
 
-#include <wfc/core/global.hpp>
+#include <wfc/core/wfcglobal.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/icore.hpp>
 #include <wfc/system/system.hpp>
@@ -38,14 +38,14 @@ config::config()
 {
 }
 
-void config::ready()
+void config::restart()
 {
-  this->global()->workflow->release_timer(_timer_id);
+  this->global()->common_workflow->release_timer(_timer_id);
   _timer_id = 0;
   
   if ( this->options().reload_changed_ms != 0 )
   {
-    _timer_id = this->global()->workflow->create_timer( 
+    _timer_id = this->global()->common_workflow->create_timer( 
       std::chrono::milliseconds(this->options().reload_changed_ms), 
       this->wrap( std::bind(&config::timer_handler_, this), [](){return false;} )
     );
@@ -60,13 +60,13 @@ void config::start()
   }
   
   this->_config_changed = get_modify_time(this->_path);
-  this->ready();
+  this->restart();
 }
 
 void config::stop()
 {
   signal(SIGHUP, nullptr);
-  this->global()->workflow->release_timer(_timer_id);
+  this->global()->common_workflow->release_timer(_timer_id);
 }
 
 bool config::reload_and_reconfigure()
@@ -81,7 +81,6 @@ bool config::reload_and_reconfigure()
   _mainconf = mainconf;
   if ( auto c = this->global()->registry.get<icore>("core") )
   {
-    SYSTEM_LOG_DEBUG("core_reconfigure")
     c->core_reconfigure();
   }
   else
@@ -120,9 +119,9 @@ bool config::load_and_check(std::string path)
   return true;
 }
 
-std::string config::get_config(std::string name)
+std::string config::get_config(std::string component_name)
 {
-  auto itr = _mainconf.find(name);
+  auto itr = _mainconf.find(component_name);
   if (itr==_mainconf.end())
   {
     return std::string();
@@ -177,7 +176,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
         std::stringstream ss;
         ss << "WFC generate error! component '"<< opt.first << "' not found." << std::endl;
         ss << "Available components:" << std::endl;
-        g->registry.for_each<ipackage>("package", [&ss](const std::string& name, std::shared_ptr<ipackage> pkg)
+        g->registry.for_each<ipackage>("package", [&ss](const std::string& package_name, std::shared_ptr<ipackage> pkg)
         {
           if ( pkg == nullptr )
             return;
@@ -187,7 +186,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
             auto components = m->components();
             for (auto c : components )
             {
-              ss << std::setw(20) << c->name()  << "\t[" << name << " " << m->name() << " ]: " << c->description() << std::endl;
+              ss << std::setw(20) << c->name()  << "\t[" << package_name << " " << m->name() << " ]: " << c->description() << std::endl;
             }
           }
         },

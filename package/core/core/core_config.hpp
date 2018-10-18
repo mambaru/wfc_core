@@ -2,7 +2,6 @@
 
 #include <ctime>
 #include <wfc/core/workflow_options.hpp>
-#include <iow/io/aux/data_pool_options.hpp>
 #include <set>
 
 namespace wfc{ namespace core{
@@ -23,7 +22,6 @@ struct core_config
   bool double_callback_abort = false;
   bool double_callback_show = true;
   
-  ::iow::io::data_map_options datapool;
   std::set<int> wfc_cpu;
   std::set<int> sys_cpu;
   common_workflow_options common_workflow;

@@ -49,11 +49,32 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( _pa.help )
   {
-    if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
-    std::cout << _pa.helpstring << std::endl;
-    std::cout << "To generate and format the configuration, use: " << std::endl;
-    std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
-    std::cout << std::endl;
+    if ( _pa.help_options.empty() )
+    {
+      if ( !helpstring.empty() ) std::cout << helpstring << std::endl << std::endl;
+      std::cout << _pa.helpstring << std::endl;
+      std::cout << "To generate and format the configuration, use: " << std::endl;
+      std::cout << _pa.program_name << " -G | python -mjson.tool " << std::endl;
+      std::cout << std::endl;
+    }
+    else
+    {
+      for (std::string helpname : _pa.help_options )
+      {
+        if ( auto g = this->global() )
+        {
+          if ( auto p = g->registry.get<icomponent>("component", helpname , true) )
+          {
+            std::cout << "*** " << helpname  << " ***" << std::endl;
+            std::cout << p->help() << std::endl << std::endl;
+          }
+          else
+          {
+            std::cout << "ERROR: component '" << helpname  << "' is not exist." << std::endl << std::endl;
+          }
+        }
+      }
+    }
     return 0;
   }
   else if ( _pa.version )
@@ -257,7 +278,6 @@ namespace {
       {
         std::vector<checked_item> checked_list;
         wjson::array< std::vector<checked_item_json> >::serializer checked_list_json;
-        wjson::json_error er;
         checked_list_json(checked_list, item.second.begin(), item.second.end(), &er);
         if (er)
         {
@@ -301,35 +321,10 @@ int startup_domain::perform_start_( )
       }
 
       std::set<std::string> required;
-      for (auto& item : _pa.instance_options) required.insert(item.first);
+      for (auto& item : _pa.object_options) required.insert(item.first);
       for (auto& item : _pa.startup_options) required.insert(item.first);
       if ( !check_options(_pa.config_path, required) )
         return 5;
-      /*
-      bool error = false;
-      for (auto& item : _pa.instance_options)
-      {
-        if ( c->get_config(item.first).empty() )
-        {
-          error = true;
-          std::cerr << "Target '" << item.first << "' for instance option not found" << std::endl;
-        }
-        else
-          std::cout << c->get_config(item.first) << std::endl;
-      }
-      
-      for (auto& item : _pa.startup_options)
-      {
-        if ( c->get_config(item.first).empty() )
-        {
-          error = true;
-          std::cerr << "Target '" << item.first << "' for startup option not found" << std::endl;
-        }
-        else
-          std::cout << c->get_config(item.first) << std::endl;
-      }
-      if (error) return 5;*/
-      
     }
     std::clog << "Program name: " << g->program_name << std::endl;
     std::clog << "Instance name: " << g->instance_name << std::endl;
@@ -337,9 +332,10 @@ int startup_domain::perform_start_( )
   
   if ( !_pa.user_name.empty() )
   {
-    if ( !::wfc::change_user(_pa.user_name) )
+    std::string err;
+    if ( !::wfc::change_user(_pa.user_name, &err) )
     {
-      std::cerr << "FAIL: cannot set new user name '"<< _pa.user_name <<"'" << std::endl;
+      std::cerr << "FAIL: cannot set new user name '"<< _pa.user_name <<"': " << err << std::endl;
       return 6;
     }
     std::clog << "New user name: " << _pa.user_name << std::endl;
@@ -347,9 +343,10 @@ int startup_domain::perform_start_( )
     
   if ( !_pa.working_directory.empty() )
   {
-    if ( !::wfc::change_working_directory(_pa.working_directory) )
+    std::string err;
+    if ( !::wfc::change_working_directory(_pa.working_directory, &err) )
     {
-      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory <<"'" << std::endl;
+      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory << "': " << err << std::endl;
       return 7;
     }
     std::clog << "New working directory: " << _pa.user_name << std::endl;
@@ -420,7 +417,7 @@ int startup_domain::perform_start_( )
   if ( auto g = this->global() )
   {
     g->args.insert(_pa.startup_options);
-    g->args.insert(_pa.instance_options);
+    g->args.insert(_pa.object_options);
   }
     
 
@@ -446,16 +443,16 @@ void startup_domain::show_usage_()
   std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <component name>] -C <config path>" << std::endl;
 }
 
-bool startup_domain::show_info_(const std::string& name)
+bool startup_domain::show_info_(const std::string& package_name)
 {
   auto g = this->global();
 
   if ( g==nullptr )
     return false;
   
-  if ( !name.empty() )
+  if ( !package_name.empty() )
   {
-    if ( auto p = g->registry.get<ipackage>("package", name, true) )
+    if ( auto p = g->registry.get<ipackage>("package", package_name, true) )
     {
       std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
@@ -475,11 +472,11 @@ bool startup_domain::show_info_(const std::string& name)
     else
     {
       std::cout << "Information about the package is not available." << std::endl;
-      std::cout << "Package '" << name << "' Not Found!" << std::endl;
+      std::cout << "Package '" << package_name << "' Not Found!" << std::endl;
       std::cout << "Available packages: " << std::endl;
-      g->registry.for_each<ipackage>("package", [this](const std::string& name, std::shared_ptr<ipackage>)
+      g->registry.for_each<ipackage>("package", [this](const std::string& pkgname, std::shared_ptr<ipackage>)
       {
-        std::cout << "\t" << name << std::endl;
+        std::cout << "\t" << pkgname << std::endl;
       });
       return false;
     }

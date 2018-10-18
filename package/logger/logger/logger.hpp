@@ -25,16 +25,16 @@ class logger
 {
   typedef std::mutex mutex_type;
 public:
-  typedef domain_object::config_type config_type;
+  typedef domain_object::domain_config domain_config;
   
   virtual ~logger();
   logger();
 // domain_object
   virtual void initialize() override;
   virtual void reconfigure() override;
-  virtual config_type generate(const std::string&) override;
+  virtual domain_config generate(const std::string&) override;
 //iinterface
-  virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback);
+  virtual void perform_io(data_ptr d, io_id_t io_id, output_handler_t callback) override;
 private:
   void init_log_(wlog::logger_options opt, wlog::logger_handlers dlh);
   virtual void release();

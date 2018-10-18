@@ -18,7 +18,7 @@
 #include <syslog.h>
 #include <sys/resource.h>
 #include <sched.h>
-#include <iow/io/aux/global_pool.hpp>
+
 
 namespace wfc{  namespace core{
 
@@ -55,7 +55,7 @@ namespace
           pids.insert(pid);
       }
     });
-    return std::move(pids);
+    return pids;
   }
   
   std::string setaffinity(pid_t pid, const std::set<int>& cpu)
@@ -67,7 +67,7 @@ namespace
     for (int id : cpu )
     {
       ss += std::to_string(id) +  ",";
-      CPU_SET(id, &mask);
+      CPU_SET( size_t(id), &mask);
     }
     if ( !cpu.empty() )
       ss.pop_back();
@@ -100,7 +100,6 @@ void core::reconfigure()
   cw_opt.id = this->name();
   if ( auto g = this->global() )
   {
-    
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
     cw_opt.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
     cw_opt.finish_handler = [g]( std::thread::id id)
@@ -109,19 +108,58 @@ void core::reconfigure()
       g->cpu.del_current_thread();
     };
     
-    if ( g->workflow==nullptr )
+    if ( g->common_workflow==nullptr )
     {
-      g->workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt );
-      g->workflow->start();
+      g->common_workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt );
+      g->common_workflow->start();
     }
     else
-      g->workflow->reconfigure(cw_opt);
+      g->common_workflow->reconfigure(cw_opt);
     
     g->disable_statistics = opt.disable_statistics;
+    
+    bool nca = opt.nocall_callback_abort;
+    bool ncs = opt.nocall_callback_show;
+    bool dca = opt.double_callback_abort;
+    bool dcs = opt.double_callback_show;
+    
+    g->nocall_handler = [g, nca, ncs](const std::string& objname)
+    {
+      if ( g->stop_signal_flag )
+      {
+        DOMAIN_LOG_WARNING("The callback handler for the '" << objname << "' was destroyed without a call after stop signal")
+      }
+      else if ( nca )
+      {
+        DOMAIN_LOG_FATAL("The callback handler for the '" << objname << "' was destroyed without a call")
+      }
+      else if ( ncs )
+      {
+        DOMAIN_LOG_ERROR("The callback handler for the '" << objname << "' was destroyed without a call")
+      }
+    };
+
+    g->doublecall_handler = [g, dca, dcs](const std::string& objname)
+    {
+      if ( g->stop_signal_flag )
+      {
+        DOMAIN_LOG_WARNING("Double call callback functions for '" << objname << "' after stop signal")
+      }
+      else if ( dca )
+      {
+        DOMAIN_LOG_FATAL("Double call callback functions for '" << objname << "'")
+      }
+      else if ( dcs )
+      {
+        DOMAIN_LOG_ERROR("Double call callback functions for '" << objname << "'")
+      }
+    };
+    /*
     g->nocall_callback_abort = opt.nocall_callback_abort;
     g->nocall_callback_show = opt.nocall_callback_show;
     g->double_callback_abort = opt.double_callback_abort;
     g->double_callback_show = opt.double_callback_show;
+    */
   }
   
 
@@ -147,7 +185,6 @@ void core::reconfigure()
   }
   this->global()->cpu.set_current_thread( this->name() );
   
-  ::iow::io::global_pool::initialize( opt.datapool );
 }
 
 void core::stop() 
@@ -159,7 +196,7 @@ void core::stop()
 
 int core::run()
 {
-  if ( this->global()->workflow==nullptr )
+  if ( this->global()->common_workflow==nullptr )
     this->reconfigure();
   
   gs_stop_signal = false;
@@ -282,12 +319,17 @@ bool core::_idle()
       SYSTEM_LOG_END("CPU threads reconfigured.")
     }
   }
-  return !_stop_flag;
+  else
+  {
+    SYSTEM_LOG_WARNING("Stop signal after reconfigure. Probably an initialization error" )
+    return this->_idle();
+  }
+  return true;
 }
 
 int core::_main_loop()
 {
-  this->global()->workflow->start();
+  this->global()->common_workflow->start();
   std::weak_ptr<core> wthis = this->shared_from_this();
 
   _core_workflow->create_timer(
@@ -366,35 +408,35 @@ bool core::_configure()
 
   if ( auto conf = g->registry.get<iconfig>("config") )
   {
-    g->registry.for_each<icomponent>("component", [this, conf](const std::string& name, std::shared_ptr<icomponent> obj)
+    g->registry.for_each<icomponent>("component", [this, conf](const std::string& component_name, std::shared_ptr<icomponent> obj)
     {
       if ( this->_abort_flag )
       {
-        SYSTEM_LOG_MESSAGE("Configure component '" << name << "' aborted!")
+        SYSTEM_LOG_MESSAGE("Configure component '" << component_name << "' aborted!")
         return;
       }
-      std::string confstr = conf->get_config(name);
+      std::string confstr = conf->get_config(component_name);
       if ( !confstr.empty() )
       {
-        SYSTEM_LOG_BEGIN("Configure component '" << name << "'...")
+        //SYSTEM_LOG_BEGIN("Configure component '" << component_name << "'...")
         json::json_error er;
         if ( !obj->configure(confstr, &er ) )
         {
           auto message = json::strerror::message( er);
           auto trace = json::strerror::trace( er, confstr.begin(), confstr.end() );
           SYSTEM_LOG_ERROR(
-            "Json unserialize error for component '" << name << "':" 
+            "Json unserialize error for component '" << component_name << "':" 
             << message << ". " << std::endl << trace
           )
           this->_abort_flag = true;
         }
         
-        if ( !this->_abort_flag ) { SYSTEM_LOG_END("Configure component '" << name << "'...Done") }
-        else { SYSTEM_LOG_END("Configure component '" << name << "'...aborted!") }
+        if ( !this->_abort_flag ) { /*SYSTEM_LOG_END("Configure component '" << component_name << "'...Done")*/ }
+        else { SYSTEM_LOG_END("Configure component '" << component_name << "'...aborted!") }
       }
       else
       {
-        SYSTEM_LOG_MESSAGE("Configuration for '" << name << "' not set")
+        SYSTEM_LOG_MESSAGE("Configuration for '" << component_name << "' is not set")
       }
     });
   }
@@ -422,7 +464,7 @@ void core::_initialize()
     if ( dirty_flag || obj->is_reconfigured() )
       instances.push_back(obj);
   });
-
+  
   if ( instances.empty() )
   {
     SYSTEM_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
@@ -548,7 +590,7 @@ void core::_stop()
 
   SYSTEM_LOG_BEGIN("Stop common workflow...")
   g->io_service.stop();
-  g->workflow->stop();
+  g->common_workflow->stop();
   SYSTEM_LOG_END("Stop common workflow ... Done")
 
   if ( !_abort_flag )

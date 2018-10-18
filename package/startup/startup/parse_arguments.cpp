@@ -34,8 +34,8 @@ try
   options_description desc_startup("Startup options");
 
   desc.add_options()
-    ("help,h", value<bool>(&pa.help)->zero_tokens(), "Produce help message")
-    ("version,v", value<bool>(&pa.help)->zero_tokens(), "Display program version information")
+    ("help,h", value<vstrings>(&pa.help_options)->multitoken()->zero_tokens(), "Produce help message")
+    ("version,v", value<bool>(&pa.version)->zero_tokens(), "Display program version information")
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
@@ -44,7 +44,7 @@ try
     
     ;
 
-  vstrings instance_options;
+  vstrings object_options;
   vstrings startup_options;
 
   desc_startup.add_options()
@@ -58,8 +58,8 @@ try
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
-    ("instance-options,O", value< vstrings >(&instance_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom options for instance objects")
-    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<instance-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after autoup)");
+    ("object-options,O", value< vstrings >(&object_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom options for instance objects")
+    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after restart by autoup)");
 
   desc.add(desc_startup);
 
@@ -83,12 +83,12 @@ try
     }
     else
     {
-      pa.generate_options[ std::string(g.begin(), g.begin() +  pos) ]
-        = std::string(g.begin() + pos + 1 , g.end() );
+      pa.generate_options[ std::string(g.begin(), g.begin() +  static_cast<std::ptrdiff_t>(pos) ) ]
+        = std::string(g.begin() + static_cast<std::ptrdiff_t>(pos) + 1 , g.end() );
     }
   }
   
-  pa.instance_options = parse_custom_options( instance_options );
+  pa.object_options = parse_custom_options( object_options );
   pa.startup_options = parse_custom_options( startup_options );
   
   if ( pa.help )
@@ -96,10 +96,10 @@ try
     std::stringstream ss;
     desc.print(ss);
     
-    if ( !pa.instance_options.empty() )
+    if ( !pa.object_options.empty() )
     {
       ss << std::endl << "Instance options:" << std::endl;
-      for ( const auto& ins : pa.instance_options)
+      for ( const auto& ins : pa.object_options)
       {
         ss << "  " << ins.first << ":" << std::endl;
         for ( const auto& val : ins.second)
@@ -138,8 +138,8 @@ namespace
     std::string val ;
     if ( beg != std::string::npos )
     {
-      key = std::string(opt.begin(), opt.begin() + beg);
-      val = std::string(opt.begin() + beg + 1, opt.end() );
+      key = std::string(opt.begin(), opt.begin() + static_cast<std::ptrdiff_t>(beg));
+      val = std::string(opt.begin() + static_cast<std::ptrdiff_t>(beg) + 1, opt.end() );
     }
     res[key]=val;
   }
@@ -152,12 +152,12 @@ namespace
       size_t end = opt.find(":", beg);
       if ( end != std::string::npos)
       {
-        parse_pair(std::string(opt.begin()+beg, opt.begin()+end), res);
+        parse_pair(std::string(opt.begin()+static_cast<std::ptrdiff_t>(beg), opt.begin()+static_cast<std::ptrdiff_t>(beg)), res);
         beg = end+1;
       }
       else
       {
-        parse_pair(std::string(opt.begin()+beg, opt.end()), res);
+        parse_pair(std::string(opt.begin()+static_cast<std::ptrdiff_t>(beg), opt.end()), res);
         beg=end;
       }
     }
@@ -173,8 +173,8 @@ namespace
     }
     else
     {
-      std::string name(opt.begin(), opt.begin() + pos);
-      std::string value(opt.begin()+ pos + 1, opt.end());
+      std::string name(opt.begin(), opt.begin() + static_cast<std::ptrdiff_t>(pos));
+      std::string value(opt.begin()+ static_cast<std::ptrdiff_t>(pos) + 1, opt.end());
       parse_options(value, res[name]);
     }
   }
@@ -186,7 +186,7 @@ namespace
     {
       parse_instance(opt, res);
     }
-    return std::move(res);
+    return res;
   }
 }
 

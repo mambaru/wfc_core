@@ -18,7 +18,7 @@ public:
   config();
   
   //domain_object
-  virtual void ready() override;
+  virtual void restart() override;
   virtual void start() override;
   virtual void stop() override;
   

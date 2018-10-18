@@ -21,7 +21,6 @@ struct workflow_statistics_json
       json::member<n_thread, workflow_statistics, std::string, &workflow_statistics::thread >
     >,
     json::strict_mode
-
   > type;
 
   typedef type::target target;

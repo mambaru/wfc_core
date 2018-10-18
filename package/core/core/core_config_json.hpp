@@ -2,7 +2,6 @@
 
 #include "core_config.hpp"
 #include <wfc/json.hpp>
-#include <iow/io/aux/data_pool_options_json.hpp>
 #include <wfc/core/workflow_options_json.hpp>
 
 namespace wfc{ namespace core{
