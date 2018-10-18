@@ -153,7 +153,7 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
   }
   
   bool stop_by_fatal = this->options().stop_with_fatal_log_entry;
-  dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& name, const std::string& ident, const std::string& message)
+  dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& logname, const std::string& ident, const std::string& message)
   {
     if ( ident=="FATAL" )
     {
@@ -162,7 +162,7 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
         {
           std::lock_guard<mutex_type> lk( this->_mutex);
           if ( _last_message == nullptr)
-            _last_message = std::make_unique<message_t>(tp, name, ident, message);
+            _last_message = std::make_unique<message_t>(tp, logname, ident, message);
         }
 
         if ( stop_by_fatal && g->stop_signal_flag == false )

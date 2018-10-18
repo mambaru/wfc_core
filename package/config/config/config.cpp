@@ -176,7 +176,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
         std::stringstream ss;
         ss << "WFC generate error! component '"<< opt.first << "' not found." << std::endl;
         ss << "Available components:" << std::endl;
-        g->registry.for_each<ipackage>("package", [&ss](const std::string& name, std::shared_ptr<ipackage> pkg)
+        g->registry.for_each<ipackage>("package", [&ss](const std::string& package_name, std::shared_ptr<ipackage> pkg)
         {
           if ( pkg == nullptr )
             return;
@@ -186,7 +186,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
             auto components = m->components();
             for (auto c : components )
             {
-              ss << std::setw(20) << c->name()  << "\t[" << name << " " << m->name() << " ]: " << c->description() << std::endl;
+              ss << std::setw(20) << c->name()  << "\t[" << package_name << " " << m->name() << " ]: " << c->description() << std::endl;
             }
           }
         },
