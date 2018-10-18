@@ -326,31 +326,6 @@ int startup_domain::perform_start_( )
       for (auto& item : _pa.startup_options) required.insert(item.first);
       if ( !check_options(_pa.config_path, required) )
         return 5;
-      /*
-      bool error = false;
-      for (auto& item : _pa.instance_options)
-      {
-        if ( c->get_config(item.first).empty() )
-        {
-          error = true;
-          std::cerr << "Target '" << item.first << "' for instance option not found" << std::endl;
-        }
-        else
-          std::cout << c->get_config(item.first) << std::endl;
-      }
-      
-      for (auto& item : _pa.startup_options)
-      {
-        if ( c->get_config(item.first).empty() )
-        {
-          error = true;
-          std::cerr << "Target '" << item.first << "' for startup option not found" << std::endl;
-        }
-        else
-          std::cout << c->get_config(item.first) << std::endl;
-      }
-      if (error) return 5;*/
-      
     }
     std::clog << "Program name: " << g->program_name << std::endl;
     std::clog << "Instance name: " << g->instance_name << std::endl;
