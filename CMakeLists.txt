@@ -1,7 +1,10 @@
-cmake_minimum_required(VERSION 2.8)
-
+cmake_minimum_required(VERSION 3.1)
 
 project(wfc_core)
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(mambaru)
+set(CMAKE_MODULE_PATH "${WFC_DIR}/cmake")
 
 include_directories(.)
 
