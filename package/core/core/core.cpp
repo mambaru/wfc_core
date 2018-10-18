@@ -55,7 +55,7 @@ namespace
           pids.insert(pid);
       }
     });
-    return std::move(pids);
+    return pids;
   }
   
   std::string setaffinity(pid_t pid, const std::set<int>& cpu)
@@ -67,7 +67,7 @@ namespace
     for (int id : cpu )
     {
       ss += std::to_string(id) +  ",";
-      CPU_SET(id, &mask);
+      CPU_SET( size_t(id), &mask);
     }
     if ( !cpu.empty() )
       ss.pop_back();
@@ -123,35 +123,35 @@ void core::reconfigure()
     bool dca = opt.double_callback_abort;
     bool dcs = opt.double_callback_show;
     
-    g->nocall_handler = [g, nca, ncs](const std::string& name)
+    g->nocall_handler = [g, nca, ncs](const std::string& objname)
     {
       if ( g->stop_signal_flag )
       {
-        DOMAIN_LOG_WARNING("The callback handler for the '" << name << "' was destroyed without a call after stop signal")
+        DOMAIN_LOG_WARNING("The callback handler for the '" << objname << "' was destroyed without a call after stop signal")
       }
       else if ( nca )
       {
-        DOMAIN_LOG_FATAL("The callback handler for the '" << name << "' was destroyed without a call")
+        DOMAIN_LOG_FATAL("The callback handler for the '" << objname << "' was destroyed without a call")
       }
       else if ( ncs )
       {
-        DOMAIN_LOG_ERROR("The callback handler for the '" << name << "' was destroyed without a call")
+        DOMAIN_LOG_ERROR("The callback handler for the '" << objname << "' was destroyed without a call")
       }
     };
 
-    g->doublecall_handler = [g, dca, dcs](const std::string& name)
+    g->doublecall_handler = [g, dca, dcs](const std::string& objname)
     {
       if ( g->stop_signal_flag )
       {
-        DOMAIN_LOG_WARNING("Double call callback functions for '" << name << "' after stop signal")
+        DOMAIN_LOG_WARNING("Double call callback functions for '" << objname << "' after stop signal")
       }
       else if ( dca )
       {
-        DOMAIN_LOG_FATAL("Double call callback functions for '" << name << "'")
+        DOMAIN_LOG_FATAL("Double call callback functions for '" << objname << "'")
       }
       else if ( dcs )
       {
-        DOMAIN_LOG_ERROR("Double call callback functions for '" << name << "'")
+        DOMAIN_LOG_ERROR("Double call callback functions for '" << objname << "'")
       }
     };
     /*
@@ -408,35 +408,35 @@ bool core::_configure()
 
   if ( auto conf = g->registry.get<iconfig>("config") )
   {
-    g->registry.for_each<icomponent>("component", [this, conf](const std::string& name, std::shared_ptr<icomponent> obj)
+    g->registry.for_each<icomponent>("component", [this, conf](const std::string& component_name, std::shared_ptr<icomponent> obj)
     {
       if ( this->_abort_flag )
       {
-        SYSTEM_LOG_MESSAGE("Configure component '" << name << "' aborted!")
+        SYSTEM_LOG_MESSAGE("Configure component '" << component_name << "' aborted!")
         return;
       }
-      std::string confstr = conf->get_config(name);
+      std::string confstr = conf->get_config(component_name);
       if ( !confstr.empty() )
       {
-        //SYSTEM_LOG_BEGIN("Configure component '" << name << "'...")
+        //SYSTEM_LOG_BEGIN("Configure component '" << component_name << "'...")
         json::json_error er;
         if ( !obj->configure(confstr, &er ) )
         {
           auto message = json::strerror::message( er);
           auto trace = json::strerror::trace( er, confstr.begin(), confstr.end() );
           SYSTEM_LOG_ERROR(
-            "Json unserialize error for component '" << name << "':" 
+            "Json unserialize error for component '" << component_name << "':" 
             << message << ". " << std::endl << trace
           )
           this->_abort_flag = true;
         }
         
-        if ( !this->_abort_flag ) { /*SYSTEM_LOG_END("Configure component '" << name << "'...Done")*/ }
-        else { SYSTEM_LOG_END("Configure component '" << name << "'...aborted!") }
+        if ( !this->_abort_flag ) { /*SYSTEM_LOG_END("Configure component '" << component_name << "'...Done")*/ }
+        else { SYSTEM_LOG_END("Configure component '" << component_name << "'...aborted!") }
       }
       else
       {
-        SYSTEM_LOG_MESSAGE("Configuration for '" << name << "' is not set")
+        SYSTEM_LOG_MESSAGE("Configuration for '" << component_name << "' is not set")
       }
     });
   }

@@ -12,7 +12,7 @@ include_directories(.)
 
 add_subdirectory(package)
 
-if ( WFC_BUILD_ALL )
+if ( BUILD_TESTING )
   #add_subdirectory(tests)
 endif()
 

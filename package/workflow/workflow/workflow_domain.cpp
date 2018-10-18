@@ -53,43 +53,13 @@ void workflow_domain::initialize()
       if ( !opt.dropped.empty() )
         _meter_drop = stat->create_value_meter(this->name() + opt.dropped);
 
-      /*
-      if ( !opt.stat.thread.empty() )
-      {
-        _meters_threads.clear();
-        _counters.clear();
-        for ( int i = 0; i < opt.threads; i++ )
-        {
-          std::stringstream ss;
-          ss << this->name() << opt.stat.thread << i;
-          //_meters_threads.push_back( stat->create_value_prototype(ss.str()) );
-          _counters.push_back(0);
-        }
-      }*/
-
-    /*  if ( _meter_size == nullptr && _meter_drop==nullptr && _meters_threads.empty() )
-        return;*/
-
       _stat_timer = core->create_timer( std::chrono::milliseconds(opt.interval_ms), [this, stat]()->bool
       {
         size_t dropped = this->_workflow->dropped();
         size_t diffdrop = dropped - this->_dropped;
-        this->_meter_size.create( this->_workflow->full_size(), 0 );
+        this->_meter_size.create( long(this->_workflow->full_size()), 0ul );
         this->_meter_drop.create( 0, diffdrop );
         this->_dropped = dropped;
-        
-        /*
-        if ( !this->_counters.empty() )
-        {
-          size_t threads = this->_workflow->manager()->get_threads();
-          for ( size_t i =0 ; i < threads; ++i )
-          {
-            //size_t counter = this->_workflow->manager()->get_counter(i) - this->_counters[i];
-            this->_counters[i] = this->_workflow->manager()->get_counter(i);
-            //stat->create_meter( _meters_threads[i], 0, counter );
-          }
-        }
-        */
         return true;
       });
     } // if ( auto stat = this->get_statistics() )
@@ -132,7 +102,7 @@ void workflow_domain::restart()
           if ( first == true )
           {
             first=false;
-            size_t id = tcount->fetch_add(1);
+            int id = tcount->fetch_add(1);
             std::stringstream ss;
             ss << pthis->name() << statopt.thread << id;
             proto_time = stat->create_value_meter( ss.str());
