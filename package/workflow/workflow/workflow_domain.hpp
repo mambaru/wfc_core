@@ -1,3 +1,9 @@
+//
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+
 #pragma once
 
 #include <wfc/domain_object.hpp>
@@ -17,12 +23,8 @@ class workflow_domain
   typedef domain_object<iinterface, workflow_config, workflow_statistics> self;
 public:
   typedef workflow_type::timer_id_t timer_id_t;
-  /*::wfc::value_meter > value_meter_ptr;
-  ::wfc::time_meter > time_meter_ptr;
-  */
-  //typedef ::wfc::workflow domain_interface;
+  
   virtual ~workflow_domain();
-  //using domain_object<iinterface, workflow_config>::create;
   virtual void configure() override;
   virtual void reconfigure() override;
   virtual void initialize() override;

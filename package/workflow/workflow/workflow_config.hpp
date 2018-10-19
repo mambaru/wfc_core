@@ -1,3 +1,9 @@
+//
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018
+//
+// Copyright: See COPYING file that comes with this distribution
+//
+
 #pragma once
 
 #include <wfc/core/workflow_options.hpp>
@@ -14,8 +20,6 @@ struct workflow_statistics
 
 struct workflow_config: workflow_options
 {
-//  std::set<int> cpu;
-//  statistics_params stat;
 };
 
 }}

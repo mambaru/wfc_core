@@ -1,5 +1,10 @@
-#pragma once
+//
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018
+//
+// Copyright: See COPYING file that comes with this distribution
+//
 
+#pragma once
 
 #include <wfc/statistics/api/push_json.hpp>
 #include <wfc/statistics/api/del_json.hpp>
