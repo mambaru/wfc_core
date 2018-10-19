@@ -1,3 +1,0 @@
-[submodule "comet"]
-	path = comet
-	url = git@gitlab.lan:cpp/comet.git

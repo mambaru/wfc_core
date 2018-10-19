@@ -1,4 +1,4 @@
-# Пакет ядра
+# Пакет ядра WFC
 
 Включает модули: 
 * startup - разабор параметров командной строки, запуск системы, демонизация
@@ -7,6 +7,9 @@
 * core - ядро
 * workflow - очереди и потоки
 * statistics - сбор статистики и отправка в btp
+
+Документация [doxygen](https://mambaru.github.io/wfc_core/index.html).
+Репозитарий на [github.com](https://github.com/mambaru/wfc_core).
 
 ## startup модуль
 Конфигурация:
