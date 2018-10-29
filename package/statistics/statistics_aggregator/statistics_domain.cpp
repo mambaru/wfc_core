@@ -51,7 +51,7 @@ void statistics_domain::reconfigure()
   {
     _stat_list.push_back( std::make_shared<stat_push>( opt ) );
     _stat_list.back()->enable( !this->suspended() );
-    _workflow_list.push_back( std::make_shared<workflow_type>(wopt) );
+    _workflow_list.push_back( std::make_shared<workflow_type>(this->global()->io_service, wopt) );
     _workflow_list.back()->start();
   }
   
@@ -72,7 +72,7 @@ void statistics_domain::initialize()
   //_target = this->get_target<istatistics>( opt.target );
 }
 
-void statistics_domain::ready() 
+void statistics_domain::restart() 
 {
   auto opt = this->options();
   if ( auto wf = this->get_workflow() )
@@ -124,15 +124,15 @@ void statistics_domain::ready()
   
   if ( auto st = this->get_statistics() )
   {
-    _push_meter = st->create_time_factory("push.time");
-    _count_meter = st->create_size_factory("push.values");
+    _push_meter = st->create_time_meter("push.time");
+    _count_meter = st->create_size_meter("push.values");
   }
 }
 
 void statistics_domain::start() 
 {
   _start_point = std::chrono::system_clock::now();
-  this->ready();
+  this->restart();
 }
 
 void statistics_domain::stop() 
@@ -155,8 +155,8 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   if ( this->bad_request(req, cb) )
     return;
   
-  time_meter tm;
-  size_meter vm;
+  time_point tm;
+  size_point vm;
   if ( auto st = this->get_statistics() )
   {
     tm = _push_meter.create(1);
@@ -257,7 +257,7 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
       {
         for ( size_t i = 1; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
         {
-          std::cout << "TEST " << req->name << " ts " << req->ts << std::endl;
+          //std::cout << "TEST " << req->name << " ts " << req->ts << std::endl;
           t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
         }
         

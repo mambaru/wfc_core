@@ -27,7 +27,7 @@ public:
   virtual void reconfigure_basic() override;
   virtual void reconfigure() override;
   virtual void initialize() override;
-  virtual void ready() override;
+  virtual void restart() override;
   virtual void stop() override;
   virtual void start() override;
   virtual void push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) override final;
@@ -52,17 +52,15 @@ private:
   typedef std::weak_ptr<istatistics> statistics_wptr;
   
   std::vector< statistics_wptr > _targets;
-  //statistics_wptr _target;
-
-  workflow_type::timer_id_t _timer_id;
-  std::vector<workflow_type::timer_id_t> _timers; // удалить
+  timer_id_t _timer_id;
+  std::vector<timer_id_t> _timers; // удалить
   std::string _log;
  
   std::atomic<bool> _started;
   std::chrono::system_clock::time_point _start_point;
   
-  time_factory _push_meter;
-  size_factory _count_meter;
+  time_meter _push_meter;
+  size_meter _count_meter;
   
   typedef rwlock<std::mutex> mutex_type;
   mutex_type _mutex;

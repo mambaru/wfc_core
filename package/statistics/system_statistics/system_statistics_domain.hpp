@@ -19,7 +19,7 @@ class system_statistics_domain
 {
 public:
   virtual void configure() override;
-  virtual void ready() override;
+  virtual void restart() override;
   virtual void stop() override;
 private:
   timer_id_t _timer_id = -1;
