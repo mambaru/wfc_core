@@ -7,7 +7,7 @@ namespace wfc{ namespace core{
 
 struct protostat
 {
-  typedef ::wfc::value_factory meter_type;
+  typedef ::wfc::value_meter meter_type;
   meter_type utime;                    /** user mode jiffies **/
   meter_type stime;                    /** kernel mode jiffies **/
   // meter_ptr cutime;                   /** user mode jiffies with childs **/
@@ -92,7 +92,7 @@ private:
     return proto;
   }
 
-  value_factory create_meter_( int id, std::string group, std::string name)
+  value_meter create_meter_( int id, std::string group, std::string name)
   {
     if ( auto stat = _wstat.lock() )
     {
@@ -101,9 +101,9 @@ private:
       if ( id != -1 )
         ss << "thread" << id << ".";
       ss << name;
-      return stat->create_value_factory(ss.str());
+      return stat->create_value_meter(ss.str());
     }
-    return value_factory();
+    return value_meter();
   }
 private:
   std::string _prefix;
@@ -126,7 +126,7 @@ void system_statistics_domain::stop()
 
 
 
-void system_statistics_domain::ready()
+void system_statistics_domain::restart()
 {
   this->get_workflow()->release_timer(_timer_id);
   //this->get_workflow()->release_timer(_timer_id2);
@@ -139,12 +139,12 @@ void system_statistics_domain::ready()
   
   auto prefix = this->statistics_options().prefix;
   auto proto = std::make_shared<protostat>();
-  proto->utime = stat->create_value_factory(prefix + "utime");
-  proto->stime = stat->create_value_factory(prefix + "stime");
+  proto->utime = stat->create_value_meter(prefix + "utime");
+  proto->stime = stat->create_value_meter(prefix + "stime");
   /*proto->cutime = stat->create_value_prototype(prefix + "cutime");
   proto->cstime = stat->create_value_prototype(prefix + "cstime");*/
-  proto->vsize = stat->create_value_factory(prefix + "vsize");
-  proto->rss= stat->create_value_factory(prefix + "rss");
+  proto->vsize = stat->create_value_meter(prefix + "vsize");
+  proto->rss= stat->create_value_meter(prefix + "rss");
   
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->statistics_options().interval_ms ),

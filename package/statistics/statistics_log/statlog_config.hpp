@@ -14,7 +14,7 @@ struct statlog_config
   std::string common_log;
   std::string legend_log;
   std::string table_log;
-  int log_metric = 1;
+  int log_metric = -1;
 };
 
 }}

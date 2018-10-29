@@ -1,5 +1,6 @@
 
 #include <wfc/iinterface.hpp>
+#include <wfc/statistics/meters.hpp>
 #include "statlog_domain.hpp"
 
 namespace wfc{ namespace core{
@@ -9,7 +10,8 @@ namespace
 {
   void wlog_metric( std::stringstream& os, long long int val, int metric)
   {
-    val*=1000;
+    // statistics_duration::period::den - microseconds
+    val*= std::chrono::nanoseconds::period::den/statistics_duration::period::den;
     val/=metric;
     os << val;
     switch (metric)
@@ -101,7 +103,6 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
        << "|" << req->count
        << "|" << req->lossy
        << "|" << req->min
-       // << "|" << req->perc0 TODO:
        << "|" << req->perc50
        << "|" << req->perc80
        << "|" << req->perc95
