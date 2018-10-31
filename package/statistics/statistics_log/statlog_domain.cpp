@@ -8,7 +8,7 @@ namespace wfc{ namespace core{
 
 namespace 
 {
-  void wlog_metric( std::stringstream& os, long long int val, int metric)
+  void wlog_metric( std::stringstream& os, long int val, int metric)
   {
     // statistics_duration::period::den - microseconds
     val*= std::chrono::nanoseconds::period::den/statistics_duration::period::den;
@@ -24,7 +24,7 @@ namespace
     }
   }
   
-  void wlog( std::stringstream& os, const std::string& name, long long int val, int metric)
+  void wlog( std::stringstream& os, const std::string& name, long int val, int metric)
   {
     if ( metric < 0 )
       return;

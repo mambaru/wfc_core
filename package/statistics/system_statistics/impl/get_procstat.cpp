@@ -25,7 +25,7 @@ int get_procstat(pid_t pid, procstat* pinfo)
     return -1;
   }
 
-  ::sprintf (szFileName, "/proc/%u/stat", (unsigned) pid);
+  ::sprintf (szFileName, "/proc/%u/stat", static_cast<unsigned>(pid) );
   
   if (-1 == ::access(szFileName, R_OK)) {
     return (pinfo->pid = -1);
@@ -35,7 +35,8 @@ int get_procstat(pid_t pid, procstat* pinfo)
         pinfo->euid = st.st_uid;
         pinfo->egid = st.st_gid;
   } else {
-        pinfo->euid = pinfo->egid = -1;
+        pinfo->euid = static_cast<unsigned>(-1);
+        pinfo->egid = static_cast<unsigned>(-1);
   }
   
   
@@ -52,7 +53,7 @@ int get_procstat(pid_t pid, procstat* pinfo)
   ::sscanf (szStatStr, "%d", &(pinfo->pid));
   s = ::strchr (szStatStr, '(') + 1;
   t = ::strchr (szStatStr, ')');
-  ::strncpy (pinfo->exName, s, t - s);
+  ::strncpy (pinfo->exName, s,  static_cast<size_t>( t - s ) );
   pinfo->exName [t - s] = '\0';
   
   sscanf (t + 2, "%c %d %d %d %d %d %u %u %u %u %u %d %d %d %d %d %d %u %u %d %u %u %u %u %u %u %u %u %d %d %d %d %u",

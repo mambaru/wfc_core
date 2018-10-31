@@ -43,7 +43,7 @@ private:
   //workflow_ptr get_workflow_(const std::string& name);
   
   template<typename StatPtr>
-  bool handler_(StatPtr st, int offset, int step);
+  bool handler_(StatPtr st, size_t offset, size_t step);
 
   stat_ptr _stat;
   stat_list _stat_list;

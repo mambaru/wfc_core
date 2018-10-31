@@ -159,8 +159,8 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   size_point vm;
   if ( auto st = this->get_statistics() )
   {
-    tm = _push_meter.create(1);
-    vm = _count_meter.create(req->data.size() );
+    tm = _push_meter.create( static_cast<wrtstat::size_type>(1) );
+    vm = _count_meter.create( static_cast<wrtstat::value_type>(req->data.size()) );
   }
   
   if ( req->ts == 0 )
@@ -231,7 +231,7 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
 
 
 template<typename StatPtr>
-bool statistics_domain::handler_(StatPtr st, int offset, int step)
+bool statistics_domain::handler_(StatPtr st, size_t offset, size_t step)
 {
   auto opt = this->options();
   if ( !_started )
@@ -242,22 +242,21 @@ bool statistics_domain::handler_(StatPtr st, int offset, int step)
     if ( !_started ) return true;
   }
    
-  int count = st->aggregators_count();
-  for ( int i = offset; i < count; i+=step)
+  size_t count = st->aggregators_count();
+  for ( size_t i = offset; i < count; i+=step)
   {
-    std::string name = st->get_name(i);
+    std::string sname = st->get_name(i);
     while (auto ag = st->pop(i) )
     {
       typedef wrtstat::aggregated_data aggregated;
       auto req = std::make_unique<statistics::request::push>();
-      req->name = name;
+      req->name = sname;
       static_cast<aggregated&>(*req) = std::move(*ag);
         
       if ( !_targets.empty() )
       {
-        for ( size_t i = 1; i < _targets.size(); ++i ) if ( auto t = _targets[i].lock() )
+        for ( size_t j = 1; j < _targets.size(); ++j ) if ( auto t = _targets[j].lock() )
         {
-          //std::cout << "TEST " << req->name << " ts " << req->ts << std::endl;
           t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
         }
         
