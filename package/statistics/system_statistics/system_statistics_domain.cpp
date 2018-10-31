@@ -23,9 +23,10 @@ class procmeter
   typedef protostat::meter_type meter_type;
   typedef std::mutex mutex_type;
 public:
-  procmeter(std::weak_ptr<wfc::statistics::statistics> stat,  std::string prefix)
+  procmeter(std::weak_ptr<wfc::statistics::statistics> stat,  const std::string& prefix)
     : _prefix(prefix)
     , _wstat(stat)
+    , _procstat()
   {
   }
 
@@ -92,7 +93,7 @@ private:
     return proto;
   }
 
-  value_meter create_meter_( int id, std::string group, std::string name)
+  value_meter create_meter_( int id, const std::string& group, const std::string& name)
   {
     if ( auto stat = _wstat.lock() )
     {

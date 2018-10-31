@@ -189,7 +189,7 @@ bool startup_domain::ready_for_run()
 
 namespace {
 
-  bool loc_file_pid( std::string path, std::string name)
+  bool loc_file_pid( std::string path, const std::string& name)
   {
     if ( !path.empty() && path.back()!='/' )
       path += '/';

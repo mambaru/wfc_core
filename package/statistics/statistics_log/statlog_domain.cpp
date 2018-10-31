@@ -24,7 +24,7 @@ namespace
     }
   }
   
-  void wlog( std::stringstream& os, std::string name, long long int val, int metric)
+  void wlog( std::stringstream& os, const std::string& name, long long int val, int metric)
   {
     if ( metric < 0 )
       return;

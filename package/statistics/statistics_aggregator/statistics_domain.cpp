@@ -12,7 +12,7 @@ class statistics_domain::stat_impl
   , public ::wfc::iinterface
 {
 public:
-  stat_impl(const wrtstat::wrtstat_options& opt )
+  explicit stat_impl(const wrtstat::wrtstat_options& opt )
     : statistics( opt)
   {}
 };

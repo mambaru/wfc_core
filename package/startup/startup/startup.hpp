@@ -28,7 +28,7 @@ private:
   int perform_start_();
   bool generate_();
   void show_usage_();
-  bool show_info_(const std::string& name);
+  bool show_info_(const std::string& package_name);
   void show_build_info_(std::shared_ptr<ibuild_info> b, bool shortinfo);
 private:
   program_arguments _pa;

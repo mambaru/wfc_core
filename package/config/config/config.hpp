@@ -32,14 +32,14 @@ public:
   virtual bool reload_and_reconfigure() override;
   virtual bool load_and_configure(std::string path) override;
   virtual bool load_and_check(std::string path) override;
-  virtual std::string get_config(std::string name) override;
+  virtual std::string get_config(std::string component_name) override;
   virtual bool generate_config( const iconfig::generate_options& go, const std::string& path, std::string& result) override;
   
 private:
   bool timer_handler_();
-  bool parse_configure_(std::string source, std::string strconf, configuration& mainconf);
+  bool parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf);
   std::string load_from_file_(const std::string& path);
-  void save_to_file_(const std::string& path, const std::string& strconf);
+  void save_to_file_(const std::string& path, const std::string& confstr);
   
 private:
   workflow::timer_id_t _timer_id;

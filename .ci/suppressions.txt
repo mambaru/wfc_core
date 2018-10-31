@@ -1,4 +1,3 @@
 unusedFunction:
-missingInclude:./examples/example07.cpp:3
-missingInclude:./examples/example_package/example_package.cpp:5
-missingInclude:./wfc/wfc.cpp:14
+unreadVariable:./package/workflow/workflow/workflow_domain.cpp:122
+missingInclude:./package/statistics/system_statistics/impl/get_procstat.hpp:10

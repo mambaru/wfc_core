@@ -206,7 +206,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   return true;
 }
 
-bool config::parse_configure_(std::string source, std::string confstr, configuration& mainconf)
+bool config::parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf)
 {
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
@@ -284,14 +284,14 @@ catch(const std::exception& e)
   return std::string();
 }
 
-void config::save_to_file_(const std::string& path, const std::string& strconf)
+void config::save_to_file_(const std::string& path, const std::string& confstr)
 {
   if ( !path.empty() )
   {
     std::ofstream fconf(path);
     std::copy(
-      strconf.begin(),
-      strconf.end(),
+      confstr.begin(),
+      confstr.end(),
       std::ostreambuf_iterator<char>(fconf)
     );
   }

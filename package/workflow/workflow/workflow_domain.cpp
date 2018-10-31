@@ -8,7 +8,7 @@ class workflow_domain::impl
   , public workflow
 {
 public:
-  impl(io_service_type& io)
+  explicit impl(io_service_type& io)
     : workflow(io)
   {}
 
