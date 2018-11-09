@@ -17,7 +17,7 @@
 namespace wfc{  namespace core{
 
 class core
-  : public ::wfc::domain_object<icore, core_config, nostat>
+  : public domain_object<icore, core_config, nostat>
   , public std::enable_shared_from_this<core>
 {
 public:

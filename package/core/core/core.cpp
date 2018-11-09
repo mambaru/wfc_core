@@ -406,7 +406,7 @@ bool core::_configure()
   if ( g == nullptr)
     return true;
 
-  if ( auto conf = g->registry.get<iconfig>("config") )
+  if ( auto conf = g->registry.get_target<iconfig>("config") )
   {
     g->registry.for_each<icomponent>("component", [this, conf](const std::string& component_name, std::shared_ptr<icomponent> obj)
     {

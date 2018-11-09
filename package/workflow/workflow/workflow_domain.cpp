@@ -25,8 +25,7 @@ workflow_domain::~workflow_domain()
 void workflow_domain::configure() 
 {
   _workflow = std::make_shared<impl>( this->global()->io_service );
-  if ( auto g = this->global() )
-      g->registry.set( "workflow", this->name(), _workflow );
+  this->reg_object( "workflow", this->name(), _workflow );
 }
 
 void workflow_domain::reconfigure() 

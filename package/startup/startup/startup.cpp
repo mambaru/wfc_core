@@ -61,17 +61,14 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     {
       for (std::string helpname : _pa.help_options )
       {
-        if ( auto g = this->global() )
+        if ( auto p = this->get_object<icomponent>("component", helpname , true) )
         {
-          if ( auto p = g->registry.get<icomponent>("component", helpname , true) )
-          {
-            std::cout << "*** " << helpname  << " ***" << std::endl;
-            std::cout << p->help() << std::endl << std::endl;
-          }
-          else
-          {
-            std::cout << "ERROR: component '" << helpname  << "' is not exist." << std::endl << std::endl;
-          }
+          std::cout << "*** " << helpname  << " ***" << std::endl;
+          std::cout << p->help() << std::endl << std::endl;
+        }
+        else
+        {
+          std::cout << "ERROR: component '" << helpname  << "' is not exist." << std::endl << std::endl;
         }
       }
     }
@@ -158,12 +155,9 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( !_pa.check_config.empty() )
   {
-    if ( auto g = this->global() )
+    if ( auto c = this->get_target<iconfig>("config") )
     {
-      if ( auto c = g->registry.get<iconfig>("config") )
-      {
-        return c->load_and_configure(_pa.check_config) ? 0 : 4;
-      }
+      return c->load_and_configure(_pa.check_config) ? 0 : 4;
     }
   }
   else if ( !_pa.config_path.empty() )
@@ -310,22 +304,23 @@ namespace {
 
 int startup_domain::perform_start_( )
 {
+  if ( auto c = this->get_target<iconfig>("config") )
+  {
+    if ( !c->load_and_configure(_pa.config_path) )
+    {
+      std::cerr << "Configuration FAIL!" << std::endl;
+      return 5;
+    }
+  }
+
+  std::set<std::string> required;
+  for (auto& item : _pa.object_options) required.insert(item.first);
+  for (auto& item : _pa.startup_options) required.insert(item.first);
+  if ( !check_options(_pa.config_path, required) )
+    return 5;
+
   if ( auto g = this->global() )
   {
-    if ( auto c = g->registry.get<iconfig>("config") )
-    {
-      if ( !c->load_and_configure(_pa.config_path) )
-      {
-        std::cerr << "Configuration FAIL!" << std::endl;
-        return 5;
-      }
-
-      std::set<std::string> required;
-      for (auto& item : _pa.object_options) required.insert(item.first);
-      for (auto& item : _pa.startup_options) required.insert(item.first);
-      if ( !check_options(_pa.config_path, required) )
-        return 5;
-    }
     std::clog << "Program name: " << g->program_name << std::endl;
     std::clog << "Instance name: " << g->instance_name << std::endl;
   }
@@ -452,7 +447,7 @@ bool startup_domain::show_info_(const std::string& package_name)
   
   if ( !package_name.empty() )
   {
-    if ( auto p = g->registry.get<ipackage>("package", package_name, true) )
+    if ( auto p = this->get_object<ipackage>("package", package_name, true) )
     {
       std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
@@ -540,28 +535,25 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
 /// @return false - модуль не найден
 bool startup_domain::generate_()
 {
-  if ( auto g = this->global() )
+  if ( auto c = this->get_target<iconfig>("config") )
   {
-    if ( auto c = g->registry.get<iconfig>("config") )
+    std::string genstr;
+    if ( c->generate_config(_pa.generate_options, _pa.config_path, genstr) )
     {
-      std::string genstr;
-      if ( c->generate_config(_pa.generate_options, _pa.config_path, genstr) )
+      if ( _pa.config_path.empty() )
       {
-        if ( _pa.config_path.empty() )
-        {
-          std::cout << genstr << std::endl;
-        }
-        else
-        {
-          std::clog << "generated write to file: " << _pa.config_path << std::endl;
-          std::clog << "For JSON format: cat "<< _pa.config_path << " | python -mjson.tool" << std::endl;
-        }
-        return true;
+        std::cout << genstr << std::endl;
       }
       else
       {
-        std::cerr << genstr << std::endl;
+        std::clog << "generated write to file: " << _pa.config_path << std::endl;
+        std::clog << "For JSON format: cat "<< _pa.config_path << " | python -mjson.tool" << std::endl;
       }
+      return true;
+    }
+    else
+    {
+      std::cerr << genstr << std::endl;
     }
   }
   return false;

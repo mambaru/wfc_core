@@ -79,7 +79,7 @@ bool config::reload_and_reconfigure()
   if ( !parse_configure_(_path, confstr, mainconf) )
     return false;
   _mainconf = mainconf;
-  if ( auto c = this->global()->registry.get<icore>("core") )
+  if ( auto c = this->get_target<icore>("core") )
   {
     c->core_reconfigure();
   }
@@ -167,7 +167,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     configuration mainconf;
     for ( const auto& opt: go )
     {
-      if ( auto obj = g->registry.get<icomponent>("component", opt.first, true) )
+      if ( auto obj = this->get_object<icomponent>("component", opt.first, true) )
       {
         mainconf[opt.first] = obj->generate(opt.second);
       }
@@ -225,7 +225,7 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
 
   for ( auto& mconf : mainconf)
   {
-    if ( auto m = this->global()->registry.get<icomponent>("component", mconf.first, true) )
+    if ( auto m = this->get_object<icomponent>("component", mconf.first, true) )
     {
       if ( !m->parse( mconf.second, &e) )
       {
@@ -305,7 +305,7 @@ namespace
     {
       g->io_service.post([g]()
       {
-        if ( auto c = g->registry.get<iconfig>("config") )
+        if ( auto c = g->registry.get_target<iconfig>("config") )
           c->reload_and_reconfigure();
       });
     }

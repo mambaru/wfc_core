@@ -178,7 +178,7 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
 
 void logger::initialize()
 {
-  auto logs= this->select_targets<ilogger>("logger");
+  auto logs= this->select_objects<ilogger>("logger");
   if ( !logs.empty() )
   {
     wlog::logger_handlers dlh;

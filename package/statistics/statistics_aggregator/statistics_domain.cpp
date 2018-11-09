@@ -55,10 +55,7 @@ void statistics_domain::reconfigure()
     _workflow_list.back()->start();
   }
   
-  if ( auto g = this->global() )
-  {
-    g->registry.set( "statistics", this->name(), _stat, false);
-  }
+  this->reg_object( "statistics", this->name(), _stat, false);
 }
 
 void statistics_domain::initialize() 
