@@ -17,4 +17,3 @@ add_subdirectory(package)
 if ( BUILD_TESTING )
   #add_subdirectory(tests)
 endif()
-
