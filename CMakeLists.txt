@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.1)
 
 project(wfc_core)
 
-if ( NOT WFC_READY)
-  set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-  include(mambaru)
-  set(CMAKE_MODULE_PATH "${WFC_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(ci)
+
+if ( STANDALONE )
+  getlibs(faslib wjson wlog wflow iow wjrpc wrtstat wfc)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/external/wfc/cmake)
 endif()
 
 include_directories(.)

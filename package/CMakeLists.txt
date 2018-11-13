@@ -43,7 +43,6 @@ if ( WFC_ENABLE_STAT )
     
     statistics/statistics_gateway/statistics_gateway_multiton.cpp
     statistics/statistics_service/statistics_service_multiton.cpp
-    #statistics/statistics_gateway/deprecated/btp_deprecated_gateway_multiton.cpp
   )
 endif()
 
@@ -53,5 +52,22 @@ add_library(
 )
 
 build_info(wfc_core core)
+
+if ( STANDALONE )
+
+  include(FindThreads)
+  find_package(Boost COMPONENTS system program_options filesystem date_time REQUIRED)
+
+  target_link_libraries(
+    wfc_core 
+      wfc
+      wrtstat
+      wlog
+      wflow
+      wjrpc
+      ${Boost_LIBRARIES} 
+      ${CMAKE_THREAD_LIBS_INIT}
+  )
+endif()
 
 install(TARGETS wfc_core DESTINATION ${CMAKE_INSTALL_PREFIX})
