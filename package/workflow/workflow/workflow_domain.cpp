@@ -92,7 +92,9 @@ void workflow_domain::restart()
     value_meter proto_time;
     value_meter proto_total;
     auto tcount = std::make_shared< std::atomic<int> >();
-    opt.statistics_handler  = [wthis, first, proto_time, proto_total, tcount, statopt](std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
+    opt.statistics_handler  = 
+      [wthis, first, proto_time, proto_total, tcount, statopt]
+    (std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
     {
       if ( auto pthis = wthis.lock() )
       {
@@ -115,10 +117,6 @@ void workflow_domain::restart()
             proto_time.create(span_mcs, count );
             proto_total.create(span_mcs, count );
           }
-        }
-        else
-        {
-          first=true;
         }
       }
     };
