@@ -469,7 +469,7 @@ bool startup_domain::show_info_(const std::string& package_name)
       std::cout << "Information about the package is not available." << std::endl;
       std::cout << "Package '" << package_name << "' Not Found!" << std::endl;
       std::cout << "Available packages: " << std::endl;
-      g->registry.for_each<ipackage>("package", [this](const std::string& pkgname, std::shared_ptr<ipackage>)
+      g->registry.for_each<ipackage>("package", [](const std::string& pkgname, std::shared_ptr<ipackage>)
       {
         std::cout << "\t" << pkgname << std::endl;
       });
