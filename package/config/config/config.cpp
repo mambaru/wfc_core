@@ -167,7 +167,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     configuration mainconf;
     for ( const auto& opt: go )
     {
-      if ( auto obj = this->get_object<icomponent>("component", opt.first, true) )
+      if ( auto obj = g->registry.get_object<icomponent>("component", opt.first, true) )
       {
         mainconf[opt.first] = obj->generate(opt.second);
       }
@@ -208,6 +208,8 @@ bool config::generate_config( const generate_options& go, const std::string& pat
 
 bool config::parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf)
 {
+  auto g = this->global();
+  
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
 
@@ -225,7 +227,7 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
 
   for ( auto& mconf : mainconf)
   {
-    if ( auto m = this->get_object<icomponent>("component", mconf.first, true) )
+    if ( auto m = g->registry.get_object<icomponent>("component", mconf.first, true) )
     {
       if ( !m->parse( mconf.second, &e) )
       {

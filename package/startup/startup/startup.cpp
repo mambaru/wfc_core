@@ -29,12 +29,19 @@ startup_domain::~startup_domain()
 
 int startup_domain::startup(int argc, char** argv, std::string helpstring)
 {
+  /* Базовый domain_object доступен ограниченно, система не инициализирована работаем через global */
   parse_arguments( _pa, argc, argv);
-  if ( auto g = this->global() )
+  
+  auto g = this->global();
+  if ( g == nullptr )
   {
-    g->program_name  = _pa.program_name;
-    g->instance_name  = _pa.instance_name;
+    std::cerr << "*** ERROR ***" << std::endl;
+    std::cerr << "global is nullptr" << std::endl;
+    std::cerr << "wfcglobal::static_global initialization required" << std::endl;
   }
+  
+  g->program_name  = _pa.program_name;
+  g->instance_name  = _pa.instance_name;
 
   if ( !_pa.errorstring.empty() )
   {
@@ -61,7 +68,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     {
       for (std::string helpname : _pa.help_options )
       {
-        if ( auto p = this->get_object<icomponent>("component", helpname , true) )
+        if ( auto p = g->registry.get_object<icomponent>("component", helpname , true) )
         {
           std::cout << "*** " << helpname  << " ***" << std::endl;
           std::cout << p->help() << std::endl << std::endl;
@@ -76,14 +83,11 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( _pa.version )
   {
-    if ( auto g = this->global() )
-    {
-      std::cout << _pa.program_name << " " << g->program_build_info->version() 
-                << std::endl << g->program_build_info->compiler_version() 
-                << std::endl << g->program_build_info->build_date() 
-                << std::endl << g->program_build_info->build_type() 
-                << std::endl;
-    }
+    std::cout << _pa.program_name << " " << g->program_build_info->version() 
+              << std::endl << g->program_build_info->compiler_version() 
+              << std::endl << g->program_build_info->build_date() 
+              << std::endl << g->program_build_info->build_type() 
+              << std::endl;
     return 0;
   }
   else if ( _pa.info )
@@ -105,49 +109,43 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( _pa.module_list )
   {
-    if ( auto g = this->global() )
+    g->registry.for_each<ipackage>("package", [](const std::string&, std::shared_ptr<ipackage> pkg)
     {
-      g->registry.for_each<ipackage>("package", [](const std::string&, std::shared_ptr<ipackage> pkg)
+      if ( pkg == nullptr )
+        return;
+      std::cout << pkg->name() << ":" << std::endl;
+      auto modules = pkg->modules();
+      for (auto m : modules)
       {
-        if ( pkg == nullptr )
-          return;
-        std::cout << pkg->name() << ":" << std::endl;
-        auto modules = pkg->modules();
-        for (auto m : modules)
-        {
-          std::cout << "\t" << m->name() << " " << m->description() << std::endl;
-        }
-      },
-      [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
-      {
-        return l->order() < r->order();
-      });
-    }
+        std::cout << "\t" << m->name() << " " << m->description() << std::endl;
+      }
+    },
+    [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
+    {
+      return l->order() < r->order();
+    });
   }
   else if ( _pa.component_list )
   {
-    if ( auto g = this->global() )
+    g->registry.for_each<ipackage>("package", [](const std::string& , std::shared_ptr<ipackage> pkg)
     {
-      g->registry.for_each<ipackage>("package", [](const std::string& , std::shared_ptr<ipackage> pkg)
+      if ( pkg == nullptr )
+        return;
+      std::cout << pkg->name() << ":" << std::endl;
+      auto modules = pkg->modules();
+      for (auto m : modules)
       {
-        if ( pkg == nullptr )
-          return;
-        std::cout << pkg->name() << ":" << std::endl;
-        auto modules = pkg->modules();
-        for (auto m : modules)
+        auto components = m->components();
+        for (auto c : components )
         {
-          auto components = m->components();
-          for (auto c : components )
-          {
-            std::cout << "\t" << c->name() << " [" << c->interface_name() << "] " << c->description() << std::endl;
-          }
+          std::cout << "\t" << c->name() << " [" << c->interface_name() << "] " << c->description() << std::endl;
         }
-      },
-      [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
-      {
-        return l->order() < r->order();
-      });
-    }
+      }
+    },
+    [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
+    {
+      return l->order() < r->order();
+    });
   }
   else if ( _pa.generate )
   {
@@ -155,7 +153,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( !_pa.check_config.empty() )
   {
-    if ( auto c = this->get_target<iconfig>("config") )
+    if ( auto c = g->registry.get_target<iconfig>("config") )
     {
       return c->load_and_configure(_pa.check_config) ? 0 : 4;
     }
@@ -177,8 +175,6 @@ bool startup_domain::ready_for_run()
 {
   return _ready;
 }
-
-
 
 
 namespace {
@@ -304,7 +300,9 @@ namespace {
 
 int startup_domain::perform_start_( )
 {
-  if ( auto c = this->get_target<iconfig>("config") )
+  auto g = this->global();
+  
+  if ( auto c = g->registry.get_target<iconfig>("config") )
   {
     if ( !c->load_and_configure(_pa.config_path) )
     {
@@ -319,11 +317,8 @@ int startup_domain::perform_start_( )
   if ( !check_options(_pa.config_path, required) )
     return 5;
 
-  if ( auto g = this->global() )
-  {
-    std::clog << "Program name: " << g->program_name << std::endl;
-    std::clog << "Instance name: " << g->instance_name << std::endl;
-  }
+  std::clog << "Program name: " << g->program_name << std::endl;
+  std::clog << "Instance name: " << g->instance_name << std::endl;
   
   if ( !_pa.user_name.empty() )
   {
@@ -364,10 +359,7 @@ int startup_domain::perform_start_( )
     
     if ( auto fun = ::wfc::daemonize(_pa.wait_daemonize) )
     {
-      if ( auto g = this->global() )
-      {
-        g->after_start.insert( [fun](){ fun(); return false;} );
-      }
+      g->after_start.insert( [fun](){ fun(); return false;} );
     }
   } 
   else if ( _pa.autoup || _pa.wait_daemonize)
@@ -385,36 +377,31 @@ int startup_domain::perform_start_( )
       _pa.autoup_timeout,
       success_autoup,
       nullptr,
-      [this](int count, int status, time_t work_time)
+      [this, g](int count, int status, time_t work_time)
       {
-        _pa.startup_options.clear();
-        if ( auto g = this->global() )
+        this->_pa.startup_options.clear();
+        
+        g->after_start.insert([count, status, work_time]()
         {
-          g->after_start.insert([count, status, work_time](){
-            SYSTEM_LOG_BEGIN("------------------------------------------------")
-            if ( status != 0 )
-            {
-              SYSTEM_LOG_ERROR("Daemon stop with status: " << status << " after work time " << work_time << "sec. ")
-            }
-            else
-            {
-              SYSTEM_LOG_WARNING("Daemon was killed after work time " << work_time << "sec. ")
-            }
-            SYSTEM_LOG_WARNING("Restart №" << count)
-            SYSTEM_LOG_END("------------------------------------------------")
-            return false;
-          });
-        }
+          SYSTEM_LOG_BEGIN("------------------------------------------------")
+          if ( status != 0 )
+          {
+            SYSTEM_LOG_ERROR("Daemon stop with status: " << status << " after work time " << work_time << "sec. ")
+          }
+          else
+          {
+            SYSTEM_LOG_WARNING("Daemon was killed after work time " << work_time << "sec. ")
+          }
+          SYSTEM_LOG_WARNING("Restart №" << count)
+          SYSTEM_LOG_END("------------------------------------------------")
+          return false;
+        });
       }
     );
   }
   
-  if ( auto g = this->global() )
-  {
-    g->args.insert(_pa.startup_options);
-    g->args.insert(_pa.object_options);
-  }
-    
+  g->args.insert(_pa.startup_options);
+  g->args.insert(_pa.object_options);
 
   if ( _pa.coredump )
     ::wfc::dumpable();
@@ -429,13 +416,15 @@ int startup_domain::perform_start_( )
 
 void startup_domain::show_usage_()
 {
+  auto g = this->global();
+  
   std::cout <<  "Usage:" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " --help" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " --version" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " --info [<package name>]" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " -G [<component name>] [-C <path>]" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " --check-config <path>" << std::endl;
-  std::cout <<  "  " << this->global()->program_name << " [-d] [-c] [-a <timeout>] [-n <component name>] -C <config path>" << std::endl;
+  std::cout <<  "  " << g->program_name << " --help" << std::endl;
+  std::cout <<  "  " << g->program_name << " --version" << std::endl;
+  std::cout <<  "  " << g->program_name << " --info [<package name>]" << std::endl;
+  std::cout <<  "  " << g->program_name << " -G [<component name>] [-C <path>]" << std::endl;
+  std::cout <<  "  " << g->program_name << " --check-config <path>" << std::endl;
+  std::cout <<  "  " << g->program_name << " [-d] [-c] [-a <timeout>] [-n <component name>] -C <config path>" << std::endl;
 }
 
 bool startup_domain::show_info_(const std::string& package_name)
@@ -447,7 +436,7 @@ bool startup_domain::show_info_(const std::string& package_name)
   
   if ( !package_name.empty() )
   {
-    if ( auto p = this->get_object<ipackage>("package", package_name, true) )
+    if ( auto p = g->registry.get_object<ipackage>("package", package_name, true) )
     {
       std::cout << "About Package:" << std::endl;
       this->show_build_info_(p->build_info(), false);
@@ -535,7 +524,9 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
 /// @return false - модуль не найден
 bool startup_domain::generate_()
 {
-  if ( auto c = this->get_target<iconfig>("config") )
+  auto g = this->global();
+  
+  if ( auto c = g->registry.get_target<iconfig>("config") )
   {
     std::string genstr;
     if ( c->generate_config(_pa.generate_options, _pa.config_path, genstr) )
