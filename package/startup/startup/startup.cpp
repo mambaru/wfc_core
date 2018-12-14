@@ -346,6 +346,19 @@ int startup_domain::perform_start_( )
   {
     return 8;
   }
+  
+  if ( _pa.working_time != 0 )
+  {
+    g->after_start.insert([this]
+    {
+      this->get_common_workflow()->post(
+        std::chrono::seconds(_pa.working_time),
+        wfc_exit
+      );
+      return true;
+    });
+  }
+  
 
   if ( _pa.daemonize )
   {

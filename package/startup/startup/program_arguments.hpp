@@ -29,6 +29,7 @@ struct program_arguments
   bool autoup = false;
   bool success_autoup = false;
   time_t autoup_timeout = 0;
+  time_t working_time = 0; // время работы в секундах
 
   std::string errorstring;
   std::string helpstring;

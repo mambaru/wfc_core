@@ -52,9 +52,12 @@ try
     ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "Change working directory")
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "Run as daemon")
     ("wait-daemonize,W", value<bool>(&pa.wait_daemonize)->zero_tokens(), "Do not leave the parent process until the start procedure is complete")
+    
+    ("working_time,t", value<time_t>(&pa.working_time)->default_value(0), "Work time in seconds [no limit]")
     ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "Auto restart daemon [minimum uptime in sec]")
-    ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "Allow core dump")
     ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "Auto restart daemon with success")
+    ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "Allow core dump")
+    
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
