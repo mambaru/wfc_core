@@ -24,7 +24,7 @@ workflow_domain::~workflow_domain()
 
 void workflow_domain::configure() 
 {
-  _workflow = std::make_shared<impl>( this->global()->io_service );
+  _workflow = std::make_shared<impl>( this->global()->io_service, this->options() );
   this->reg_object( "workflow", this->name(), _workflow );
 }
 
@@ -40,9 +40,9 @@ void workflow_domain::initialize()
 {
   auto opt = this->statistics_options();
   this->reconfigure();
-  if ( auto core = this->global()->common_workflow )
+  if ( auto wrkf = this->get_common_workflow() )
   {
-    core->release_timer(_stat_timer);
+    wrkf->release_timer(_stat_timer);
     if ( opt.queue.empty() || opt.dropped.empty() )
         return;
     if ( auto stat = this->get_statistics() )
@@ -52,7 +52,7 @@ void workflow_domain::initialize()
       if ( !opt.dropped.empty() )
         _meter_drop = stat->create_value_meter(this->name() + opt.dropped);
 
-      _stat_timer = core->create_timer( std::chrono::milliseconds(opt.interval_ms), [this, stat]()->bool
+      _stat_timer = wrkf->create_timer( std::chrono::milliseconds(opt.interval_ms), [this, stat]()->bool
       {
         size_t dropped = this->_workflow->dropped();
         size_t diffdrop = dropped - this->_dropped;
