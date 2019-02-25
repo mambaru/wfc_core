@@ -66,16 +66,30 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     }
     else
     {
-      for (std::string helpname : _pa.help_options )
+      for (std::string helpparams : _pa.help_options )
       {
-        if ( auto p = g->registry.get_object<icomponent>("component", helpname , true) )
+        std::string component_name;
+        std::string component_args;
+        
+        size_t pos_params = helpparams.find(':');
+        if ( pos_params == std::string::npos )
         {
-          std::cout << "*** " << helpname  << " ***" << std::endl;
-          std::cout << p->help() << std::endl << std::endl;
+          component_name=helpparams;
         }
         else
         {
-          std::cout << "ERROR: component '" << helpname  << "' is not exist." << std::endl << std::endl;
+          component_name = helpparams.substr(0, pos_params);
+          component_args = helpparams.substr(pos_params + 1);
+        }
+        
+        if ( auto p = g->registry.get_object<icomponent>("component", component_name , true) )
+        {
+          std::cout << "*** " << component_name  << " ***" << std::endl;
+          std::cout << p->help(component_args) << std::endl << std::endl;
+        }
+        else
+        {
+          std::cout << "ERROR: component '" << component_name  << "' is not exist." << std::endl << std::endl;
         }
       }
     }
