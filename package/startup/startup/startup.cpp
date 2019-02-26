@@ -84,7 +84,6 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
         
         if ( auto p = g->registry.get_object<icomponent>("component", component_name , true) )
         {
-          std::cout << "*** " << component_name  << " ***" << std::endl;
           std::cout << p->help(component_args) << std::endl << std::endl;
         }
         else

@@ -34,7 +34,7 @@ try
   options_description desc_startup("Startup options");
 
   desc.add_options()
-    ("help,h", value<vstrings>(&pa.help_options)->multitoken()->zero_tokens(), "Produce help message")
+    ("help,h", value<vstrings>(&pa.help_options)->multitoken()->zero_tokens(), "Produce help message. Use component-name[:args] as arg for produce component help message.")
     ("version,v", value<bool>(&pa.version)->zero_tokens(), "Display program version information")
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
