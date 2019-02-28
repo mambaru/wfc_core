@@ -26,7 +26,7 @@ SET(
   workflow/workflow/workflow_domain.cpp
 )
 
-if ( WFC_ENABLE_STAT )
+if ( WFC_ENABLE_STAT OR STANDALONE )
   SET(
     wfc_core_source_list
     ${wfc_core_source_list}
@@ -53,21 +53,6 @@ add_library(
 
 build_info(wfc_core core)
 
-if ( STANDALONE )
-
-  include(FindThreads)
-  find_package(Boost COMPONENTS system program_options filesystem date_time REQUIRED)
-
-  target_link_libraries(
-    wfc_core 
-      wfc
-      wrtstat
-      wlog
-      wflow
-      wjrpc
-      ${Boost_LIBRARIES} 
-      ${CMAKE_THREAD_LIBS_INIT}
-  )
-endif()
+target_link_libraries(wfc_core ${WFC_LIBRARIES})
 
 install(TARGETS wfc_core DESTINATION ${CMAKE_INSTALL_PREFIX})
