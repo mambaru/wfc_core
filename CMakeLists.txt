@@ -5,10 +5,7 @@ project(wfc_core)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(ci)
 
-if ( STANDALONE )
-  getlibs(faslib wjson wlog wflow iow wjrpc wrtstat wfc)
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/external/wfc/cmake)
-endif()
+wfc_libs()
 
 include_directories(.)
 
