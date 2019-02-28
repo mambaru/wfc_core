@@ -141,7 +141,7 @@ void system_statistics_domain::restart()
   
   _timer_id = this->get_workflow()->create_timer( 
     std::chrono::milliseconds( this->statistics_options().interval_ms ),
-    [stat, proto, this]()->bool
+    [stat, proto]()->bool
     {
       procstat ps;
       if ( 0==get_procstat(&ps) )
