@@ -1,4 +1,12 @@
-# Пакет ядра WFC
+[![pipeline status](http://github.lan/cpp/wfc_core/badges/wip-devel/pipeline.svg)](http://github.lan/cpp/wfc_core/commits/wip-devel)
+[![coverage report](http://github.lan/cpp/wfc_core/badges/wip-devel/coverage.svg)](http://github.lan/cpp/wfc_core/commits/wip-devel)
+
+# wfc_core: Пакет ядра WFC
+
+* Документация [doxygen](https://mambaru.github.io/wfc_core/index.html).
+* Репозитарий на [github.com](https://github.com/mambaru/wfc_core).
+* Отчет [coverage](https://mambaru.github.io/wfc_core/cov-report/index.html)
+
 
 Включает модули: 
 * startup - разабор параметров командной строки, запуск системы, демонизация
@@ -7,9 +15,6 @@
 * core - ядро
 * workflow - очереди и потоки
 * statistics - сбор статистики и отправка в btp
-
-Документация [doxygen](https://mambaru.github.io/wfc_core/index.html).
-Репозитарий на [github.com](https://github.com/mambaru/wfc_core).
 
 ## startup модуль
 Конфигурация:
