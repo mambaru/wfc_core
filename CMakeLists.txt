@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(wfc_core)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-include(ci)
+include(cmake/ci.cmake)
 
 wfc_libs()
 
@@ -13,6 +12,5 @@ add_subdirectory(package)
 
 if ( BUILD_TESTING )
   enable_testing()
-  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${UNIT_TEST_BIN_OUTPUT_DIR})                                                                                                                 
-  #add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()

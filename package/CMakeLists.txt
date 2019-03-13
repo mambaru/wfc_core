@@ -46,10 +46,7 @@ if ( WFC_ENABLE_STAT OR STANDALONE )
   )
 endif()
 
-add_library(
-  wfc_core 
-  ${wfc_core_source_list}
-)
+add_library(wfc_core ${wfc_core_source_list})
 
 build_info(wfc_core core)
 
