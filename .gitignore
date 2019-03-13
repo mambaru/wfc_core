@@ -7,7 +7,8 @@
 */debug
 */release
 */build
-build
+build/
+docs/
 .tup
 *.kch
 autom4te.cache
