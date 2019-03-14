@@ -6,8 +6,6 @@ include(cmake/ci.cmake)
 
 wfc_libs()
 
-include_directories(.)
-
 add_subdirectory(package)
 
 if ( BUILD_TESTING )
