@@ -161,7 +161,7 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
   }
   
   if ( req->ts == 0 )
-    req->ts = time(0) * 1000000;
+    req->ts = time(nullptr) * 1000000;
   
   auto res = this->create_response(cb);
   {

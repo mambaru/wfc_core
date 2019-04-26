@@ -20,7 +20,7 @@ int get_procstat(pid_t pid, procstat* pinfo)
   FILE *fp = NULL;
   struct stat st;
   
-  if (NULL == pinfo) {
+  if ( nullptr == pinfo) {
     errno = EINVAL;
     return -1;
   }
