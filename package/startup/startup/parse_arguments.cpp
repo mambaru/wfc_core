@@ -19,10 +19,15 @@ namespace
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
 try
 {
+#define GCC_COMPILER (defined(__GNUC__) && !defined(__clang__))
+#if GCC_COMPILER
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
   pa.program_name = ::boost::filesystem::path(argv[0]).filename().native();
+#if GCC_COMPILER
   #pragma GCC diagnostic pop
+#endif
   
   pa.usage = ( argc == 1 );
   if ( pa.usage )
