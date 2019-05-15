@@ -1,5 +1,4 @@
 #include "parse_arguments.hpp"
-#include <fas/system/nullptr.hpp>
 #include <boost/program_options.hpp>
 #include <iow/boost.hpp>
 #include <iostream>
@@ -20,7 +19,7 @@ namespace
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
 try
 {
-  pa.program_name = ::boost::filesystem::path(argv[0], fas_nullptr).filename().native();
+  pa.program_name = ::boost::filesystem::path(argv[0]).filename().native();
   pa.usage = ( argc == 1 );
   if ( pa.usage )
     return;
