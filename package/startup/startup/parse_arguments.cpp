@@ -19,7 +19,11 @@ namespace
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
 try
 {
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
   pa.program_name = ::boost::filesystem::path(argv[0]).filename().native();
+  #pragma GCC diagnostic pop
+  
   pa.usage = ( argc == 1 );
   if ( pa.usage )
     return;
