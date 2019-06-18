@@ -1,9 +1,8 @@
 #include "parse_arguments.hpp"
 #include <boost/program_options.hpp>
-
 #include <iow/boost.hpp>
-
 #include <iostream>
+
 namespace wfc{ namespace core{
   
 namespace 
@@ -20,7 +19,15 @@ namespace
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
 try
 {
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
   pa.program_name = ::boost::filesystem::path(argv[0]).filename().native();
+#if defined(__GNUC__) && !defined(__clang__)
+  #pragma GCC diagnostic pop
+#endif
+  
   pa.usage = ( argc == 1 );
   if ( pa.usage )
     return;

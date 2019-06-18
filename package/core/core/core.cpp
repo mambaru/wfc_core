@@ -1,5 +1,6 @@
 #include "core.hpp"
 
+
 #include <wfc/core/iconfig.hpp>
 #include <wfc/module/iinstance.hpp>
 #include <wfc/module/icomponent.hpp>
@@ -8,7 +9,7 @@
 #include <wfc/logger.hpp>
 #include <wfc/memory.hpp>
 #include <wfc/json.hpp>
-
+#include <fas/system/nullptr.hpp>
 #include <boost/filesystem.hpp>
 #include <vector>
 #include <string>
@@ -47,7 +48,7 @@ namespace
   
     std::for_each(beg, end, [&pids](const boost::filesystem::directory_entry& de)
     {
-      boost::filesystem::path p(de);
+      boost::filesystem::path p(de, fas_null_param);
       if ( boost::filesystem::is_directory(p) )
       {
         pid_t pid = ::atoi( p.filename().c_str() );
