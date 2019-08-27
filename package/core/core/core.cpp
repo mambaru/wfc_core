@@ -155,15 +155,8 @@ void core::reconfigure()
         DOMAIN_LOG_ERROR("Double call callback functions for '" << objname << "'")
       }
     };
-    /*
-    g->nocall_callback_abort = opt.nocall_callback_abort;
-    g->nocall_callback_show = opt.nocall_callback_show;
-    g->double_callback_abort = opt.double_callback_abort;
-    g->double_callback_show = opt.double_callback_show;
-    */
   }
   
-
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
