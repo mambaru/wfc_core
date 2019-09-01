@@ -1,5 +1,3 @@
-[![pipeline status](http://github.lan/cpp/wfc_core/badges/wip-devel/pipeline.svg)](http://github.lan/cpp/wfc_core/commits/wip-devel)
-[![coverage report](http://github.lan/cpp/wfc_core/badges/wip-devel/coverage.svg)](http://github.lan/cpp/wfc_core/commits/wip-devel)
 
 # wfc_core: Пакет ядра WFC
 
