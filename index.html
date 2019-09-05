@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.15"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>wfc: wfc_core: Пакет ядра WFC</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="customdoxygen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td id="projectalign" style="padding-left: 0.5em;">
+   <div id="projectname">wfc
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.8.15 -->
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
+$(function() {
+  initMenu('',false,false,'search.php','Поиск');
+});
+/* @license-end */</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div class="PageDoc"><div class="header">
+  <div class="headertitle">
+<div class="title">wfc_core: Пакет ядра WFC </div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><ul>
+<li>Документация <a href="https://mambaru.github.io/wfc_core/index.html">doxygen</a>.</li>
+<li>Репозитарий на <a href="https://github.com/mambaru/wfc_core">github.com</a>.</li>
+<li>Отчет <a href="https://mambaru.github.io/wfc_core/cov-report/index.html">coverage</a></li>
+</ul>
+<p class="">Включает модули:</p><ul>
+<li>startup - разабор параметров командной строки, запуск системы, демонизация</li>
+<li>config - модуль конфигурации</li>
+<li>logger - логирование</li>
+<li>core - ядро</li>
+<li>workflow - очереди и потоки</li>
+<li>statistics - сбор статистики и отправка в btp</li>
+</ul>
+<h2>startup модуль</h2>
+<p class="">Конфигурация: </p><div class="fragment"><div class="line">{&quot;startup&quot;:{}}</div></div><!-- fragment --><p> Параметры командной строки:</p><ul>
+<li>-v [ &ndash;version ] - краткая информация о версии, времени, типе сборки, компиляторе и ОС</li>
+<li>-h [ &ndash;help ] <em>component</em> - помощь по параметрам командной строки или справка по указанному компоненту (если реализована)</li>
+<li>-i [ &ndash;info ] <em>package</em> - расширенная информация о версии и список подключенных пакетов или расширенная информация о версии указанного пакета</li>
+<li>&ndash;module-list - список подключенных модулей (группировка по пакетам)</li>
+<li>&ndash;component-list - список подключенных компонент (группировка по <em>пакетам</em>)</li>
+<li>&ndash;check-config <em>package</em> - проверка файла конфигурации</li>
+<li>-G [ &ndash;generate ] <em>component_lits</em> - генерация конфигурации для всех компонент или только указанных</li>
+</ul>
+<p class="">Параметры запуска:</p><ul>
+<li>-u [ &ndash;user ] name - cменить пользователя</li>
+<li>-w [ &ndash;working-directory ] path - рабочая директория</li>
+<li>-d [ &ndash;daemonize ] - запустить как демон</li>
+<li>-W [ &ndash;wait-daemonize ] - дождаться успешного запуска все компонент дочернего процесса перед завершением родительского</li>
+<li>-a [ &ndash;autoup ] <em>uptime</em> (=-1) - запустить мониторящий процесс, который будет перезапускать демон в случае аварийного завершения работы. Можно задать минимальное время работы демона в секундах, до которого перезапуск не осуществляется (чтобы избежать "кувыркания" если демон падает сразу после запуска)</li>
+<li>-A [ &ndash;success-autoup ] - перезапускает демон, даже если он корректно завершил работу (только совместно с &ndash;autoup)</li>
+<li>-c [ &ndash;coredump ] - разрешить запись дампов памяти</li>
+<li>-n [ &ndash;name ] name - уникальное имя экземпляра (если нужно запустить несколько экземпляров с одинаковыми конфигурационными файлами)</li>
+<li>-C [ &ndash;config ] path - файл конфигурации</li>
+<li>-P [ &ndash;pid-dir ] path - директория для pid-файла.</li>
+<li>-O [ &ndash;object-options ] arg &lt;&lt;object-name&gt;&gt;:arg=value[:arg2=value2...] custom options for instance objects</li>
+<li>-S [ &ndash;startup-options ] arg &lt;&lt;object-name&gt;&gt;:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after restart by autoup)</li>
+</ul>
+<h3>Расширенная информация о версии</h3>
+<p class="">Информация о версии формируется автоматически на базе доступной информации git-репозитария. В качестве номера версии используется последний доступный тег и локальный счетчик сборок, например <code>0.7.1-2</code>. Если на момент сборки текущий коммит не помечен тегом, или есть незафиксированные изменения, то об этом появляется информация в квадратных скобках: </p><div class="fragment"><div class="line">0.7.1[17.0.1]-2</div><div class="line">──┬──  │ │ │  └── локальный счетчик сборок</div><div class="line">  │    │ │ └───── количество измененных, но незакомиченных файлов </div><div class="line">  │    │ └─────── количество измененных, но незапушенных в файлов </div><div class="line">  │    └───────── количество коммитов после последнего тега</div><div class="line">  └────────────── версия (последний тег), если отсутствует, то бранч сборки </div></div><!-- fragment --><p> Расширенную информацию о версии можно посмотреть с использованием параметра &ndash;info. Пример для пакета wfc_core: </p><div class="fragment"><div class="line">Enabled: 1</div><div class="line">Name: wfc_core</div><div class="line">Version: 0.7.1[16.0.1]-36</div><div class="line">Compiler: g++-4.8 (SUSE Linux) 4.8.5</div><div class="line">Build Type: Debug</div><div class="line">Build Date: 2018-10-18 11:47:54 +03:00</div><div class="line">Build Flags: g++-4.8  -W -Wall -Werror -pedantic -ftemplate-backtrace-limit=0 -fpic -W -Wall -Werror -pedantic -ftemplate-backtrace-limit=0 -fpic -O0 -g</div><div class="line">Branch: devel</div><div class="line">Commit: 3a66ebe2c7d9787897db422087053902a97bae1b</div><div class="line">Commit Date: 2018-10-18 11:41:52 +03:00</div><div class="line">Commit Author: Vladimir Migashko &lt;migashko@gmail.com&gt;</div><div class="line">Commit Message: CI initial</div><div class="line">All Authors: Vladimir Migashko &lt;migashko@gmail.com&gt; (514), Владимир Мигашко &lt;migashko@wamba.com&gt; (7), Dmitry Saprykin &lt;saprykin.dmitry@gmail.com&gt; (2)</div><div class="line">Initial Author: Vladimir Migashko &lt;migashko@gmail.com&gt;</div><div class="line">Description: WFC core modules</div></div><!-- fragment --><ul>
+<li><em>All Authors</em> - это список всех авторов, с указанием числа внесенных коммитов</li>
+<li><em>Initial Author</em> - автор первого коммита</li>
+</ul>
+<h3>Генерация конфигурации</h3>
+<p class="">Используйте генератор конфигурации для получения актуального списка опций со значениями по умолчанию. Если значение по умолчанию вас устраивает, то можно удалить это поле для упрощения конфигурации. Конфигурация выводиться без форматирования, чтобы сделать ее более читабельной: </p><div class="fragment"><div class="line">demod -G | python -mjson.tool</div></div><!-- fragment --><p> Однако этот метод пересортировывает поля, что не всегда наглядно. С помощью сайта <a href="http://jsoneditoronline.org/">http://jsoneditoronline.org/</a> это можно отформатировать через браузер с сохранением порядка полей (как задумано разработчиком конкретного модуля) просто скопировав сгенерированную конфигурацию.</p>
+<p class="">Для получения конфигурации конкретного компонента, просто укажите его имя. </p><div class="fragment"><div class="line">demod -G core</div></div><!-- fragment --><p> Генератор по умолчанию не формирует данные для массивов, но некоторые компоненты поддерживают расширенную генерацию, заполняя массивы объектами и инициализируют поля недефолтными значениями. Для этого нужно передать режим генерации через двоеточие: </p><div class="fragment"><div class="line">demod -G workflow:example</div></div><!-- fragment --><p> Расширенную генерацию поддерживают не все компоненты, за уточнением обращайтесь к документации соответствующего компонента.</p>
+<h3>Дополнительные аргументы для объектов</h3>
+<p class="">Некоторые опции объектов имеет смысл передавать через параметры командной строки, а не прописывать их в файл конфигурации. Это такие опции, например, которые нужны только для первоначальной инициализации, для последующих запусков они уже не нужны. Для передачи таких опций конкретному объекту используются параметры командной строки:</p><ul>
+<li>&ndash;object-options <em>имя_объекта</em>:<em>ключ</em>=_значение_</li>
+<li>&ndash;startup-options <em>имя_объекта</em>:<em>ключ</em>=_значение_ Разница между ними только при использовании функции автоподнятия (&ndash;autoup). В первом случае опции доступны всегда, во втором только до перезапуска контролирующим процессом. Наборы доступных опций (если они есть), смотрите в описании конкретного компонента. В качестве имени объекта допустимо передавать имена объектов описанных в файле конфигурации.</li>
+</ul>
+<h2>Модуль конфигурации</h2>
+<p class="">Конфигурация: </p><div class="fragment"><div class="line">{</div><div class="line">  &quot;config&quot;: {</div><div class="line">      /* Для отключения объекта */</div><div class="line">      &quot;enabled&quot;: true,</div><div class="line">      /* Перечитать конфигурацию по сигналу SIGHUP */</div><div class="line">      &quot;reload_sighup&quot;: false,</div><div class="line">      /* Перечитать конфигурацию при изменении файла (интервал проверки) */</div><div class="line">      &quot;reload_changed_ms&quot;: 0</div><div class="line">  }</div><div class="line">}</div></div><!-- fragment --><p> При старте программы компонент конфигурирования доступен с опциями по умолчанию, которые могут быть изменены после инициализации системы. Отвечает за первичную десериализацию и обеспечивает доступ к JSON-конфигурации конкретных объектов.</p>
+<p class="">Внимание. Реконфигурация на лету может поддерживаться не всеми модулями или быть некорректно реализована. На данный момент не рекомендуется использовать эту функцию на продакшене, особенно на больших нагрузках.</p>
+<h2>Модуль логирования</h2>
+<p class="">Конфигурация: </p><div class="fragment"><div class="line">&quot;logger&quot;: {</div><div class="line">  &quot;enabled&quot;: true,</div><div class="line">  &quot;startup_priority&quot;: 0,</div><div class="line">  &quot;shutdown_priority&quot;: 0,</div><div class="line">  &quot;stop_with_fatal_log_entry&quot;: true</div><div class="line"></div><div class="line">  /* Прочие опции логера */</div><div class="line">}</div></div><!-- fragment --><p> Для того чтобы логер запускался раньше остальных компонентов системы, о отключался позже, необходимо задать минимальный приоритет запуска и максимальный для останова, например: </p><div class="fragment"><div class="line">{</div><div class="line">  &quot;logger&quot;: {</div><div class="line">    &quot;startup_priority&quot;: -1000,</div><div class="line">    &quot;shutdown_priority&quot;: 1000,</div><div class="line">  }</div><div class="line">}</div></div><!-- fragment --><p> Опция <em>stop_with_fatal_log_entry</em> позволяет отключить автоматическое аварийное завершение при сообщениях типа <em>FATAL</em>. С остальными опциями логирования можно ознакомиться здесь <a href="https://mambaru.github.io/wlog/index.html">https://mambaru.github.io/wlog/index.html</a></p>
+<h2>Модуль ядра</h2>
+<p class="">Конфигурация: </p><div class="fragment"><div class="line">{</div><div class="line">  &quot;core&quot;: {</div><div class="line">    /* таймер ядра (проверка сигнала на завершение работы, переконфигурацию и пр.) */</div><div class="line">    &quot;core_timeout_ms&quot;: 1000,</div><div class="line">    /* таймер фоновых задач */</div><div class="line">    &quot;idle_timeout_ms&quot;: 1000,</div><div class="line">    /* Ограничение по памяти (для отладки) */</div><div class="line">    &quot;rlimit_as_mb&quot;: 0,</div><div class="line">    /* Отключить сбор статистики для всех модулей */</div><div class="line">    &quot;disable_statistics&quot;: false,</div><div class="line"></div><div class="line">    /* Для отладки */</div><div class="line">    &quot;nocall_callback_abort&quot;: false,</div><div class="line">    &quot;nocall_callback_show&quot;: true,</div><div class="line">    &quot;double_callback_abort&quot;: false,</div><div class="line">    &quot;double_callback_show&quot;: true,</div><div class="line"></div><div class="line">    /* Общий workflow */</div><div class="line">    &quot;common-workflow&quot;: {</div><div class="line">      /* Потоки обработки очереди (0 - в основном потоке приложения)*/</div><div class="line">      &quot;threads&quot;: 0,</div><div class="line">      /* Размер очереди при превышении которой производится запись предупреждения в лог */</div><div class="line">      &quot;wrnsize&quot;: 0,</div><div class="line">      /* Максимальный размер очереди после чего, все входящие задания сбрасываются */</div><div class="line">      &quot;maxsize&quot;: 0,</div><div class="line">      /* Интервал проверки счетчиков очередей */</div><div class="line">      &quot;control_ms&quot;: 0,</div><div class="line">      /* Отладочный режим (больше информации в лог) */</div><div class="line">      &quot;debug&quot;: false,</div><div class="line">      /* Ядра CPU для потоков обработки (если не заданно, то wfc-cpu)*/</div><div class="line">      &quot;cpu&quot;: []</div><div class="line">    },</div><div class="line">    /* Ядра CPU для потоков WFC по умолчанию */</div><div class="line">    &quot;wfc-cpu&quot;: [],</div><div class="line">    /* Ядра CPU для всех остальных потоков  */</div><div class="line">    &quot;sys-cpu&quot;: []</div><div class="line">  }</div><div class="line">}</div></div><!-- fragment --> <h2>workflow</h2>
+<p class="">Конфигурация: </p><div class="fragment"><div class="line">{</div><div class="line">  &quot;workflow&quot;: [</div><div class="line">    {</div><div class="line">      &quot;name&quot;: &quot;workflow1&quot;,</div><div class="line">      &quot;enabled&quot;: true,</div><div class="line">      &quot;startup_priority&quot;: 0,</div><div class="line">      &quot;shutdown_priority&quot;: 0,</div><div class="line">      /* Ядра CPU для потоков обработки (если не заданно, то wfc-cpu)*/</div><div class="line">      &quot;cpu&quot;: [],</div><div class="line">      /* Потоки обработки очереди (0 - в основном потоке приложения)*/</div><div class="line">      &quot;threads&quot;: 0,</div><div class="line">      /* Размер очереди при превышении которой производится запись предупреждения в лог */</div><div class="line">      &quot;wrnsize&quot;: 0,</div><div class="line">      /* Максимальный размер очереди после чего, все входящие задания сбрасываются */</div><div class="line">      &quot;maxsize&quot;: 0,</div><div class="line">      /* Интервал проверки счетчиков очередей */</div><div class="line">      &quot;control_ms&quot;: 0,</div><div class="line">      /* Отладочный режим (больше информации в лог) */</div><div class="line">      &quot;debug&quot;: false,</div><div class="line">      /* Задержка обработки для всех входящих заданий */</div><div class="line">      &quot;post_delay_ms&quot;: 0,</div><div class="line">      /* Ограничение на скорость обработки (заданий в секунду) */</div><div class="line">      &quot;rate_limit&quot;: 0</div><div class="line">    }</div><div class="line">  ]</div><div class="line">}</div></div><!-- fragment --><p> В двух словах workflow это очередь и пул потоков ее обрабатывающих. Один и тот-же workflow могут использовать несколько компонет (имя workflow указывается в настройках компонентов, и как правило, поле так и называется <em>workflow</em>). Может использоваться как для обработки входящего потока сообщений так и для всевозможных таймеров. Как правило для всех таймеров достаточно <em>common-workflow</em> ядра, а для высоконагруженных сервисов необходим свой workflow. Для отладки есть возможность искусственно увеличить минимальное время обработки заданий, или наложить ограничение на максимальную скорость (отработка будет идти не пачками с паузой, а более или менее равномерно)</p>
+<h2>Модуль статистики</h2>
+<p class="">Доступно если собрано с опцией <em>WFC_ENABLE_STAT=ON</em>. Включает следующие компоненты:</p><ul>
+<li>statistics_aggregator - агрегатор статистики</li>
+<li>statistics_gateway - шлюз для отправки в BTP (хранилище)</li>
+<li>statistics_log - запись агрегированной статистики в лог</li>
+<li>statistics_service - интерфейс для получения агрегированной статистики</li>
+<li>system_statistics - сбор системной статистики (utime, stime, vsize, rss) </li>
+</ul>
+</div></div><!-- PageDoc -->
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Создано системой &#160;<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/>
+</a> 1.8.15
+</small></address>
+</body>
+</html>

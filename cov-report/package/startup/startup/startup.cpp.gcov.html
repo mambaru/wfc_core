@@ -1,0 +1,655 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - wfc_core-coverage.info - package/startup/startup/startup.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">package/startup/startup</a> - startup.cpp<span style="font-size: 80%;"> (source / <a href="startup.cpp.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">wfc_core-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">304</td>
+            <td class="headerCovTableEntryLo">0.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2019-09-05</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">35</td>
+            <td class="headerCovTableEntryLo">5.7 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //</a>
+<span class="lineNum">       2 </span>            : // Author: Vladimir Migashko &lt;migashko@gmail.com&gt;, (C) 2013-2015
+<span class="lineNum">       3 </span>            : //
+<span class="lineNum">       4 </span>            : // Copyright: See COPYING file that comes with this distribution
+<span class="lineNum">       5 </span>            : //
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span>            : #include &quot;startup.hpp&quot;
+<span class="lineNum">       8 </span>            : #include &quot;parse_arguments.hpp&quot;
+<span class="lineNum">       9 </span>            : 
+<span class="lineNum">      10 </span>            : #include &lt;wfc/core/iconfig.hpp&gt;
+<span class="lineNum">      11 </span>            : #include &lt;wfc/module/imodule.hpp&gt;
+<span class="lineNum">      12 </span>            : #include &lt;wfc/module/ipackage.hpp&gt;
+<span class="lineNum">      13 </span>            : #include &lt;wfc/system/system.hpp&gt;
+<span class="lineNum">      14 </span>            : #include &lt;wfc/logger.hpp&gt;
+<span class="lineNum">      15 </span>            : #include &lt;wfc/asio.hpp&gt;
+<span class="lineNum">      16 </span>            : 
+<span class="lineNum">      17 </span>            : #include &lt;fstream&gt;
+<span class="lineNum">      18 </span>            : #include &lt;syslog.h&gt;
+<span class="lineNum">      19 </span>            : 
+<span class="lineNum">      20 </span>            : #include &lt;sys/file.h&gt;
+<span class="lineNum">      21 </span>            : #include &lt;errno.h&gt;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<a name="24"><span class="lineNum">      24 </span>            : namespace wfc{ namespace core{</a>
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span><span class="lineNoCov">          0 : startup_domain::~startup_domain()</span>
+<span class="lineNum">      27 </span>            : {
+<a name="28"><span class="lineNum">      28 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span><span class="lineNoCov">          0 : int startup_domain::startup(int argc, char** argv, std::string helpstring)</span>
+<span class="lineNum">      31 </span>            : {
+<span class="lineNum">      32 </span>            :   /* Базовый domain_object доступен ограниченно, система не инициализирована работаем через global */
+<span class="lineNum">      33 </span><span class="lineNoCov">          0 :   parse_arguments( _pa, argc, argv);</span>
+<span class="lineNum">      34 </span>            :   
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :   if ( g == nullptr )</span>
+<span class="lineNum">      37 </span>            :   {
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 :     std::cerr &lt;&lt; &quot;*** ERROR ***&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      39 </span><span class="lineNoCov">          0 :     std::cerr &lt;&lt; &quot;global is nullptr&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      40 </span><span class="lineNoCov">          0 :     std::cerr &lt;&lt; &quot;wfcglobal::static_global initialization required&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      41 </span>            :   }
+<span class="lineNum">      42 </span>            :   
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :   g-&gt;program_name  = _pa.program_name;</span>
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :   g-&gt;instance_name  = _pa.instance_name;</span>
+<span class="lineNum">      45 </span>            : 
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :   if ( !_pa.errorstring.empty() )</span>
+<span class="lineNum">      47 </span>            :   {
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 :     std::cerr &lt;&lt; &quot;*** ERROR ***&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :     std::cerr &lt;&lt; _pa.errorstring &lt;&lt; std::endl;</span>
+<span class="lineNum">      50 </span><span class="lineNoCov">          0 :     return 1;</span>
+<span class="lineNum">      51 </span>            :   }
+<span class="lineNum">      52 </span><span class="lineNoCov">          0 :   else if ( _pa.usage )</span>
+<span class="lineNum">      53 </span>            :   {
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 :     this-&gt;show_usage_();</span>
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :     return 0;</span>
+<span class="lineNum">      56 </span>            :   }
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :   else if ( _pa.help )</span>
+<span class="lineNum">      58 </span>            :   {
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 :     if ( _pa.help_options.empty() )</span>
+<span class="lineNum">      60 </span>            :     {
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 :       if ( !helpstring.empty() ) std::cout &lt;&lt; helpstring &lt;&lt; std::endl &lt;&lt; std::endl;</span>
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; _pa.helpstring &lt;&lt; std::endl;</span>
+<span class="lineNum">      63 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;To generate and format the configuration, use: &quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; _pa.program_name &lt;&lt; &quot; -G | python -mjson.tool &quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; std::endl;</span>
+<span class="lineNum">      66 </span>            :     }
+<span class="lineNum">      67 </span>            :     else
+<span class="lineNum">      68 </span>            :     {
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :       for (std::string helpparams : _pa.help_options )</span>
+<span class="lineNum">      70 </span>            :       {
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :         std::string component_name;</span>
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :         std::string component_args;</span>
+<span class="lineNum">      73 </span>            :         
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :         size_t pos_params = helpparams.find(':');</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :         if ( pos_params == std::string::npos )</span>
+<span class="lineNum">      76 </span>            :         {
+<span class="lineNum">      77 </span><span class="lineNoCov">          0 :           component_name=helpparams;</span>
+<span class="lineNum">      78 </span>            :         }
+<span class="lineNum">      79 </span>            :         else
+<span class="lineNum">      80 </span>            :         {
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :           component_name = helpparams.substr(0, pos_params);</span>
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :           component_args = helpparams.substr(pos_params + 1);</span>
+<span class="lineNum">      83 </span>            :         }
+<span class="lineNum">      84 </span>            :         
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 :         if ( auto p = g-&gt;registry.get_object&lt;icomponent&gt;(&quot;component&quot;, component_name , true) )</span>
+<span class="lineNum">      86 </span>            :         {
+<span class="lineNum">      87 </span><span class="lineNoCov">          0 :           std::cout &lt;&lt; p-&gt;help(component_args) &lt;&lt; std::endl &lt;&lt; std::endl;</span>
+<span class="lineNum">      88 </span>            :         }
+<span class="lineNum">      89 </span>            :         else
+<span class="lineNum">      90 </span>            :         {
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :           std::cout &lt;&lt; &quot;ERROR: component '&quot; &lt;&lt; component_name  &lt;&lt; &quot;' is not exist.&quot; &lt;&lt; std::endl &lt;&lt; std::endl;</span>
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">      93 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">      94 </span>            :     }
+<span class="lineNum">      95 </span><span class="lineNoCov">          0 :     return 0;</span>
+<span class="lineNum">      96 </span>            :   }
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :   else if ( _pa.version )</span>
+<span class="lineNum">      98 </span>            :   {
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; _pa.program_name &lt;&lt; &quot; &quot; &lt;&lt; g-&gt;program_build_info-&gt;version() </span>
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :               &lt;&lt; std::endl &lt;&lt; g-&gt;program_build_info-&gt;compiler_version() </span>
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :               &lt;&lt; std::endl &lt;&lt; g-&gt;program_build_info-&gt;build_date() </span>
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :               &lt;&lt; std::endl &lt;&lt; g-&gt;program_build_info-&gt;build_type() </span>
+<span class="lineNum">     103 </span><span class="lineNoCov">          0 :               &lt;&lt; std::endl;</span>
+<span class="lineNum">     104 </span><span class="lineNoCov">          0 :     return 0;</span>
+<span class="lineNum">     105 </span>            :   }
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :   else if ( _pa.info )</span>
+<span class="lineNum">     107 </span>            :   {
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 :     if ( _pa.info_options.empty() )</span>
+<span class="lineNum">     109 </span>            :     {
+<span class="lineNum">     110 </span><span class="lineNoCov">          0 :       this-&gt;show_info_(&quot;&quot;);</span>
+<span class="lineNum">     111 </span><span class="lineNoCov">          0 :       return 0;</span>
+<span class="lineNum">     112 </span>            :     }
+<span class="lineNum">     113 </span>            :     else
+<span class="lineNum">     114 </span>            :     {
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :       bool flag = true;</span>
+<span class="lineNum">     116 </span><span class="lineNoCov">          0 :       for ( const std::string&amp; i : _pa.info_options )</span>
+<span class="lineNum">     117 </span>            :       {
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :         flag = flag &amp;&amp; this-&gt;show_info_(i);</span>
+<span class="lineNum">     119 </span>            :       }
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :       return flag ? 0 : 2;</span>
+<span class="lineNum">     121 </span>            :     }
+<span class="lineNum">     122 </span>            :   }
+<a name="123"><span class="lineNum">     123 </span><span class="lineNoCov">          0 :   else if ( _pa.module_list )</span></a>
+<span class="lineNum">     124 </span>            :   {
+<span class="lineNum">     125 </span><span class="lineNoCov">          0 :     g-&gt;registry.for_each&lt;ipackage&gt;(&quot;package&quot;, [](const std::string&amp;, std::shared_ptr&lt;ipackage&gt; pkg)</span>
+<span class="lineNum">     126 </span>            :     {
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :       if ( pkg == nullptr )</span>
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; pkg-&gt;name() &lt;&lt; &quot;:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :       auto modules = pkg-&gt;modules();</span>
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :       for (auto m : modules)</span>
+<span class="lineNum">     132 </span>            :       {
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :         std::cout &lt;&lt; &quot;\t&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot; &quot; &lt;&lt; m-&gt;description() &lt;&lt; std::endl;</span>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :       }</span></a>
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :     },</span>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :     [](std::shared_ptr&lt;ipackage&gt; l, std::shared_ptr&lt;ipackage&gt; r)-&gt;bool</span>
+<span class="lineNum">     137 </span>            :     {
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :       return l-&gt;order() &lt; r-&gt;order();</span>
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :     });</span>
+<span class="lineNum">     140 </span>            :   }
+<a name="141"><span class="lineNum">     141 </span><span class="lineNoCov">          0 :   else if ( _pa.component_list )</span></a>
+<span class="lineNum">     142 </span>            :   {
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :     g-&gt;registry.for_each&lt;ipackage&gt;(&quot;package&quot;, [](const std::string&amp; , std::shared_ptr&lt;ipackage&gt; pkg)</span>
+<span class="lineNum">     144 </span>            :     {
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :       if ( pkg == nullptr )</span>
+<span class="lineNum">     146 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; pkg-&gt;name() &lt;&lt; &quot;:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :       auto modules = pkg-&gt;modules();</span>
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :       for (auto m : modules)</span>
+<span class="lineNum">     150 </span>            :       {
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :         auto components = m-&gt;components();</span>
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :         for (auto c : components )</span>
+<span class="lineNum">     153 </span>            :         {
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :           std::cout &lt;&lt; &quot;\t&quot; &lt;&lt; c-&gt;name() &lt;&lt; &quot; [&quot; &lt;&lt; c-&gt;interface_name() &lt;&lt; &quot;] &quot; &lt;&lt; c-&gt;description() &lt;&lt; std::endl;</span>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :         }</span>
+<a name="156"><span class="lineNum">     156 </span><span class="lineNoCov">          0 :       }</span></a>
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :     },</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :     [](std::shared_ptr&lt;ipackage&gt; l, std::shared_ptr&lt;ipackage&gt; r)-&gt;bool</span>
+<span class="lineNum">     159 </span>            :     {
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :       return l-&gt;order() &lt; r-&gt;order();</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :     });</span>
+<span class="lineNum">     162 </span>            :   }
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :   else if ( _pa.generate )</span>
+<span class="lineNum">     164 </span>            :   {
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :     return this-&gt;generate_() ? 0 : 3;</span>
+<span class="lineNum">     166 </span>            :   }
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :   else if ( !_pa.check_config.empty() )</span>
+<span class="lineNum">     168 </span>            :   {
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :     if ( auto c = g-&gt;registry.get_target&lt;iconfig&gt;(&quot;config&quot;) )</span>
+<span class="lineNum">     170 </span>            :     {
+<span class="lineNum">     171 </span><span class="lineNoCov">          0 :       return c-&gt;load_and_configure(_pa.check_config) ? 0 : 4;</span>
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     173 </span>            :   }
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :   else if ( !_pa.config_path.empty() )</span>
+<span class="lineNum">     175 </span>            :   {
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :     return this-&gt;perform_start_();</span>
+<span class="lineNum">     177 </span>            :   }
+<span class="lineNum">     178 </span>            :   else
+<span class="lineNum">     179 </span>            :   {
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :     std::cerr &lt;&lt; &quot;ERROR: you must specify a configuration file (-C)&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :     this-&gt;show_usage_();</span>
+<span class="lineNum">     182 </span>            :   }
+<span class="lineNum">     183 </span><span class="lineNoCov">          0 :   return 0;</span>
+<span class="lineNum">     184 </span>            : }
+<a name="185"><span class="lineNum">     185 </span>            : </a>
+<span class="lineNum">     186 </span>            : 
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 : bool startup_domain::ready_for_run()</span>
+<span class="lineNum">     188 </span>            : {
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :   return _ready;</span>
+<span class="lineNum">     190 </span>            : }
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span>            : 
+<a name="193"><span class="lineNum">     193 </span>            : namespace {</a>
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span><span class="lineNoCov">          0 :   bool loc_file_pid( std::string path, const std::string&amp; name)</span>
+<span class="lineNum">     196 </span>            :   {
+<span class="lineNum">     197 </span><span class="lineNoCov">          0 :     if ( !path.empty() &amp;&amp; path.back()!='/' )</span>
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :       path += '/';</span>
+<span class="lineNum">     199 </span>            : 
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :     std::string fname = path + name + &quot;.pid&quot;;</span>
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :     int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);</span>
+<span class="lineNum">     202 </span><span class="lineNoCov">          0 :     if ( pid_file == -1)</span>
+<span class="lineNum">     203 </span>            :     {
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; fname &lt;&lt; &quot; open error: &quot; &lt;&lt; strerror(errno) &lt;&lt; std::endl;</span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :       return false;</span>
+<span class="lineNum">     206 </span>            :     }
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :     int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);</span>
+<span class="lineNum">     208 </span><span class="lineNoCov">          0 :     if (rc) </span>
+<span class="lineNum">     209 </span>            :     {
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :       if( EWOULDBLOCK == errno)</span>
+<span class="lineNum">     211 </span>            :       {
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :         std::cerr &lt;&lt; fname &lt;&lt; &quot; blocked for another instance&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :         std::cerr &lt;&lt; &quot;FAIL :  another instance '&quot;&lt;&lt; name &lt;&lt;&quot;' is running&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :         return false; // another instance is running</span>
+<span class="lineNum">     215 </span>            :       }
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; fname &lt;&lt; &quot; blocked error: &quot; &lt;&lt; strerror(errno) &lt;&lt; std::endl;</span>
+<span class="lineNum">     217 </span>            :     }
+<span class="lineNum">     218 </span>            :     else 
+<span class="lineNum">     219 </span>            :     {
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :       std::clog &lt;&lt; fname &lt;&lt; &quot; blocked for this instance&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     221 </span>            :     }
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :     return true;</span>
+<span class="lineNum">     223 </span>            :   }
+<span class="lineNum">     224 </span>            : }
+<span class="lineNum">     225 </span>            : 
+<a name="226"><span class="lineNum">     226 </span>            : namespace {</a>
+<span class="lineNum">     227 </span>            :   
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :   struct checked_item</span>
+<span class="lineNum">     229 </span>            :   {
+<span class="lineNum">     230 </span>            :     std::string name;
+<span class="lineNum">     231 </span>            :   };
+<span class="lineNum">     232 </span>            :   
+<a name="233"><span class="lineNum">     233 </span>            :   struct checked_item_json</a>
+<span class="lineNum">     234 </span>            :   {
+<span class="lineNum">     235 </span><span class="lineNoCov">          0 :     JSON_NAME(name)</span>
+<span class="lineNum">     236 </span>            :     typedef wjson::object&lt;
+<span class="lineNum">     237 </span>            :       checked_item,
+<span class="lineNum">     238 </span>            :       wjson::member_list&lt;
+<span class="lineNum">     239 </span>            :         wjson::member&lt;n_name, checked_item, std::string, &amp;checked_item::name&gt;
+<span class="lineNum">     240 </span>            :       &gt;
+<span class="lineNum">     241 </span>            :     &gt; type;
+<span class="lineNum">     242 </span>            :     typedef type::serializer serializer;
+<span class="lineNum">     243 </span>            :     typedef type::target target;
+<span class="lineNum">     244 </span>            :     typedef type::member_list member_list;
+<a name="245"><span class="lineNum">     245 </span>            :   };</a>
+<span class="lineNum">     246 </span>            :   
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :   bool check_options(const std::string&amp; path, const std::set&lt;std::string&gt;&amp; required )</span>
+<span class="lineNum">     248 </span>            :   {
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :     std::map&lt;std::string, std::string&gt; conf;</span>
+<span class="lineNum">     250 </span><span class="lineNoCov">          0 :     std::set&lt;std::string&gt; conf_names;</span>
+<span class="lineNum">     251 </span>            :     wjson::dict_map&lt; wjson::raw_value&lt;&gt; &gt;::serializer conf_json;
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :     std::ifstream f(path);</span>
+<span class="lineNum">     253 </span><span class="lineNoCov">          0 :     wjson::json_error er;</span>
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :     std::string jsonconf;</span>
+<span class="lineNum">     255 </span>            :     std::copy(
+<span class="lineNum">     256 </span>            :       std::istreambuf_iterator&lt;char&gt;(f),
+<span class="lineNum">     257 </span>            :       std::istreambuf_iterator&lt;char&gt;(),
+<span class="lineNum">     258 </span>            :       std::back_inserter(jsonconf)
+<span class="lineNum">     259 </span><span class="lineNoCov">          0 :     );</span>
+<span class="lineNum">     260 </span>            : 
+<span class="lineNum">     261 </span><span class="lineNoCov">          0 :     conf_json(conf, std::begin(jsonconf), std::end(jsonconf), &amp;er );</span>
+<span class="lineNum">     262 </span>            :     
+<span class="lineNum">     263 </span><span class="lineNoCov">          0 :     if (er)</span>
+<span class="lineNum">     264 </span>            :     {
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; &quot;ERROR: &quot; &lt;&lt; wjson::strerror::message(er) &lt;&lt; std::endl;</span>
+<span class="lineNum">     266 </span><span class="lineNoCov">          0 :       return false;</span>
+<span class="lineNum">     267 </span>            :     }
+<span class="lineNum">     268 </span>            :     
+<span class="lineNum">     269 </span><span class="lineNoCov">          0 :     bool status = true;</span>
+<span class="lineNum">     270 </span><span class="lineNoCov">          0 :     for (const auto&amp; item : conf )</span>
+<span class="lineNum">     271 </span>            :     {
+<span class="lineNum">     272 </span><span class="lineNoCov">          0 :       if ( wjson::parser::is_object( item.second.begin(), item.second.end() ) )</span>
+<span class="lineNum">     273 </span>            :       {
+<span class="lineNum">     274 </span><span class="lineNoCov">          0 :         if ( !conf_names.insert(item.first).second )</span>
+<span class="lineNum">     275 </span>            :         {
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :           std::cerr &lt;&lt; &quot;ERROR: Item '&quot; &lt;&lt; item.first &lt;&lt; &quot;' already exist. Check the configuration for duplication of entities.&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     277 </span><span class="lineNoCov">          0 :           status = false;</span>
+<span class="lineNum">     278 </span>            :         }
+<span class="lineNum">     279 </span>            :       }
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :       else if ( wjson::parser::is_array( item.second.begin(), item.second.end() ) )</span>
+<span class="lineNum">     281 </span>            :       {
+<span class="lineNum">     282 </span><span class="lineNoCov">          0 :         std::vector&lt;checked_item&gt; checked_list;</span>
+<span class="lineNum">     283 </span>            :         wjson::array&lt; std::vector&lt;checked_item_json&gt; &gt;::serializer checked_list_json;
+<span class="lineNum">     284 </span><span class="lineNoCov">          0 :         checked_list_json(checked_list, item.second.begin(), item.second.end(), &amp;er);</span>
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :         if (er)</span>
+<span class="lineNum">     286 </span>            :         {
+<span class="lineNum">     287 </span><span class="lineNoCov">          0 :           std::cerr &lt;&lt; wjson::strerror::message(er) &lt;&lt; std::endl;</span>
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :           return false;</span>
+<span class="lineNum">     289 </span>            :         }
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :         for (const auto&amp; chk: checked_list )</span>
+<span class="lineNum">     291 </span>            :         {
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :           if ( !conf_names.insert(chk.name).second )</span>
+<span class="lineNum">     293 </span>            :           {
+<span class="lineNum">     294 </span><span class="lineNoCov">          0 :             std::cerr &lt;&lt; &quot;ERROR: instance '&quot; &lt;&lt; chk.name </span>
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :                       &lt;&lt; &quot;' already exist. Check the configuration for duplication of entities.&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :             status = false;</span>
+<span class="lineNum">     297 </span>            :           }
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     299 </span>            :       }
+<span class="lineNum">     300 </span>            :     }//
+<span class="lineNum">     301 </span>            :     
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :     for ( const auto&amp; name : required )</span>
+<span class="lineNum">     303 </span>            :     {
+<span class="lineNum">     304 </span><span class="lineNoCov">          0 :       if ( conf_names.count(name) == 0 )</span>
+<span class="lineNum">     305 </span>            :       {
+<span class="lineNum">     306 </span><span class="lineNoCov">          0 :         std::cerr &lt;&lt; &quot;ERROR: instance '&quot;&lt;&lt; name &lt;&lt; &quot;' not found for program args&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :         status = false;</span>
+<span class="lineNum">     308 </span>            :       }
+<span class="lineNum">     309 </span>            :     }
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :     return status;</span>
+<span class="lineNum">     311 </span>            :   }
+<a name="312"><span class="lineNum">     312 </span>            : }</a>
+<span class="lineNum">     313 </span>            : 
+<span class="lineNum">     314 </span><span class="lineNoCov">          0 : int startup_domain::perform_start_( )</span>
+<span class="lineNum">     315 </span>            : {
+<span class="lineNum">     316 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     317 </span>            :   
+<span class="lineNum">     318 </span><span class="lineNoCov">          0 :   if ( auto c = g-&gt;registry.get_target&lt;iconfig&gt;(&quot;config&quot;) )</span>
+<span class="lineNum">     319 </span>            :   {
+<span class="lineNum">     320 </span><span class="lineNoCov">          0 :     if ( !c-&gt;load_and_configure(_pa.config_path) )</span>
+<span class="lineNum">     321 </span>            :     {
+<span class="lineNum">     322 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; &quot;Configuration FAIL!&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     323 </span><span class="lineNoCov">          0 :       return 5;</span>
+<span class="lineNum">     324 </span>            :     }
+<span class="lineNum">     325 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     326 </span>            : 
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :   std::set&lt;std::string&gt; required;</span>
+<span class="lineNum">     328 </span><span class="lineNoCov">          0 :   for (auto&amp; item : _pa.object_options) required.insert(item.first);</span>
+<span class="lineNum">     329 </span><span class="lineNoCov">          0 :   for (auto&amp; item : _pa.startup_options) required.insert(item.first);</span>
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 :   if ( !check_options(_pa.config_path, required) )</span>
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 :     return 5;</span>
+<span class="lineNum">     332 </span>            : 
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :   std::clog &lt;&lt; &quot;Program name: &quot; &lt;&lt; g-&gt;program_name &lt;&lt; std::endl;</span>
+<span class="lineNum">     334 </span><span class="lineNoCov">          0 :   std::clog &lt;&lt; &quot;Instance name: &quot; &lt;&lt; g-&gt;instance_name &lt;&lt; std::endl;</span>
+<span class="lineNum">     335 </span>            :   
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :   if ( !_pa.user_name.empty() )</span>
+<span class="lineNum">     337 </span>            :   {
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :     std::string err;</span>
+<span class="lineNum">     339 </span><span class="lineNoCov">          0 :     if ( !::wfc::change_user(_pa.user_name, &amp;err) )</span>
+<span class="lineNum">     340 </span>            :     {
+<span class="lineNum">     341 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; &quot;FAIL: cannot set new user name '&quot;&lt;&lt; _pa.user_name &lt;&lt;&quot;': &quot; &lt;&lt; err &lt;&lt; std::endl;</span>
+<span class="lineNum">     342 </span><span class="lineNoCov">          0 :       return 6;</span>
+<span class="lineNum">     343 </span>            :     }
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :     std::clog &lt;&lt; &quot;New user name: &quot; &lt;&lt; _pa.user_name &lt;&lt; std::endl;</span>
+<span class="lineNum">     345 </span>            :   }
+<span class="lineNum">     346 </span>            :     
+<span class="lineNum">     347 </span><span class="lineNoCov">          0 :   if ( !_pa.working_directory.empty() )</span>
+<span class="lineNum">     348 </span>            :   {
+<span class="lineNum">     349 </span><span class="lineNoCov">          0 :     std::string err;</span>
+<span class="lineNum">     350 </span><span class="lineNoCov">          0 :     if ( !::wfc::change_working_directory(_pa.working_directory, &amp;err) )</span>
+<span class="lineNum">     351 </span>            :     {
+<span class="lineNum">     352 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; &quot;FAIL: cannot set new working directory '&quot; &lt;&lt; _pa.working_directory &lt;&lt; &quot;': &quot; &lt;&lt; err &lt;&lt; std::endl;</span>
+<span class="lineNum">     353 </span><span class="lineNoCov">          0 :       return 7;</span>
+<span class="lineNum">     354 </span>            :     }
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :     std::clog &lt;&lt; &quot;New working directory: &quot; &lt;&lt; _pa.user_name &lt;&lt; std::endl;</span>
+<span class="lineNum">     356 </span>            :   }
+<span class="lineNum">     357 </span>            : 
+<span class="lineNum">     358 </span><span class="lineNoCov">          0 :   if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )</span>
+<span class="lineNum">     359 </span>            :   {
+<span class="lineNum">     360 </span><span class="lineNoCov">          0 :     return 8;</span>
+<span class="lineNum">     361 </span>            :   }
+<span class="lineNum">     362 </span>            :   
+<a name="363"><span class="lineNum">     363 </span><span class="lineNoCov">          0 :   if ( _pa.working_time != 0 )</span></a>
+<span class="lineNum">     364 </span>            :   {
+<span class="lineNum">     365 </span><span class="lineNoCov">          0 :     g-&gt;after_start.insert([this]</span>
+<span class="lineNum">     366 </span>            :     {
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :       this-&gt;get_common_workflow()-&gt;post(</span>
+<span class="lineNum">     368 </span>            :         std::chrono::seconds(_pa.working_time),
+<span class="lineNum">     369 </span>            :         wfc_exit
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :       );</span>
+<span class="lineNum">     371 </span><span class="lineNoCov">          0 :       return true;</span>
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :     });</span>
+<span class="lineNum">     373 </span>            :   }
+<span class="lineNum">     374 </span>            :   
+<span class="lineNum">     375 </span>            : 
+<span class="lineNum">     376 </span><span class="lineNoCov">          0 :   if ( _pa.daemonize )</span>
+<span class="lineNum">     377 </span>            :   {
+<span class="lineNum">     378 </span><span class="lineNoCov">          0 :     if ( _pa.autoup )</span>
+<span class="lineNum">     379 </span><span class="lineNoCov">          0 :       std::clog &lt;&lt; &quot;autoup process enabled&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     380 </span>            :     
+<span class="lineNum">     381 </span><span class="lineNoCov">          0 :     std::clog &lt;&lt; &quot;daemonize... see log for startup status&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     382 </span>            :     
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :     if ( _pa.wait_daemonize )</span>
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :       std::clog &lt;&lt; &quot;wait for finalize daemon startup&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     385 </span>            :     
+<a name="386"><span class="lineNum">     386 </span><span class="lineNoCov">          0 :     if ( auto fun = ::wfc::daemonize(_pa.wait_daemonize) )</span></a>
+<span class="lineNum">     387 </span>            :     {
+<span class="lineNum">     388 </span><span class="lineNoCov">          0 :       g-&gt;after_start.insert( [fun](){ fun(); return false;} );</span>
+<span class="lineNum">     389 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     390 </span>            :   } 
+<span class="lineNum">     391 </span><span class="lineNoCov">          0 :   else if ( _pa.autoup || _pa.wait_daemonize)</span>
+<span class="lineNum">     392 </span>            :   {
+<span class="lineNum">     393 </span><span class="lineNoCov">          0 :     if ( _pa.autoup )</span>
+<span class="lineNum">     394 </span><span class="lineNoCov">          0 :       std::clog &lt;&lt; &quot;WARNING: autoup argument ignored. Only with -d worked&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     395 </span><span class="lineNoCov">          0 :     if (_pa.wait_daemonize)</span>
+<span class="lineNum">     396 </span><span class="lineNoCov">          0 :       std::clog &lt;&lt; &quot;WARNING: wait_daemonize argument ignored. Only with -d worked&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     397 </span>            :   }
+<span class="lineNum">     398 </span>            : 
+<span class="lineNum">     399 </span><span class="lineNoCov">          0 :   if ( _pa.daemonize &amp;&amp; _pa.autoup )</span>
+<span class="lineNum">     400 </span>            :   {
+<span class="lineNum">     401 </span><span class="lineNoCov">          0 :     bool success_autoup = _pa.success_autoup;</span>
+<span class="lineNum">     402 </span>            :     ::wfc::autoup( 
+<span class="lineNum">     403 </span>            :       _pa.autoup_timeout,
+<a name="404"><span class="lineNum">     404 </span>            :       success_autoup,</a>
+<span class="lineNum">     405 </span>            :       nullptr,
+<span class="lineNum">     406 </span><span class="lineNoCov">          0 :       [this, g](int count, int status, time_t work_time)</span>
+<span class="lineNum">     407 </span>            :       {
+<a name="408"><span class="lineNum">     408 </span><span class="lineNoCov">          0 :         this-&gt;_pa.startup_options.clear();</span></a>
+<span class="lineNum">     409 </span>            :         
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :         g-&gt;after_start.insert([count, status, work_time]()</span>
+<span class="lineNum">     411 </span>            :         {
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :           SYSTEM_LOG_BEGIN(&quot;------------------------------------------------&quot;)</span>
+<span class="lineNum">     413 </span><span class="lineNoCov">          0 :           if ( status != 0 )</span>
+<span class="lineNum">     414 </span>            :           {
+<span class="lineNum">     415 </span><span class="lineNoCov">          0 :             SYSTEM_LOG_ERROR(&quot;Daemon stop with status: &quot; &lt;&lt; status &lt;&lt; &quot; after work time &quot; &lt;&lt; work_time &lt;&lt; &quot;sec. &quot;)</span>
+<span class="lineNum">     416 </span>            :           }
+<span class="lineNum">     417 </span>            :           else
+<span class="lineNum">     418 </span>            :           {
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :             SYSTEM_LOG_WARNING(&quot;Daemon was killed after work time &quot; &lt;&lt; work_time &lt;&lt; &quot;sec. &quot;)</span>
+<span class="lineNum">     420 </span>            :           }
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :           SYSTEM_LOG_WARNING(&quot;Restart №&quot; &lt;&lt; count)</span>
+<span class="lineNum">     422 </span><span class="lineNoCov">          0 :           SYSTEM_LOG_END(&quot;------------------------------------------------&quot;)</span>
+<span class="lineNum">     423 </span><span class="lineNoCov">          0 :           return false;</span>
+<span class="lineNum">     424 </span><span class="lineNoCov">          0 :         });</span>
+<span class="lineNum">     425 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     426 </span><span class="lineNoCov">          0 :     );</span>
+<span class="lineNum">     427 </span>            :   }
+<span class="lineNum">     428 </span>            :   
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 :   g-&gt;args.insert(_pa.startup_options);</span>
+<span class="lineNum">     430 </span><span class="lineNoCov">          0 :   g-&gt;args.insert(_pa.object_options);</span>
+<span class="lineNum">     431 </span>            : 
+<span class="lineNum">     432 </span><span class="lineNoCov">          0 :   if ( _pa.coredump )</span>
+<span class="lineNum">     433 </span><span class="lineNoCov">          0 :     ::wfc::dumpable();</span>
+<span class="lineNum">     434 </span>            : 
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :   _ready = true;</span>
+<span class="lineNum">     436 </span><span class="lineNoCov">          0 :   return 0;</span>
+<span class="lineNum">     437 </span>            : }
+<span class="lineNum">     438 </span>            : 
+<span class="lineNum">     439 </span>            : ///
+<span class="lineNum">     440 </span>            : /// help
+<a name="441"><span class="lineNum">     441 </span>            : ///</a>
+<span class="lineNum">     442 </span>            : 
+<span class="lineNum">     443 </span><span class="lineNoCov">          0 : void startup_domain::show_usage_()</span>
+<span class="lineNum">     444 </span>            : {
+<span class="lineNum">     445 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     446 </span>            :   
+<span class="lineNum">     447 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;Usage:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     448 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;  &quot; &lt;&lt; g-&gt;program_name &lt;&lt; &quot; --help&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;  &quot; &lt;&lt; g-&gt;program_name &lt;&lt; &quot; --version&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     450 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;  &quot; &lt;&lt; g-&gt;program_name &lt;&lt; &quot; --info [&lt;package name&gt;]&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     451 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;  &quot; &lt;&lt; g-&gt;program_name &lt;&lt; &quot; -G [&lt;component name&gt;] [-C &lt;path&gt;]&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     452 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;  &quot; &lt;&lt; g-&gt;program_name &lt;&lt; &quot; --check-config &lt;path&gt;&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 :   std::cout &lt;&lt;  &quot;  &quot; &lt;&lt; g-&gt;program_name &lt;&lt; &quot; [-d] [-c] [-a &lt;timeout&gt;] [-n &lt;component name&gt;] -C &lt;config path&gt;&quot; &lt;&lt; std::endl;</span>
+<a name="454"><span class="lineNum">     454 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     455 </span>            : 
+<span class="lineNum">     456 </span><span class="lineNoCov">          0 : bool startup_domain::show_info_(const std::string&amp; package_name)</span>
+<span class="lineNum">     457 </span>            : {
+<span class="lineNum">     458 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     459 </span>            : 
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :   if ( g==nullptr )</span>
+<span class="lineNum">     461 </span><span class="lineNoCov">          0 :     return false;</span>
+<span class="lineNum">     462 </span>            :   
+<span class="lineNum">     463 </span><span class="lineNoCov">          0 :   if ( !package_name.empty() )</span>
+<span class="lineNum">     464 </span>            :   {
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :     if ( auto p = g-&gt;registry.get_object&lt;ipackage&gt;(&quot;package&quot;, package_name, true) )</span>
+<span class="lineNum">     466 </span>            :     {
+<span class="lineNum">     467 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;About Package:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     468 </span><span class="lineNoCov">          0 :       this-&gt;show_build_info_(p-&gt;build_info(), false);</span>
+<span class="lineNum">     469 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;\tDescription: &quot; &lt;&lt; p-&gt;description() &lt;&lt; std::endl;</span>
+<span class="lineNum">     470 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;\tList of modules:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     471 </span><span class="lineNoCov">          0 :       auto modules = p-&gt;modules();</span>
+<span class="lineNum">     472 </span><span class="lineNoCov">          0 :       for( auto m: modules ) </span>
+<span class="lineNum">     473 </span>            :       {
+<span class="lineNum">     474 </span><span class="lineNoCov">          0 :           std::cout &lt;&lt; &quot;\t\t&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;. &quot; &lt;&lt; m-&gt;description() &lt;&lt; std::endl;</span>
+<span class="lineNum">     475 </span><span class="lineNoCov">          0 :           auto components = m-&gt;components();</span>
+<span class="lineNum">     476 </span><span class="lineNoCov">          0 :           for( auto o: components ) </span>
+<span class="lineNum">     477 </span>            :           {
+<span class="lineNum">     478 </span><span class="lineNoCov">          0 :             std::cout &lt;&lt; &quot;\t\t\t&quot; &lt;&lt; o-&gt;name() &lt;&lt; &quot; - &quot; &lt;&lt; o-&gt;description() &lt;&lt; std::endl;</span>
+<span class="lineNum">     479 </span><span class="lineNoCov">          0 :           }</span>
+<span class="lineNum">     480 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     481 </span>            :     }
+<span class="lineNum">     482 </span>            :     else
+<span class="lineNum">     483 </span>            :     {
+<span class="lineNum">     484 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;Information about the package is not available.&quot; &lt;&lt; std::endl;</span>
+<a name="485"><span class="lineNum">     485 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;Package '&quot; &lt;&lt; package_name &lt;&lt; &quot;' Not Found!&quot; &lt;&lt; std::endl;</span></a>
+<span class="lineNum">     486 </span><span class="lineNoCov">          0 :       std::cout &lt;&lt; &quot;Available packages: &quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     487 </span><span class="lineNoCov">          0 :       g-&gt;registry.for_each&lt;ipackage&gt;(&quot;package&quot;, [](const std::string&amp; pkgname, std::shared_ptr&lt;ipackage&gt;)</span>
+<span class="lineNum">     488 </span>            :       {
+<span class="lineNum">     489 </span><span class="lineNoCov">          0 :         std::cout &lt;&lt; &quot;\t&quot; &lt;&lt; pkgname &lt;&lt; std::endl;</span>
+<span class="lineNum">     490 </span><span class="lineNoCov">          0 :       });</span>
+<span class="lineNum">     491 </span><span class="lineNoCov">          0 :       return false;</span>
+<span class="lineNum">     492 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     493 </span>            :   }
+<span class="lineNum">     494 </span>            :   else
+<span class="lineNum">     495 </span>            :   {
+<span class="lineNum">     496 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;About Program:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     497 </span><span class="lineNoCov">          0 :     this-&gt;show_build_info_(g-&gt;program_build_info, false);</span>
+<span class="lineNum">     498 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;About WFC:&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     499 </span><span class="lineNoCov">          0 :     this-&gt;show_build_info_(g-&gt;wfc_build_info, false);</span>
+<span class="lineNum">     500 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;Package List:&quot; &lt;&lt; std::endl;</span>
+<a name="501"><span class="lineNum">     501 </span>            : </a>
+<span class="lineNum">     502 </span><span class="lineNoCov">          0 :     g-&gt;registry.for_each&lt;ipackage&gt;(&quot;package&quot;, </span>
+<span class="lineNum">     503 </span><span class="lineNoCov">          0 :       [this](const std::string&amp;, std::shared_ptr&lt;ipackage&gt; p)</span>
+<span class="lineNum">     504 </span>            :       {
+<a name="505"><span class="lineNum">     505 </span><span class="lineNoCov">          0 :         this-&gt;show_build_info_(p-&gt;build_info(), true);</span></a>
+<span class="lineNum">     506 </span><span class="lineNoCov">          0 :       }, </span>
+<span class="lineNum">     507 </span><span class="lineNoCov">          0 :       [](std::shared_ptr&lt;ipackage&gt; left, std::shared_ptr&lt;ipackage&gt; right)</span>
+<span class="lineNum">     508 </span>            :       {
+<span class="lineNum">     509 </span><span class="lineNoCov">          0 :         return left-&gt;order() &lt; right-&gt;order();</span>
+<span class="lineNum">     510 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     511 </span><span class="lineNoCov">          0 :     );</span>
+<span class="lineNum">     512 </span>            :   }
+<span class="lineNum">     513 </span><span class="lineNoCov">          0 :   return true;</span>
+<a name="514"><span class="lineNum">     514 </span>            : }</a>
+<span class="lineNum">     515 </span>            : 
+<span class="lineNum">     516 </span><span class="lineNoCov">          0 : void startup_domain::show_build_info_(std::shared_ptr&lt;ibuild_info&gt; b, bool shortinfo)</span>
+<span class="lineNum">     517 </span>            : {
+<span class="lineNum">     518 </span><span class="lineNoCov">          0 :   if ( b==nullptr )</span>
+<span class="lineNum">     519 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">     520 </span>            :   
+<span class="lineNum">     521 </span><span class="lineNoCov">          0 :   if ( shortinfo )</span>
+<span class="lineNum">     522 </span>            :   {
+<span class="lineNum">     523 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; std::setw(20) &lt;&lt; std::right &lt;&lt; b-&gt;name() </span>
+<span class="lineNum">     524 </span><span class="lineNoCov">          0 :               &lt;&lt; &quot; &quot; &lt;&lt; std::setw(17) &lt;&lt; std::left &lt;&lt; b-&gt;version() </span>
+<span class="lineNum">     525 </span><span class="lineNoCov">          0 :               &lt;&lt; &quot; &quot; &lt;&lt; b-&gt;initial_author() &lt;&lt; std::endl;</span>
+<span class="lineNum">     526 </span>            :   }
+<span class="lineNum">     527 </span>            :   else
+<span class="lineNum">     528 </span>            :   {
+<span class="lineNum">     529 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tEnabled: &quot; &lt;&lt; b-&gt;enabled()  &lt;&lt; std::endl;</span>
+<span class="lineNum">     530 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tName: &quot;    &lt;&lt; b-&gt;name()     &lt;&lt; std::endl;</span>
+<span class="lineNum">     531 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tVersion: &quot; &lt;&lt; b-&gt;version() &lt;&lt; std::endl;</span>
+<span class="lineNum">     532 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tCompiler: &quot; &lt;&lt; b-&gt;compiler_version() &lt;&lt; std::endl;</span>
+<span class="lineNum">     533 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tBuild Type: &quot;     &lt;&lt; b-&gt;build_type()     &lt;&lt; std::endl;</span>
+<span class="lineNum">     534 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tBuild Date: &quot;     &lt;&lt; b-&gt;build_date()     &lt;&lt; std::endl;</span>
+<span class="lineNum">     535 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tBuild Flags: &quot;    &lt;&lt; b-&gt;build_flags()    &lt;&lt; std::endl;</span>
+<span class="lineNum">     536 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tBranch: &quot;         &lt;&lt; b-&gt;branch()         &lt;&lt; std::endl;</span>
+<span class="lineNum">     537 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tCommit: &quot;         &lt;&lt; b-&gt;commit()         &lt;&lt; std::endl;</span>
+<span class="lineNum">     538 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tCommit Date: &quot;    &lt;&lt; b-&gt;commit_date()    &lt;&lt; std::endl;</span>
+<span class="lineNum">     539 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tCommit Author: &quot;  &lt;&lt; b-&gt;commit_author()  &lt;&lt; std::endl;</span>
+<span class="lineNum">     540 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tCommit Message: &quot; &lt;&lt; b-&gt;commit_message() &lt;&lt; std::endl;</span>
+<span class="lineNum">     541 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tAll Authors: &quot;    &lt;&lt; b-&gt;all_authors()    &lt;&lt; std::endl;</span>
+<span class="lineNum">     542 </span><span class="lineNoCov">          0 :     std::cout &lt;&lt; &quot;\tInitial Author: &quot; &lt;&lt; b-&gt;initial_author() &lt;&lt; std::endl;</span>
+<span class="lineNum">     543 </span>            :   }
+<span class="lineNum">     544 </span>            : }
+<span class="lineNum">     545 </span>            : 
+<span class="lineNum">     546 </span>            : ///
+<span class="lineNum">     547 </span>            : /// generate
+<span class="lineNum">     548 </span>            : ///
+<a name="549"><span class="lineNum">     549 </span>            : </a>
+<span class="lineNum">     550 </span>            : /// @return false - модуль не найден
+<span class="lineNum">     551 </span><span class="lineNoCov">          0 : bool startup_domain::generate_()</span>
+<span class="lineNum">     552 </span>            : {
+<span class="lineNum">     553 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     554 </span>            :   
+<span class="lineNum">     555 </span><span class="lineNoCov">          0 :   if ( auto c = g-&gt;registry.get_target&lt;iconfig&gt;(&quot;config&quot;) )</span>
+<span class="lineNum">     556 </span>            :   {
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :     std::string genstr;</span>
+<span class="lineNum">     558 </span><span class="lineNoCov">          0 :     if ( c-&gt;generate_config(_pa.generate_options, _pa.config_path, genstr) )</span>
+<span class="lineNum">     559 </span>            :     {
+<span class="lineNum">     560 </span><span class="lineNoCov">          0 :       if ( _pa.config_path.empty() )</span>
+<span class="lineNum">     561 </span>            :       {
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :         std::cout &lt;&lt; genstr &lt;&lt; std::endl;</span>
+<span class="lineNum">     563 </span>            :       }
+<span class="lineNum">     564 </span>            :       else
+<span class="lineNum">     565 </span>            :       {
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 :         std::clog &lt;&lt; &quot;generated write to file: &quot; &lt;&lt; _pa.config_path &lt;&lt; std::endl;</span>
+<span class="lineNum">     567 </span><span class="lineNoCov">          0 :         std::clog &lt;&lt; &quot;For JSON format: cat &quot;&lt;&lt; _pa.config_path &lt;&lt; &quot; | python -mjson.tool&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">     568 </span>            :       }
+<span class="lineNum">     569 </span><span class="lineNoCov">          0 :       return true;</span>
+<span class="lineNum">     570 </span>            :     }
+<span class="lineNum">     571 </span>            :     else
+<span class="lineNum">     572 </span>            :     {
+<span class="lineNum">     573 </span><span class="lineNoCov">          0 :       std::cerr &lt;&lt; genstr &lt;&lt; std::endl;</span>
+<span class="lineNum">     574 </span><span class="lineNoCov">          0 :     }</span>
+<span class="lineNum">     575 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     576 </span><span class="lineNoCov">          0 :   return false;</span>
+<a name="577"><span class="lineNum">     577 </span>            : }</a>
+<span class="lineNum">     578 </span>            : 
+<span class="lineNum">     579 </span><span class="lineCov">          3 : }}</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

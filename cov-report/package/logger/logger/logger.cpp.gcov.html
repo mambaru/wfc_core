@@ -1,0 +1,414 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - wfc_core-coverage.info - package/logger/logger/logger.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">package/logger/logger</a> - logger.cpp<span style="font-size: 80%;"> (source / <a href="logger.cpp.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">wfc_core-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">117</td>
+            <td class="headerCovTableEntryLo">0.9 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2019-09-05</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntryLo">16.7 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //</a>
+<span class="lineNum">       2 </span>            : // Author: Vladimir Migashko &lt;migashko@gmail.com&gt;, (C) 2013-2017
+<span class="lineNum">       3 </span>            : //
+<span class="lineNum">       4 </span>            : // Copyright: See COPYING file that comes with this distribution
+<span class="lineNum">       5 </span>            : //
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span>            : #include &quot;logger.hpp&quot;
+<span class="lineNum">       8 </span>            : #include &lt;wfc/logger.hpp&gt;
+<span class="lineNum">       9 </span>            : #include &lt;wfc/wfc_exit.hpp&gt;
+<span class="lineNum">      10 </span>            : #include &lt;wfc/memory.hpp&gt;
+<span class="lineNum">      11 </span>            : #include &lt;wlog/init.hpp&gt;
+<span class="lineNum">      12 </span>            : #include &lt;wlog/formatter/formatter.hpp&gt;
+<span class="lineNum">      13 </span>            : #include &lt;iostream&gt;
+<span class="lineNum">      14 </span>            : #include &lt;memory&gt;
+<span class="lineNum">      15 </span>            : 
+<a name="16"><span class="lineNum">      16 </span>            : namespace wfc{ namespace core{</a>
+<span class="lineNum">      17 </span>            : 
+<span class="lineNum">      18 </span><span class="lineNoCov">          0 : logger::~logger()</span>
+<span class="lineNum">      19 </span>            : {
+<span class="lineNum">      20 </span>            :   // Логгер инициализируеться на этапе конфигурации
+<span class="lineNum">      21 </span>            :   // Но если система не была запущщена из=за ошибки, 
+<span class="lineNum">      22 </span>            :   // то метод stop не будет вызван
+<span class="lineNum">      23 </span><span class="lineNoCov">          0 :   this-&gt;release();</span>
+<a name="24"><span class="lineNum">      24 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      25 </span>            : 
+<span class="lineNum">      26 </span><span class="lineNoCov">          0 : logger::logger()</span>
+<span class="lineNum">      27 </span>            : {
+<span class="lineNum">      28 </span><span class="lineNoCov">          0 :   wlog::init();</span>
+<a name="29"><span class="lineNum">      29 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span><span class="lineNoCov">          0 : logger::domain_config logger::generate(const std::string&amp; arg) </span>
+<span class="lineNum">      32 </span>            : {
+<span class="lineNum">      33 </span>            :   domain_config
+<span class="lineNum">      34 </span><span class="lineNoCov">          0 :   conf;</span>
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :   conf.finalize();</span>
+<span class="lineNum">      36 </span><span class="lineNoCov">          0 :   conf.stdout.color_map.clear();</span>
+<span class="lineNum">      37 </span><span class="lineNoCov">          0 :   if ( arg == &quot;example&quot; )</span>
+<span class="lineNum">      38 </span>            :   {
+<span class="lineNum">      39 </span><span class="lineNoCov">          0 :     conf.startup_priority = -1000;</span>
+<span class="lineNum">      40 </span><span class="lineNoCov">          0 :     conf.shutdown_priority = 1000;</span>
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :     conf.customize.resize(1);</span>
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 :     conf.customize.back().names.push_back(&quot;&lt;&lt;log-name&gt;&gt;&quot;);</span>
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :     conf.customize.back().deny.insert(&quot;DEBUG&quot;);</span>
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :     conf.customize.back().path=&quot;$&quot;;</span>
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 :     conf.customize.back().stdout.color_map.clear();</span>
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :     conf.customize.back().resolution = wlog::resolutions::milliseconds;</span>
+<span class="lineNum">      47 </span><span class="lineNoCov">          0 :     conf.customize.back().size_limit = 12345;</span>
+<span class="lineNum">      48 </span><span class="lineNoCov">          0 :     conf.deny.insert(&quot;TRACE&quot;);</span>
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :     conf.path=&quot;path/to/log/file.log&quot;;</span>
+<span class="lineNum">      50 </span>            :   }
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :   return conf;</span>
+<a name="52"><span class="lineNum">      52 </span>            : }</a>
+<span class="lineNum">      53 </span>            : 
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 : void logger::release()</span>
+<span class="lineNum">      55 </span>            : {
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :   std::unique_ptr&lt;message_t&gt; lm;</span>
+<span class="lineNum">      57 </span><span class="lineNoCov">          0 :   wlog::logger_fun log;</span>
+<span class="lineNum">      58 </span>            :   {
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 :     std::lock_guard&lt;mutex_type&gt; lk(_mutex);</span>
+<span class="lineNum">      60 </span><span class="lineNoCov">          0 :     log = wlog::release();</span>
+<span class="lineNum">      61 </span><span class="lineNoCov">          0 :     if ( _last_message!=nullptr)</span>
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :       lm = std::make_unique&lt;message_t&gt;( *_last_message );</span>
+<span class="lineNum">      63 </span>            :   }
+<span class="lineNum">      64 </span>            :   // TODO: записать финальное сообщение 
+<span class="lineNum">      65 </span><span class="lineNoCov">          0 :   if (lm != nullptr &amp;&amp; log!=nullptr )</span>
+<span class="lineNum">      66 </span>            :   {
+<span class="lineNum">      67 </span><span class="lineNoCov">          0 :     auto tp = wlog::time_point::clock::now();</span>
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 :     log(tp, &quot;&quot;, &quot;FINAL&quot;, &quot;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n&quot;);</span>
+<span class="lineNum">      69 </span><span class="lineNoCov">          0 :     log(tp, &quot;&quot;, &quot;FINAL&quot;, &quot;---------- Abnormal Shutdown! ----------\n&quot;);</span>
+<span class="lineNum">      70 </span>            :     {
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :       std::stringstream ss;</span>
+<span class="lineNum">      72 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;Date: &quot;;</span>
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :       wlog::formatter::date(ss, std::get&lt;0&gt;( *lm), this-&gt;options(), wlog::formatter_handlers() );</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;\n&quot;;</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :       log(tp, &quot;&quot;, &quot;FINAL&quot;, ss.str() );</span>
+<span class="lineNum">      76 </span>            :     }
+<span class="lineNum">      77 </span>            : 
+<span class="lineNum">      78 </span>            :     {
+<span class="lineNum">      79 </span><span class="lineNoCov">          0 :       std::stringstream ss;</span>
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;Time: &quot;;</span>
+<span class="lineNum">      81 </span><span class="lineNoCov">          0 :       wlog::formatter::time(ss, std::get&lt;0&gt;( *lm), this-&gt;options(), wlog::formatter_handlers() );</span>
+<span class="lineNum">      82 </span><span class="lineNoCov">          0 :       wlog::formatter::fraction(ss, std::get&lt;0&gt;( *lm), this-&gt;options(), wlog::formatter_handlers() );</span>
+<span class="lineNum">      83 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;\n&quot;;</span>
+<span class="lineNum">      84 </span><span class="lineNoCov">          0 :       log(tp, &quot;&quot;, &quot;FINAL&quot;, ss.str() );</span>
+<span class="lineNum">      85 </span>            :     }
+<span class="lineNum">      86 </span>            : 
+<span class="lineNum">      87 </span>            :     {
+<span class="lineNum">      88 </span><span class="lineNoCov">          0 :       std::stringstream ss;</span>
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;Name: &quot;;</span>
+<span class="lineNum">      90 </span><span class="lineNoCov">          0 :       ss &lt;&lt; std::get&lt;1&gt;( *lm);</span>
+<span class="lineNum">      91 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;\n&quot;;</span>
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :       log(tp, &quot;&quot;, &quot;FINAL&quot;, ss.str() );</span>
+<span class="lineNum">      93 </span>            :     }
+<span class="lineNum">      94 </span>            : 
+<span class="lineNum">      95 </span>            :     {
+<span class="lineNum">      96 </span><span class="lineNoCov">          0 :       std::stringstream ss;</span>
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 :       ss &lt;&lt; &quot;Message: &quot;;</span>
+<span class="lineNum">      98 </span><span class="lineNoCov">          0 :       ss &lt;&lt; std::get&lt;3&gt;( *lm);</span>
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :       log(tp, &quot;&quot;, &quot;FINAL&quot;, ss.str() );</span>
+<span class="lineNum">     100 </span>            :     }
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :     log(tp, &quot;&quot;, &quot;FINAL&quot;, &quot;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n&quot;);</span>
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :   }</span>
+<a name="103"><span class="lineNum">     103 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     104 </span>            : 
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 : void logger::reconfigure()</span>
+<span class="lineNum">     106 </span>            : {
+<span class="lineNum">     107 </span><span class="lineNoCov">          0 :   this-&gt;init_log_( this-&gt;options(), wlog::logger_handlers() );</span>
+<a name="108"><span class="lineNum">     108 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     109 </span>            : 
+<span class="lineNum">     110 </span><span class="lineNoCov">          0 : void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)</span>
+<span class="lineNum">     111 </span>            : {
+<span class="lineNum">     112 </span>            :   /*
+<span class="lineNum">     113 </span>            :   bool fatal_found = false;
+<span class="lineNum">     114 </span>            :   bool final_found = false;
+<span class="lineNum">     115 </span>            :   bool syslog_found = false;
+<span class="lineNum">     116 </span>            :   for ( const auto&amp; c : opt.customize )
+<span class="lineNum">     117 </span>            :   {
+<span class="lineNum">     118 </span>            :     for ( const auto&amp; n : c.names)
+<span class="lineNum">     119 </span>            :     {
+<span class="lineNum">     120 </span>            :       if ( !fatal_found &amp;&amp; n == &quot;FATAL&quot;)
+<span class="lineNum">     121 </span>            :         fatal_found = true;
+<span class="lineNum">     122 </span>            :       if ( !final_found &amp;&amp; n == &quot;FINAL&quot;)
+<span class="lineNum">     123 </span>            :         final_found = true;
+<span class="lineNum">     124 </span>            :       if ( !syslog_found &amp;&amp; n == &quot;SYSLOG&quot;)
+<span class="lineNum">     125 </span>            :         syslog_found = true;
+<span class="lineNum">     126 </span>            :     }
+<span class="lineNum">     127 </span>            :   }
+<span class="lineNum">     128 </span>            :   */
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :   bool fatal_found = opt.get_customize(&quot;FATAL&quot;)!=nullptr;</span>
+<span class="lineNum">     130 </span><span class="lineNoCov">          0 :   bool final_found = opt.get_customize(&quot;FINAL&quot;)!=nullptr;</span>
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :   bool syslog_found = opt.get_customize(&quot;SYSLOG&quot;)!=nullptr;</span>
+<span class="lineNum">     132 </span>            :   
+<span class="lineNum">     133 </span>            :   
+<span class="lineNum">     134 </span><span class="lineNoCov">          0 :   if ( !fatal_found )</span>
+<span class="lineNum">     135 </span>            :   {
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :     opt.customize.resize( opt.customize.size() + 1 );</span>
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :     opt.customize.back().names.push_back(&quot;FATAL&quot;);</span>
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :     opt.customize.back().stdout.color_map[&quot;$all&quot;] = &quot;red&quot;;</span>
+<span class="lineNum">     139 </span>            :   }
+<span class="lineNum">     140 </span>            :     
+<span class="lineNum">     141 </span><span class="lineNoCov">          0 :   if ( !final_found )</span>
+<span class="lineNum">     142 </span>            :   {
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :     opt.customize.resize( opt.customize.size() + 1 );</span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     opt.customize.back().names.push_back(&quot;FINAL&quot;);</span>
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :     opt.customize.back().stdout.color_map[&quot;$all&quot;] = &quot;light_red&quot;;</span>
+<span class="lineNum">     146 </span>            :   }
+<span class="lineNum">     147 </span>            :   
+<span class="lineNum">     148 </span><span class="lineNoCov">          0 :   if ( !syslog_found )</span>
+<span class="lineNum">     149 </span>            :   {
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :     opt.customize.resize( opt.customize.size() + 1 );</span>
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :     opt.customize.back().names.push_back(&quot;SYSLOG&quot;);</span>
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :     opt.customize.back().syslog.name=this-&gt;global()-&gt;program_name;</span>
+<span class="lineNum">     153 </span>            :   }
+<a name="154"><span class="lineNum">     154 </span>            :   </a>
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :   bool stop_by_fatal = this-&gt;options().stop_with_fatal_log_entry;</span>
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :   dlh.after.push_back([this, stop_by_fatal](const wlog::time_point&amp; tp, const std::string&amp; logname, const std::string&amp; ident, const std::string&amp; message)</span>
+<span class="lineNum">     157 </span>            :   {
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :     if ( ident==&quot;FATAL&quot; )</span>
+<span class="lineNum">     159 </span>            :     {
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :       if ( auto g = this-&gt;global())</span>
+<span class="lineNum">     161 </span>            :       {
+<span class="lineNum">     162 </span>            :         {
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :           std::lock_guard&lt;mutex_type&gt; lk( this-&gt;_mutex);</span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :           if ( _last_message == nullptr)</span>
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :             _last_message = std::make_unique&lt;message_t&gt;(tp, logname, ident, message);</span>
+<span class="lineNum">     166 </span>            :         }
+<span class="lineNum">     167 </span>            : 
+<span class="lineNum">     168 </span><span class="lineNoCov">          0 :         if ( stop_by_fatal &amp;&amp; g-&gt;stop_signal_flag == false )</span>
+<span class="lineNum">     169 </span>            :         {
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :           wfc_exit_with_error(&quot;Abnormal Shutdown by 'FATAL' message!&quot;);</span>
+<span class="lineNum">     171 </span>            :         }
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     173 </span>            :     }
+<span class="lineNum">     174 </span><span class="lineNoCov">          0 :   });</span>
+<span class="lineNum">     175 </span>            :   
+<span class="lineNum">     176 </span><span class="lineNoCov">          0 :   wlog::init( opt, dlh );</span>
+<a name="177"><span class="lineNum">     177 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     178 </span>            : 
+<span class="lineNum">     179 </span><span class="lineNoCov">          0 : void logger::initialize()</span>
+<span class="lineNum">     180 </span>            : {
+<span class="lineNum">     181 </span><span class="lineNoCov">          0 :   auto logs= this-&gt;select_objects&lt;ilogger&gt;(&quot;logger&quot;);</span>
+<span class="lineNum">     182 </span><span class="lineNoCov">          0 :   if ( !logs.empty() )</span>
+<span class="lineNum">     183 </span>            :   {
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 :     wlog::logger_handlers dlh;</span>
+<span class="lineNum">     185 </span><span class="lineNoCov">          0 :     wlog::logger_options opt = this-&gt;options();</span>
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :     for ( const auto&amp; fmt: logs )</span>
+<span class="lineNum">     187 </span>            :     {
+<span class="lineNum">     188 </span><span class="lineNoCov">          0 :       dlh.customize[fmt.first].file_formatter   = fmt.second-&gt;file_formatter();</span>
+<span class="lineNum">     189 </span><span class="lineNoCov">          0 :       dlh.customize[fmt.first].stdout_formatter = fmt.second-&gt;stdout_formatter();</span>
+<span class="lineNum">     190 </span><span class="lineNoCov">          0 :       dlh.customize[fmt.first].syslog_formatter = fmt.second-&gt;syslog_formatter();</span>
+<span class="lineNum">     191 </span>            : 
+<span class="lineNum">     192 </span><span class="lineNoCov">          0 :       dlh.customize[fmt.first].file_writer   = fmt.second-&gt;file_writer();</span>
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :       dlh.customize[fmt.first].stdout_writer = fmt.second-&gt;stdout_writer();</span>
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :       dlh.customize[fmt.first].syslog_writer = fmt.second-&gt;syslog_writer();</span>
+<span class="lineNum">     195 </span>            :       
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :       if ( auto log_ptr = fmt.second-&gt;options() )</span>
+<span class="lineNum">     197 </span>            :       {
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :         if (wlog::custom_logger_options* cstm_opt = opt.get_customize(fmt.first) )</span>
+<span class="lineNum">     199 </span>            :         {
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :           cstm_opt-&gt;upgrade(*log_ptr);</span>
+<span class="lineNum">     201 </span>            :         }
+<span class="lineNum">     202 </span>            :         else
+<span class="lineNum">     203 </span>            :         {
+<span class="lineNum">     204 </span><span class="lineNoCov">          0 :           wlog::custom_logger_options cl_opt;</span>
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :           cl_opt.names.push_back(fmt.first);</span>
+<span class="lineNum">     206 </span><span class="lineNoCov">          0 :           static_cast&lt;wlog::basic_logger_options&amp;&gt;(cl_opt) = *log_ptr;</span>
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :           opt.customize.push_back(cl_opt);</span>
+<span class="lineNum">     208 </span>            :         }
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     210 </span>            :     }
+<span class="lineNum">     211 </span>            :     // Это повторная инициализация, поэтому отключаем 
+<span class="lineNum">     212 </span><span class="lineNoCov">          0 :     opt.startup_rotate = false;</span>
+<span class="lineNum">     213 </span><span class="lineNoCov">          0 :     for (auto&amp; o : opt.customize ) o.startup_rotate = false;</span>
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :     this-&gt;init_log_(opt, dlh);</span>
+<span class="lineNum">     215 </span><span class="lineNoCov">          0 :   }</span>
+<a name="216"><span class="lineNum">     216 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     217 </span>            : 
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 : void logger::perform_io(data_ptr /*d*/, io_id_t /*io_id*/, output_handler_t /*callback*/)</span>
+<span class="lineNum">     219 </span>            : {
+<span class="lineNum">     220 </span>            :   /*
+<span class="lineNum">     221 </span>            : 
+<span class="lineNum">     222 </span>            :   std::stringstream ss;
+<span class="lineNum">     223 </span>            :   ss &lt;&lt; d;
+<span class="lineNum">     224 </span>            :   std::string cmd;
+<span class="lineNum">     225 </span>            :   std::string result;
+<span class="lineNum">     226 </span>            :   ss &gt;&gt; cmd;
+<span class="lineNum">     227 </span>            :   if ( cmd==&quot;exit&quot; )
+<span class="lineNum">     228 </span>            :   {
+<span class="lineNum">     229 </span>            :     if (callback!=nullptr) callback(nullptr);
+<span class="lineNum">     230 </span>            :     return;
+<span class="lineNum">     231 </span>            :   }
+<span class="lineNum">     232 </span>            : 
+<span class="lineNum">     233 </span>            :   if ( cmd == &quot;help&quot; )
+<span class="lineNum">     234 </span>            :   {
+<span class="lineNum">     235 </span>            :     result = &quot;help!!!&quot;;
+<span class="lineNum">     236 </span>            :   }
+<span class="lineNum">     237 </span>            :   else if ( cmd == &quot;allow&quot; )
+<span class="lineNum">     238 </span>            :   {
+<span class="lineNum">     239 </span>            :     std::string value;
+<span class="lineNum">     240 </span>            :     ss &gt;&gt; value;
+<span class="lineNum">     241 </span>            :     _deny.erase(value);
+<span class="lineNum">     242 </span>            :   }
+<span class="lineNum">     243 </span>            :   else if ( cmd == &quot;deny&quot; )
+<span class="lineNum">     244 </span>            :   {
+<span class="lineNum">     245 </span>            :     std::string value;
+<span class="lineNum">     246 </span>            :     ss &gt;&gt; value;
+<span class="lineNum">     247 </span>            :     _deny.insert(value);
+<span class="lineNum">     248 </span>            :   }
+<span class="lineNum">     249 </span>            :   else if ( cmd == &quot;list&quot; )
+<span class="lineNum">     250 </span>            :   {
+<span class="lineNum">     251 </span>            :     
+<span class="lineNum">     252 </span>            :   }
+<span class="lineNum">     253 </span>            :   else if ( cmd == &quot;get&quot; )
+<span class="lineNum">     254 </span>            :   {
+<span class="lineNum">     255 </span>            :     
+<span class="lineNum">     256 </span>            :   }
+<span class="lineNum">     257 </span>            :   else if ( cmd == &quot;set&quot; )
+<span class="lineNum">     258 </span>            :   {
+<span class="lineNum">     259 </span>            :     std::string name;
+<span class="lineNum">     260 </span>            :     ss &gt;&gt; name;
+<span class="lineNum">     261 </span>            :     auto itr = _writers.find(name);
+<span class="lineNum">     262 </span>            :     if ( itr==_writers.end() || itr-&gt;second==nullptr )
+<span class="lineNum">     263 </span>            :     {
+<span class="lineNum">     264 </span>            :       result = std::string(&quot;ERROR: logger '&quot;) + cmd + &quot;' not found&quot;;
+<span class="lineNum">     265 </span>            :     }
+<span class="lineNum">     266 </span>            :     else
+<span class="lineNum">     267 </span>            :     {
+<span class="lineNum">     268 </span>            :       bool ready = true;
+<span class="lineNum">     269 </span>            :       auto pwrite = itr-&gt;second;
+<span class="lineNum">     270 </span>            :       auto opt = pwrite-&gt;options();
+<span class="lineNum">     271 </span>            :       std::sort(opt.deny.begin(), opt.deny.end());
+<span class="lineNum">     272 </span>            :       std::string field;
+<span class="lineNum">     273 </span>            :       ss &gt;&gt; field;
+<span class="lineNum">     274 </span>            :       if (field == &quot;milliseconds&quot;)
+<span class="lineNum">     275 </span>            :       {
+<span class="lineNum">     276 </span>            :         bool value;
+<span class="lineNum">     277 </span>            :         ss &gt;&gt; std::boolalpha &gt;&gt; value;
+<span class="lineNum">     278 </span>            :         opt.milliseconds = value;
+<span class="lineNum">     279 </span>            :       }
+<span class="lineNum">     280 </span>            :       else if (field == &quot;limit&quot;)
+<span class="lineNum">     281 </span>            :       {
+<span class="lineNum">     282 </span>            :         size_t value;
+<span class="lineNum">     283 </span>            :         ss &gt;&gt; value;
+<span class="lineNum">     284 </span>            :         opt.limit = value;
+<span class="lineNum">     285 </span>            :       }
+<span class="lineNum">     286 </span>            :       else if (field == &quot;stdout&quot;)
+<span class="lineNum">     287 </span>            :       {
+<span class="lineNum">     288 </span>            :         std::string value;
+<span class="lineNum">     289 </span>            :         ss &gt;&gt; value;
+<span class="lineNum">     290 </span>            :         opt.stdout = value;
+<span class="lineNum">     291 </span>            :       }
+<span class="lineNum">     292 </span>            :       else if (field == &quot;syslog&quot;)
+<span class="lineNum">     293 </span>            :       {
+<span class="lineNum">     294 </span>            :         std::string value;
+<span class="lineNum">     295 </span>            :         ss &gt;&gt; value;
+<span class="lineNum">     296 </span>            :         opt.syslog = value;
+<span class="lineNum">     297 </span>            :       }
+<span class="lineNum">     298 </span>            :       else if (field == &quot;path&quot;)
+<span class="lineNum">     299 </span>            :       {
+<span class="lineNum">     300 </span>            :         std::string value;
+<span class="lineNum">     301 </span>            :         ss &gt;&gt; value;
+<span class="lineNum">     302 </span>            :         opt.path = value;
+<span class="lineNum">     303 </span>            :       }
+<span class="lineNum">     304 </span>            :       else if (field == &quot;deny&quot;)
+<span class="lineNum">     305 </span>            :       {
+<span class="lineNum">     306 </span>            :         std::string value;
+<span class="lineNum">     307 </span>            :         ss &gt;&gt; value;
+<span class="lineNum">     308 </span>            :         auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
+<span class="lineNum">     309 </span>            :         if (itr==opt.deny.end())
+<span class="lineNum">     310 </span>            :           opt.deny.push_back(value);
+<span class="lineNum">     311 </span>            :       }
+<span class="lineNum">     312 </span>            :       else if (field == &quot;allow&quot;)
+<span class="lineNum">     313 </span>            :       {
+<span class="lineNum">     314 </span>            :         std::string value;
+<span class="lineNum">     315 </span>            :         ss &gt;&gt; value;
+<span class="lineNum">     316 </span>            :         auto itr = std::find(opt.deny.begin(), opt.deny.end(), value);
+<span class="lineNum">     317 </span>            :         if (itr!=opt.deny.end())
+<span class="lineNum">     318 </span>            :           opt.deny.erase(itr);
+<span class="lineNum">     319 </span>            :       }
+<span class="lineNum">     320 </span>            :       else
+<span class="lineNum">     321 </span>            :       {
+<span class="lineNum">     322 </span>            :         ready = false;
+<span class="lineNum">     323 </span>            :         result = std::string(&quot;ERROR: unkown field: &quot;) + field; 
+<span class="lineNum">     324 </span>            :       }
+<span class="lineNum">     325 </span>            : 
+<span class="lineNum">     326 </span>            :       if ( ready )
+<span class="lineNum">     327 </span>            :       {
+<span class="lineNum">     328 </span>            :         pwrite-&gt;initialize(opt);
+<span class="lineNum">     329 </span>            :         result=&quot;Done&quot;;
+<span class="lineNum">     330 </span>            :       }
+<span class="lineNum">     331 </span>            :     }
+<span class="lineNum">     332 </span>            :   }
+<span class="lineNum">     333 </span>            :   callback(std::make_unique&lt;data_type&gt;(result.begin(), result.end()) );
+<span class="lineNum">     334 </span>            :   */
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 : }</span>
+<a name="336"><span class="lineNum">     336 </span>            : </a>
+<span class="lineNum">     337 </span>            : 
+<span class="lineNum">     338 </span><span class="lineCov">          3 : }}</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

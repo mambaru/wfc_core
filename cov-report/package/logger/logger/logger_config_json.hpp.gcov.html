@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - wfc_core-coverage.info - package/logger/logger/logger_config_json.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">package/logger/logger</a> - logger_config_json.hpp<span style="font-size: 80%;"> (source / <a href="logger_config_json.hpp.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">wfc_core-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2019-09-05</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //</a>
+<span class="lineNum">       2 </span>            : // Author: Vladimir Migashko &lt;migashko@gmail.com&gt;, (C) 2013-2015
+<span class="lineNum">       3 </span>            : //
+<span class="lineNum">       4 </span>            : // Copyright: See COPYING file that comes with this distribution
+<span class="lineNum">       5 </span>            : //
+<span class="lineNum">       6 </span>            : #pragma once
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : #include &quot;logger_config.hpp&quot;
+<span class="lineNum">       9 </span>            : #include &lt;wfc/json.hpp&gt;
+<span class="lineNum">      10 </span>            : #include &lt;wlogjson/logger_options_json.hpp&gt;
+<span class="lineNum">      11 </span>            : 
+<span class="lineNum">      12 </span>            : namespace wfc{ namespace core{
+<span class="lineNum">      13 </span>            : 
+<a name="14"><span class="lineNum">      14 </span>            : struct logger_config_json</a>
+<span class="lineNum">      15 </span>            : {
+<span class="lineNum">      16 </span><span class="lineNoCov">          0 :   JSON_NAME(stop_with_fatal_log_entry)</span>
+<span class="lineNum">      17 </span>            :   
+<span class="lineNum">      18 </span>            :   typedef json::object&lt;
+<span class="lineNum">      19 </span>            :     logger_config,
+<span class="lineNum">      20 </span>            :     json::member_list&lt;
+<span class="lineNum">      21 </span>            :       json::member&lt;n_stop_with_fatal_log_entry,    logger_config, bool,      &amp;logger_config::stop_with_fatal_log_entry&gt;,
+<span class="lineNum">      22 </span>            :       json::base&lt;wlog::logger_options_json&gt;
+<span class="lineNum">      23 </span>            :     &gt;,
+<span class="lineNum">      24 </span>            :     json::strict_mode
+<span class="lineNum">      25 </span>            :   &gt; type;
+<span class="lineNum">      26 </span>            :   
+<span class="lineNum">      27 </span>            :   typedef type::serializer serializer;
+<span class="lineNum">      28 </span>            :   typedef type::target target;
+<span class="lineNum">      29 </span>            :   typedef type::member_list member_list;
+<span class="lineNum">      30 </span>            : };
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            :   /*
+<span class="lineNum">      33 </span>            : struct logger_config_json
+<span class="lineNum">      34 </span>            : {
+<span class="lineNum">      35 </span>            :   JSON_NAME(limit)
+<span class="lineNum">      36 </span>            :   JSON_NAME(save_old)
+<span class="lineNum">      37 </span>            :   JSON_NAME(milliseconds)
+<span class="lineNum">      38 </span>            :   JSON_NAME(syslog)
+<span class="lineNum">      39 </span>            :   JSON_NAME(stdout)
+<span class="lineNum">      40 </span>            :   JSON_NAME(path)
+<span class="lineNum">      41 </span>            :   JSON_NAME(deny)
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            :   typedef json::object&lt;
+<span class="lineNum">      44 </span>            :     writer_options,
+<span class="lineNum">      45 </span>            :     json::member_list&lt;
+<span class="lineNum">      46 </span>            :       json::member&lt;n_milliseconds,    writer_options, bool,      &amp;writer_options::milliseconds&gt;,
+<span class="lineNum">      47 </span>            :       json::member&lt;n_limit,    writer_options, size_t,      &amp;writer_options::limit&gt;,
+<span class="lineNum">      48 </span>            :       json::member&lt;n_save_old,    writer_options, bool,      &amp;writer_options::save_old&gt;,
+<span class="lineNum">      49 </span>            :       json::member&lt;n_stdout,   writer_options, std::string, &amp;writer_options::stdout&gt;,
+<span class="lineNum">      50 </span>            :       json::member&lt;n_path,     writer_options, std::string, &amp;writer_options::path&gt;,
+<span class="lineNum">      51 </span>            :       json::member&lt;n_syslog,   writer_options, std::string, &amp;writer_options::syslog&gt;,
+<span class="lineNum">      52 </span>            :       json::member&lt;n_deny,   writer_options, std::vector&lt;std::string&gt;, &amp;writer_options::deny,
+<span class="lineNum">      53 </span>            :         json::array&lt;std::vector&lt; json::value&lt;std::string&gt; &gt; &gt;
+<span class="lineNum">      54 </span>            :       &gt;
+<span class="lineNum">      55 </span>            :     &gt;,
+<span class="lineNum">      56 </span>            :     json::strict_mode
+<span class="lineNum">      57 </span>            :   &gt; writer_options_json;
+<span class="lineNum">      58 </span>            :   
+<span class="lineNum">      59 </span>            :   JSON_NAME(single)
+<span class="lineNum">      60 </span>            :   JSON_NAME(custom)
+<span class="lineNum">      61 </span>            :   JSON_NAME(abort_with_fatal_message)
+<span class="lineNum">      62 </span>            :   
+<span class="lineNum">      63 </span>            :   typedef json::object&lt;
+<span class="lineNum">      64 </span>            :     logger_config,
+<span class="lineNum">      65 </span>            :     json::member_list&lt;
+<span class="lineNum">      66 </span>            :       json::base&lt;writer_options_json&gt;,
+<span class="lineNum">      67 </span>            :       json::member&lt;n_single,   logger_config, bool,        &amp;logger_config::single&gt;,
+<span class="lineNum">      68 </span>            :       json::member&lt;n_abort_with_fatal_message,    logger_config, bool,      &amp;logger_config::abort_with_fatal_message&gt;,
+<span class="lineNum">      69 </span>            :       json::member&lt;n_custom,   logger_config, logger_config::custom_map, &amp;logger_config::custom,
+<span class="lineNum">      70 </span>            :         json::dict&lt; std::unordered_map&lt; json::value&lt;std::string&gt;, writer_options_json &gt; &gt;
+<span class="lineNum">      71 </span>            :       &gt;
+<span class="lineNum">      72 </span>            :     &gt;,
+<span class="lineNum">      73 </span>            :     json::strict_mode
+<span class="lineNum">      74 </span>            :   &gt; type;
+<span class="lineNum">      75 </span>            :   
+<span class="lineNum">      76 </span>            :   typedef type::serializer serializer;
+<span class="lineNum">      77 </span>            :   typedef type::target target;
+<span class="lineNum">      78 </span>            :   typedef type::member_list member_list;
+<span class="lineNum">      79 </span>            : };
+<span class="lineNum">      80 </span>            :   */
+<span class="lineNum">      81 </span>            : 
+<span class="lineNum">      82 </span>            : }}
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

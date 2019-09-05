@@ -1,0 +1,250 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - wfc_core-coverage.info - package/statistics/system_statistics/system_statistics_domain.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">package/statistics/system_statistics</a> - system_statistics_domain.cpp<span style="font-size: 80%;"> (source / <a href="system_statistics_domain.cpp.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">wfc_core-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">38</td>
+            <td class="headerCovTableEntryLo">2.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2019-09-05</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntryLo">18.2 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : </a>
+<span class="lineNum">       2 </span>            : #include &lt;wfc/iinterface.hpp&gt;
+<span class="lineNum">       3 </span>            : #include &lt;wfc/statistics/meters.hpp&gt;
+<span class="lineNum">       4 </span>            : #include &quot;system_statistics_domain.hpp&quot;
+<span class="lineNum">       5 </span>            : #include &quot;impl/get_procstat.hpp&quot;
+<a name="6"><span class="lineNum">       6 </span>            : namespace wfc{ namespace core{</a>
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span><span class="lineNoCov">          0 : struct protostat</span>
+<span class="lineNum">       9 </span>            : {
+<span class="lineNum">      10 </span>            :   typedef ::wfc::value_meter meter_type;
+<span class="lineNum">      11 </span>            :   meter_type utime;                    /** user mode jiffies **/
+<span class="lineNum">      12 </span>            :   meter_type stime;                    /** kernel mode jiffies **/
+<span class="lineNum">      13 </span>            :   meter_type vsize;                    /** Virtual memory size **/
+<span class="lineNum">      14 </span>            :   meter_type rss;                      /** Resident Set Size **/
+<span class="lineNum">      15 </span>            :   int pid = 0;
+<span class="lineNum">      16 </span>            :   procstat ps;
+<span class="lineNum">      17 </span>            : };
+<span class="lineNum">      18 </span>            : 
+<span class="lineNum">      19 </span>            : class procmeter
+<span class="lineNum">      20 </span>            : {
+<span class="lineNum">      21 </span>            :   typedef protostat::meter_type meter_type;
+<span class="lineNum">      22 </span>            :   typedef std::mutex mutex_type;
+<span class="lineNum">      23 </span>            : public:
+<span class="lineNum">      24 </span>            :   procmeter(std::weak_ptr&lt;wfc::statistics::statistics&gt; stat,  const std::string&amp; prefix)
+<span class="lineNum">      25 </span>            :     : _prefix(prefix)
+<span class="lineNum">      26 </span>            :     , _wstat(stat)
+<span class="lineNum">      27 </span>            :     , _procstat()
+<span class="lineNum">      28 </span>            :   {
+<span class="lineNum">      29 </span>            :   }
+<span class="lineNum">      30 </span>            : 
+<span class="lineNum">      31 </span>            :   void initialize(  )
+<span class="lineNum">      32 </span>            :   {
+<span class="lineNum">      33 </span>            :     std::lock_guard&lt;mutex_type&gt; lk(_mutext);
+<span class="lineNum">      34 </span>            :     _threads.clear();
+<span class="lineNum">      35 </span>            :     _procstat = this-&gt;create_protostat_(&quot;&quot;, -1);
+<span class="lineNum">      36 </span>            :     _procstat.pid = ::getpid();
+<span class="lineNum">      37 </span>            :   }
+<span class="lineNum">      38 </span>            : 
+<span class="lineNum">      39 </span>            :   void add_threads( std::string name, std::vector&lt;pid_t&gt; ids )
+<span class="lineNum">      40 </span>            :   {
+<span class="lineNum">      41 </span>            :     std::lock_guard&lt;mutex_type&gt; lk(_mutext);
+<span class="lineNum">      42 </span>            :     for (size_t i=0; i &lt; ids.size(); ++i)
+<span class="lineNum">      43 </span>            :     {
+<span class="lineNum">      44 </span>            :       _threads.push_back( this-&gt;create_protostat_( name, static_cast&lt;int&gt;(i) ) );
+<span class="lineNum">      45 </span>            :       _threads.back().pid = ids[i];
+<span class="lineNum">      46 </span>            :     }
+<span class="lineNum">      47 </span>            :   }
+<span class="lineNum">      48 </span>            : 
+<span class="lineNum">      49 </span>            :   void perform()
+<span class="lineNum">      50 </span>            :   {
+<span class="lineNum">      51 </span>            :     std::lock_guard&lt;mutex_type&gt; lk(_mutext);
+<span class="lineNum">      52 </span>            :     this-&gt;perform_( &amp;_procstat );
+<span class="lineNum">      53 </span>            :     for ( auto&amp; t : _threads )
+<span class="lineNum">      54 </span>            :       this-&gt;perform_( &amp;t );
+<span class="lineNum">      55 </span>            :   }
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            :   
+<span class="lineNum">      58 </span>            : private:
+<span class="lineNum">      59 </span>            :   void perform_( protostat* proto )
+<span class="lineNum">      60 </span>            :   {
+<span class="lineNum">      61 </span>            :     if ( auto stat = _wstat.lock() )
+<span class="lineNum">      62 </span>            :     {
+<span class="lineNum">      63 </span>            :       procstat ps;
+<span class="lineNum">      64 </span>            :       if ( 0==get_procstat(proto-&gt;pid, &amp;ps) )
+<span class="lineNum">      65 </span>            :       {
+<span class="lineNum">      66 </span>            :         if ( proto-&gt;ps.utime != 0 || true)
+<span class="lineNum">      67 </span>            :           proto-&gt;utime.create( static_cast&lt;wrtstat::value_type&gt;(0), static_cast&lt;wrtstat::size_type&gt;(ps.utime - proto-&gt;ps.utime) );
+<span class="lineNum">      68 </span>            :         if ( proto-&gt;ps.stime != 0 )
+<span class="lineNum">      69 </span>            :           proto-&gt;stime.create( static_cast&lt;wrtstat::value_type&gt;(0), static_cast&lt;wrtstat::size_type&gt;(ps.stime - proto-&gt;ps.stime) );
+<span class="lineNum">      70 </span>            :         proto-&gt;vsize.create(
+<span class="lineNum">      71 </span>            :           static_cast&lt;wrtstat::value_type&gt;( static_cast&lt;int&gt;(ps.vsize)*getpagesize()), 
+<span class="lineNum">      72 </span>            :           static_cast&lt;wrtstat::size_type&gt;(0) 
+<span class="lineNum">      73 </span>            :         );
+<span class="lineNum">      74 </span>            :         proto-&gt;rss.create(
+<span class="lineNum">      75 </span>            :           static_cast&lt;wrtstat::value_type&gt;( static_cast&lt;int&gt;(ps.rss)*getpagesize()), 
+<span class="lineNum">      76 </span>            :           static_cast&lt;wrtstat::size_type&gt;(0)
+<span class="lineNum">      77 </span>            :         );
+<span class="lineNum">      78 </span>            :         proto-&gt;ps = ps;
+<span class="lineNum">      79 </span>            :       }
+<span class="lineNum">      80 </span>            :     }
+<span class="lineNum">      81 </span>            :   }
+<span class="lineNum">      82 </span>            : 
+<span class="lineNum">      83 </span>            :   protostat create_protostat_(std::string name, int pid)
+<span class="lineNum">      84 </span>            :   {
+<span class="lineNum">      85 </span>            :     protostat proto;
+<span class="lineNum">      86 </span>            :     proto.utime = this-&gt;create_meter_(pid, name, &quot;utime&quot;);
+<span class="lineNum">      87 </span>            :     proto.stime = this-&gt;create_meter_(pid, name, &quot;stime&quot;);
+<span class="lineNum">      88 </span>            :     proto.vsize = this-&gt;create_meter_(pid, name, &quot;vsize&quot;);
+<span class="lineNum">      89 </span>            :     proto.rss= this-&gt;create_meter_(pid, name, &quot;rss&quot;);
+<span class="lineNum">      90 </span>            :     return proto;
+<span class="lineNum">      91 </span>            :   }
+<span class="lineNum">      92 </span>            : 
+<span class="lineNum">      93 </span>            :   value_meter create_meter_( int id, const std::string&amp; group, const std::string&amp; name)
+<span class="lineNum">      94 </span>            :   {
+<span class="lineNum">      95 </span>            :     if ( auto stat = _wstat.lock() )
+<span class="lineNum">      96 </span>            :     {
+<span class="lineNum">      97 </span>            :       std::stringstream ss;
+<span class="lineNum">      98 </span>            :       ss &lt;&lt; _prefix &lt;&lt; group;
+<span class="lineNum">      99 </span>            :       if ( id != -1 )
+<span class="lineNum">     100 </span>            :         ss &lt;&lt; &quot;thread&quot; &lt;&lt; id &lt;&lt; &quot;.&quot;;
+<span class="lineNum">     101 </span>            :       ss &lt;&lt; name;
+<span class="lineNum">     102 </span>            :       return stat-&gt;create_value_meter(ss.str());
+<span class="lineNum">     103 </span>            :     }
+<span class="lineNum">     104 </span>            :     return value_meter();
+<span class="lineNum">     105 </span>            :   }
+<span class="lineNum">     106 </span>            : private:
+<span class="lineNum">     107 </span>            :   std::string _prefix;
+<span class="lineNum">     108 </span>            :   std::weak_ptr&lt;wfc::statistics::statistics&gt; _wstat;
+<span class="lineNum">     109 </span>            :   protostat _procstat;
+<span class="lineNum">     110 </span>            :   std::vector&lt;protostat&gt; _threads;
+<span class="lineNum">     111 </span>            :   mutex_type _mutext;
+<a name="112"><span class="lineNum">     112 </span>            : };</a>
+<span class="lineNum">     113 </span>            :   
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 : void system_statistics_domain::configure()</span>
+<span class="lineNum">     115 </span>            : {
+<span class="lineNum">     116 </span>            : 
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     118 </span>            : 
+<span class="lineNum">     119 </span><span class="lineNoCov">          0 : void system_statistics_domain::stop() </span>
+<span class="lineNum">     120 </span>            : {
+<span class="lineNum">     121 </span><span class="lineNoCov">          0 :   this-&gt;get_workflow()-&gt;release_timer(_timer_id);</span>
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 : }</span>
+<span class="lineNum">     123 </span>            : 
+<a name="124"><span class="lineNum">     124 </span>            : </a>
+<span class="lineNum">     125 </span>            : 
+<span class="lineNum">     126 </span><span class="lineNoCov">          0 : void system_statistics_domain::restart()</span>
+<span class="lineNum">     127 </span>            : {
+<span class="lineNum">     128 </span><span class="lineNoCov">          0 :   this-&gt;get_workflow()-&gt;release_timer(_timer_id);</span>
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :   _timer_id = -1; </span>
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :   auto stat = this-&gt;get_statistics();</span>
+<span class="lineNum">     132 </span><span class="lineNoCov">          0 :   if ( stat == nullptr )</span>
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">     134 </span>            :   
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :   auto prefix = this-&gt;statistics_options().prefix;</span>
+<span class="lineNum">     136 </span><span class="lineNoCov">          0 :   auto proto = std::make_shared&lt;protostat&gt;();</span>
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :   proto-&gt;utime = stat-&gt;create_value_meter(prefix + &quot;utime&quot;);</span>
+<span class="lineNum">     138 </span><span class="lineNoCov">          0 :   proto-&gt;stime = stat-&gt;create_value_meter(prefix + &quot;stime&quot;);</span>
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :   proto-&gt;vsize = stat-&gt;create_value_meter(prefix + &quot;vsize&quot;);</span>
+<span class="lineNum">     140 </span><span class="lineNoCov">          0 :   proto-&gt;rss= stat-&gt;create_value_meter(prefix + &quot;rss&quot;);</span>
+<span class="lineNum">     141 </span>            :   
+<a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 :   _timer_id = this-&gt;get_workflow()-&gt;create_timer( </span></a>
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :     std::chrono::milliseconds( this-&gt;statistics_options().interval_ms ),</span>
+<span class="lineNum">     144 </span><span class="lineNoCov">          0 :     [stat, proto]()-&gt;bool</span>
+<span class="lineNum">     145 </span>            :     {
+<span class="lineNum">     146 </span>            :       procstat ps;
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :       if ( 0==get_procstat(&amp;ps) )</span>
+<span class="lineNum">     148 </span>            :       {
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :         if ( proto-&gt;ps.utime != 0 )</span>
+<span class="lineNum">     150 </span><span class="lineNoCov">          0 :           proto-&gt;utime.create(</span>
+<span class="lineNum">     151 </span>            :             static_cast&lt;wrtstat::value_type&gt;(0),
+<span class="lineNum">     152 </span><span class="lineNoCov">          0 :             static_cast&lt;wrtstat::size_type&gt;(ps.utime - proto-&gt;ps.utime) );</span>
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :         if ( proto-&gt;ps.stime != 0 )</span>
+<span class="lineNum">     154 </span><span class="lineNoCov">          0 :           proto-&gt;stime.create(</span>
+<span class="lineNum">     155 </span>            :             static_cast&lt;wrtstat::value_type&gt;(0),
+<span class="lineNum">     156 </span><span class="lineNoCov">          0 :             static_cast&lt;wrtstat::size_type&gt;(ps.stime - proto-&gt;ps.stime) );</span>
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :         proto-&gt;vsize.create(</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :           static_cast&lt;wrtstat::value_type&gt;( static_cast&lt;int&gt;(ps.vsize)*getpagesize()/(1024*1024)),</span>
+<span class="lineNum">     159 </span>            :           static_cast&lt;wrtstat::size_type&gt;(0)
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :         );</span>
+<span class="lineNum">     161 </span><span class="lineNoCov">          0 :         proto-&gt;rss.create(</span>
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :           static_cast&lt;wrtstat::value_type&gt;( static_cast&lt;int&gt;(ps.rss)*getpagesize()/(1024*1024)),</span>
+<span class="lineNum">     163 </span>            :           static_cast&lt;wrtstat::size_type&gt;(0)
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :         );</span>
+<span class="lineNum">     165 </span><span class="lineNoCov">          0 :         proto-&gt;ps = ps;</span>
+<span class="lineNum">     166 </span>            :       }
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :       return true;</span>
+<span class="lineNum">     168 </span>            :     }
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :   );</span>
+<span class="lineNum">     170 </span>            :   
+<span class="lineNum">     171 </span>            :   
+<a name="172"><span class="lineNum">     172 </span>            : }</a>
+<span class="lineNum">     173 </span>            : 
+<span class="lineNum">     174 </span><span class="lineCov">          3 : }}</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,681 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - wfc_core-coverage.info - package/core/core/core.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">package/core/core</a> - core.cpp<span style="font-size: 80%;"> (source / <a href="core.cpp.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">wfc_core-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">338</td>
+            <td class="headerCovTableEntryLo">0.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2019-09-05</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">65</td>
+            <td class="headerCovTableEntryLo">3.1 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : #include &quot;core.hpp&quot;</a>
+<span class="lineNum">       2 </span>            : 
+<span class="lineNum">       3 </span>            : 
+<span class="lineNum">       4 </span>            : #include &lt;wfc/core/iconfig.hpp&gt;
+<span class="lineNum">       5 </span>            : #include &lt;wfc/module/iinstance.hpp&gt;
+<span class="lineNum">       6 </span>            : #include &lt;wfc/module/icomponent.hpp&gt;
+<span class="lineNum">       7 </span>            : 
+<span class="lineNum">       8 </span>            : #include &lt;wfc/system/system.hpp&gt;
+<span class="lineNum">       9 </span>            : #include &lt;wfc/logger.hpp&gt;
+<span class="lineNum">      10 </span>            : #include &lt;wfc/memory.hpp&gt;
+<span class="lineNum">      11 </span>            : #include &lt;wfc/json.hpp&gt;
+<span class="lineNum">      12 </span>            : #include &lt;fas/system/nullptr.hpp&gt;
+<span class="lineNum">      13 </span>            : #include &lt;boost/filesystem.hpp&gt;
+<span class="lineNum">      14 </span>            : #include &lt;vector&gt;
+<span class="lineNum">      15 </span>            : #include &lt;string&gt;
+<span class="lineNum">      16 </span>            : #include &lt;iostream&gt;
+<span class="lineNum">      17 </span>            : #include &lt;sstream&gt;
+<span class="lineNum">      18 </span>            : #include &lt;algorithm&gt;
+<span class="lineNum">      19 </span>            : #include &lt;syslog.h&gt;
+<span class="lineNum">      20 </span>            : #include &lt;sys/resource.h&gt;
+<span class="lineNum">      21 </span>            : #include &lt;sched.h&gt;
+<span class="lineNum">      22 </span>            : 
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            : namespace wfc{  namespace core{
+<span class="lineNum">      25 </span>            : 
+<a name="26"><span class="lineNum">      26 </span>            : namespace </a>
+<span class="lineNum">      27 </span>            : {
+<a name="28"><span class="lineNum">      28 </span><span class="lineCov">          1 :   static std::atomic&lt;bool&gt; gs_stop_signal;</span></a>
+<span class="lineNum">      29 </span>            : 
+<span class="lineNum">      30 </span><span class="lineNoCov">          0 :   static void signal_sigint_handler(int)</span>
+<span class="lineNum">      31 </span>            :   {
+<span class="lineNum">      32 </span><span class="lineNoCov">          0 :     std::clog &lt;&lt; &quot;Stop signal handler&quot; &lt;&lt; std::endl;</span>
+<span class="lineNum">      33 </span><span class="lineNoCov">          0 :     if ( auto g = ::wfc::wfcglobal::static_global )</span>
+<span class="lineNum">      34 </span><span class="lineNoCov">          0 :       g-&gt;stop_signal_flag = true;</span>
+<span class="lineNum">      35 </span><span class="lineNoCov">          0 :     gs_stop_signal = true;</span>
+<a name="36"><span class="lineNum">      36 </span><span class="lineNoCov">          0 :   }</span></a>
+<span class="lineNum">      37 </span>            :   
+<span class="lineNum">      38 </span><span class="lineNoCov">          0 :   std::set&lt;pid_t&gt; get_threads()</span>
+<span class="lineNum">      39 </span>            :   {
+<span class="lineNum">      40 </span><span class="lineNoCov">          0 :     std::set&lt;pid_t&gt; pids;</span>
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :     std::stringstream ss;</span>
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 :     ss &lt;&lt; &quot;/proc/&quot; &lt;&lt; ::getpid() &lt;&lt; &quot;/task&quot;;</span>
+<span class="lineNum">      43 </span><span class="lineNoCov">          0 :     std::string dirname = ss.str();</span>
+<span class="lineNum">      44 </span><span class="lineNoCov">          0 :     boost::system::error_code ec;</span>
+<span class="lineNum">      45 </span><span class="lineNoCov">          0 :     boost::filesystem::directory_iterator beg( dirname, ec), end;</span>
+<span class="lineNum">      46 </span><span class="lineNoCov">          0 :     if (ec)</span>
+<a name="47"><span class="lineNum">      47 </span><span class="lineNoCov">          0 :       return pids;</span></a>
+<span class="lineNum">      48 </span>            :   
+<span class="lineNum">      49 </span><span class="lineNoCov">          0 :     std::for_each(beg, end, [&amp;pids](const boost::filesystem::directory_entry&amp; de)</span>
+<span class="lineNum">      50 </span>            :     {
+<span class="lineNum">      51 </span><span class="lineNoCov">          0 :       boost::filesystem::path p(de, fas_null_param);</span>
+<span class="lineNum">      52 </span><span class="lineNoCov">          0 :       if ( boost::filesystem::is_directory(p) )</span>
+<span class="lineNum">      53 </span>            :       {
+<span class="lineNum">      54 </span><span class="lineNoCov">          0 :         pid_t pid = ::atoi( p.filename().c_str() );</span>
+<span class="lineNum">      55 </span><span class="lineNoCov">          0 :         if ( pid &gt; 0 )</span>
+<span class="lineNum">      56 </span><span class="lineNoCov">          0 :           pids.insert(pid);</span>
+<span class="lineNum">      57 </span>            :       }
+<span class="lineNum">      58 </span><span class="lineNoCov">          0 :     });</span>
+<span class="lineNum">      59 </span><span class="lineNoCov">          0 :     return pids;</span>
+<a name="60"><span class="lineNum">      60 </span>            :   }</a>
+<span class="lineNum">      61 </span>            :   
+<span class="lineNum">      62 </span><span class="lineNoCov">          0 :   std::string setaffinity(pid_t pid, const std::set&lt;int&gt;&amp; cpu)</span>
+<span class="lineNum">      63 </span>            :   {
+<span class="lineNum">      64 </span><span class="lineNoCov">          0 :     std::string ss = &quot;[&quot;;</span>
+<span class="lineNum">      65 </span>            :     cpu_set_t  mask;
+<span class="lineNum">      66 </span><span class="lineNoCov">          0 :     CPU_ZERO(&amp;mask);</span>
+<span class="lineNum">      67 </span>            :     
+<span class="lineNum">      68 </span><span class="lineNoCov">          0 :     for (int id : cpu )</span>
+<span class="lineNum">      69 </span>            :     {
+<span class="lineNum">      70 </span><span class="lineNoCov">          0 :       ss += std::to_string(id) +  &quot;,&quot;;</span>
+<span class="lineNum">      71 </span><span class="lineNoCov">          0 :       CPU_SET( size_t(id), &amp;mask);</span>
+<span class="lineNum">      72 </span>            :     }
+<span class="lineNum">      73 </span><span class="lineNoCov">          0 :     if ( !cpu.empty() )</span>
+<span class="lineNum">      74 </span><span class="lineNoCov">          0 :       ss.pop_back();</span>
+<span class="lineNum">      75 </span><span class="lineNoCov">          0 :     ss+=&quot;]&quot;;</span>
+<span class="lineNum">      76 </span><span class="lineNoCov">          0 :     if ( 0 != ::sched_setaffinity( pid, sizeof(cpu_set_t), &amp;mask) )</span>
+<span class="lineNum">      77 </span>            :     {
+<span class="lineNum">      78 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_ERROR(&quot;sched_setaffinity: &quot; &lt;&lt; strerror(errno) &lt;&lt; &quot; for pid=&quot; &lt;&lt; pid);</span>
+<span class="lineNum">      79 </span>            :     }
+<span class="lineNum">      80 </span><span class="lineNoCov">          0 :     return ss;</span>
+<span class="lineNum">      81 </span>            :   }
+<span class="lineNum">      82 </span>            : 
+<a name="83"><span class="lineNum">      83 </span>            : } // namespace</a>
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span><span class="lineNoCov">          0 : core::~core()</span>
+<span class="lineNum">      86 </span>            : {
+<a name="87"><span class="lineNum">      87 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      88 </span>            : 
+<span class="lineNum">      89 </span><span class="lineNoCov">          0 : core::core()</span>
+<span class="lineNum">      90 </span>            :   : _reconfigure_flag(false)
+<span class="lineNum">      91 </span>            :   , _stop_flag(false)
+<span class="lineNum">      92 </span><span class="lineNoCov">          0 :   , _abort_flag(false)</span>
+<span class="lineNum">      93 </span>            : {
+<span class="lineNum">      94 </span><span class="lineNoCov">          0 :   gs_stop_signal = false;</span>
+<a name="95"><span class="lineNum">      95 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">      96 </span>            : 
+<span class="lineNum">      97 </span><span class="lineNoCov">          0 : void core::reconfigure()</span>
+<span class="lineNum">      98 </span>            : {
+<span class="lineNum">      99 </span><span class="lineNoCov">          0 :   auto opt = this-&gt;options();</span>
+<span class="lineNum">     100 </span><span class="lineNoCov">          0 :   auto cw_opt = opt.common_workflow;</span>
+<span class="lineNum">     101 </span><span class="lineNoCov">          0 :   cw_opt.id = this-&gt;name();</span>
+<span class="lineNum">     102 </span><span class="lineNoCov">          0 :   if ( auto g = this-&gt;global() )</span>
+<a name="103"><span class="lineNum">     103 </span>            :   {</a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineNoCov">          0 :     g-&gt;cpu.set_cpu( &quot;common_workflow&quot;, opt.common_workflow.cpu);</span></a>
+<span class="lineNum">     105 </span><span class="lineNoCov">          0 :     cw_opt.startup_handler = [g]( std::thread::id ){ g-&gt;cpu.set_current_thread(&quot;common_workflow&quot;);};</span>
+<span class="lineNum">     106 </span><span class="lineNoCov">          0 :     cw_opt.finish_handler = [g]( std::thread::id id)</span>
+<span class="lineNum">     107 </span>            :     {
+<span class="lineNum">     108 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_MESSAGE( &quot;common_workflow thread finished. std::thread::id=&quot; &lt;&lt; id )</span>
+<span class="lineNum">     109 </span><span class="lineNoCov">          0 :       g-&gt;cpu.del_current_thread();</span>
+<span class="lineNum">     110 </span><span class="lineNoCov">          0 :     };</span>
+<span class="lineNum">     111 </span>            :     
+<span class="lineNum">     112 </span><span class="lineNoCov">          0 :     if ( g-&gt;common_workflow==nullptr )</span>
+<span class="lineNum">     113 </span>            :     {
+<span class="lineNum">     114 </span><span class="lineNoCov">          0 :       g-&gt;common_workflow = std::make_shared&lt;wfc::workflow&gt;( g-&gt;io_service, cw_opt );</span>
+<span class="lineNum">     115 </span><span class="lineNoCov">          0 :       g-&gt;common_workflow-&gt;start();</span>
+<span class="lineNum">     116 </span>            :     }
+<span class="lineNum">     117 </span>            :     else
+<span class="lineNum">     118 </span><span class="lineNoCov">          0 :       g-&gt;common_workflow-&gt;reconfigure(cw_opt);</span>
+<span class="lineNum">     119 </span>            :     
+<span class="lineNum">     120 </span><span class="lineNoCov">          0 :     g-&gt;disable_statistics = opt.disable_statistics;</span>
+<span class="lineNum">     121 </span>            :     
+<span class="lineNum">     122 </span><span class="lineNoCov">          0 :     bool nca = opt.nocall_callback_abort;</span>
+<span class="lineNum">     123 </span><span class="lineNoCov">          0 :     bool ncs = opt.nocall_callback_show;</span>
+<span class="lineNum">     124 </span><span class="lineNoCov">          0 :     bool dca = opt.double_callback_abort;</span>
+<a name="125"><span class="lineNum">     125 </span><span class="lineNoCov">          0 :     bool dcs = opt.double_callback_show;</span></a>
+<span class="lineNum">     126 </span>            :     
+<span class="lineNum">     127 </span><span class="lineNoCov">          0 :     g-&gt;nocall_handler = [g, nca, ncs](const std::string&amp; objname)</span>
+<span class="lineNum">     128 </span>            :     {
+<span class="lineNum">     129 </span><span class="lineNoCov">          0 :       if ( g-&gt;stop_signal_flag )</span>
+<span class="lineNum">     130 </span>            :       {
+<span class="lineNum">     131 </span><span class="lineNoCov">          0 :         DOMAIN_LOG_WARNING(&quot;The callback handler for the '&quot; &lt;&lt; objname &lt;&lt; &quot;' was destroyed without a call after stop signal&quot;)</span>
+<span class="lineNum">     132 </span>            :       }
+<span class="lineNum">     133 </span><span class="lineNoCov">          0 :       else if ( nca )</span>
+<span class="lineNum">     134 </span>            :       {
+<span class="lineNum">     135 </span><span class="lineNoCov">          0 :         DOMAIN_LOG_FATAL(&quot;The callback handler for the '&quot; &lt;&lt; objname &lt;&lt; &quot;' was destroyed without a call&quot;)</span>
+<span class="lineNum">     136 </span>            :       }
+<span class="lineNum">     137 </span><span class="lineNoCov">          0 :       else if ( ncs )</span>
+<span class="lineNum">     138 </span>            :       {
+<span class="lineNum">     139 </span><span class="lineNoCov">          0 :         DOMAIN_LOG_ERROR(&quot;The callback handler for the '&quot; &lt;&lt; objname &lt;&lt; &quot;' was destroyed without a call&quot;)</span>
+<span class="lineNum">     140 </span>            :       }
+<a name="141"><span class="lineNum">     141 </span><span class="lineNoCov">          0 :     };</span></a>
+<span class="lineNum">     142 </span>            : 
+<span class="lineNum">     143 </span><span class="lineNoCov">          0 :     g-&gt;doublecall_handler = [g, dca, dcs](const std::string&amp; objname)</span>
+<span class="lineNum">     144 </span>            :     {
+<span class="lineNum">     145 </span><span class="lineNoCov">          0 :       if ( g-&gt;stop_signal_flag )</span>
+<span class="lineNum">     146 </span>            :       {
+<span class="lineNum">     147 </span><span class="lineNoCov">          0 :         DOMAIN_LOG_WARNING(&quot;Double call callback functions for '&quot; &lt;&lt; objname &lt;&lt; &quot;' after stop signal&quot;)</span>
+<span class="lineNum">     148 </span>            :       }
+<span class="lineNum">     149 </span><span class="lineNoCov">          0 :       else if ( dca )</span>
+<span class="lineNum">     150 </span>            :       {
+<span class="lineNum">     151 </span><span class="lineNoCov">          0 :         DOMAIN_LOG_FATAL(&quot;Double call callback functions for '&quot; &lt;&lt; objname &lt;&lt; &quot;'&quot;)</span>
+<span class="lineNum">     152 </span>            :       }
+<span class="lineNum">     153 </span><span class="lineNoCov">          0 :       else if ( dcs )</span>
+<span class="lineNum">     154 </span>            :       {
+<span class="lineNum">     155 </span><span class="lineNoCov">          0 :         DOMAIN_LOG_ERROR(&quot;Double call callback functions for '&quot; &lt;&lt; objname &lt;&lt; &quot;'&quot;)</span>
+<span class="lineNum">     156 </span>            :       }
+<span class="lineNum">     157 </span><span class="lineNoCov">          0 :     };</span>
+<span class="lineNum">     158 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     159 </span>            :   
+<span class="lineNum">     160 </span><span class="lineNoCov">          0 :   if ( opt.rlimit_as_mb != 0 )</span>
+<span class="lineNum">     161 </span>            :   {
+<span class="lineNum">     162 </span><span class="lineNoCov">          0 :     rlim_t limit = opt.rlimit_as_mb*1024*1024;</span>
+<span class="lineNum">     163 </span><span class="lineNoCov">          0 :     rlimit rlim = {RLIM_INFINITY, RLIM_INFINITY};</span>
+<span class="lineNum">     164 </span><span class="lineNoCov">          0 :     if ( 0 == getrlimit( RLIMIT_AS, &amp;rlim ) )</span>
+<span class="lineNum">     165 </span>            :     {
+<span class="lineNum">     166 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_MESSAGE(&quot;current RLIMIT_DATA: &quot; &lt;&lt; rlim.rlim_cur &lt;&lt; &quot;, &quot; &lt;&lt; rlim.rlim_max)</span>
+<span class="lineNum">     167 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_MESSAGE(&quot;rlimit_as_mb: &quot; &lt;&lt; opt.rlimit_as_mb &lt;&lt; &quot;Mb&quot;)</span>
+<span class="lineNum">     168 </span>            : 
+<span class="lineNum">     169 </span><span class="lineNoCov">          0 :       rlim.rlim_cur = limit;</span>
+<span class="lineNum">     170 </span><span class="lineNoCov">          0 :       if ( 0 != setrlimit( RLIMIT_AS, &amp;rlim ) )</span>
+<span class="lineNum">     171 </span>            :       {
+<span class="lineNum">     172 </span><span class="lineNoCov">          0 :         SYSTEM_LOG_ERROR(&quot;setrlimit: &quot; &lt;&lt; strerror(errno) )</span>
+<span class="lineNum">     173 </span>            :       }
+<span class="lineNum">     174 </span>            :     }
+<span class="lineNum">     175 </span>            :     else
+<span class="lineNum">     176 </span>            :     {
+<span class="lineNum">     177 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_ERROR(&quot;getrlimit: &quot; &lt;&lt; strerror(errno) )</span>
+<span class="lineNum">     178 </span>            :     }
+<span class="lineNum">     179 </span>            :   }
+<span class="lineNum">     180 </span><span class="lineNoCov">          0 :   this-&gt;global()-&gt;cpu.set_current_thread( this-&gt;name() );</span>
+<span class="lineNum">     181 </span>            :   
+<a name="182"><span class="lineNum">     182 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     183 </span>            : 
+<span class="lineNum">     184 </span><span class="lineNoCov">          0 : void core::stop() </span>
+<span class="lineNum">     185 </span>            : {
+<span class="lineNum">     186 </span><span class="lineNoCov">          0 :   _same = this-&gt;shared_from_this();</span>
+<span class="lineNum">     187 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(&quot;************* void core::stop()  *****************&quot;)</span>
+<span class="lineNum">     188 </span><span class="lineNoCov">          0 :   _stop_flag = true;</span>
+<a name="189"><span class="lineNum">     189 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     190 </span>            : 
+<span class="lineNum">     191 </span><span class="lineNoCov">          0 : int core::run()</span>
+<span class="lineNum">     192 </span>            : {
+<span class="lineNum">     193 </span><span class="lineNoCov">          0 :   if ( this-&gt;global()-&gt;common_workflow==nullptr )</span>
+<span class="lineNum">     194 </span><span class="lineNoCov">          0 :     this-&gt;reconfigure();</span>
+<span class="lineNum">     195 </span>            :   
+<span class="lineNum">     196 </span><span class="lineNoCov">          0 :   gs_stop_signal = false;</span>
+<span class="lineNum">     197 </span>            : 
+<span class="lineNum">     198 </span><span class="lineNoCov">          0 :   signal(SIGPIPE,  SIG_IGN);</span>
+<span class="lineNum">     199 </span><span class="lineNoCov">          0 :   signal(SIGPOLL,  SIG_IGN);</span>
+<span class="lineNum">     200 </span><span class="lineNoCov">          0 :   signal(SIGINT,   signal_sigint_handler);</span>
+<span class="lineNum">     201 </span><span class="lineNoCov">          0 :   signal(SIGTERM,  signal_sigint_handler);</span>
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(&quot;core::run: sunrise!&quot;)</span>
+<span class="lineNum">     204 </span>            : 
+<span class="lineNum">     205 </span><span class="lineNoCov">          0 :   this-&gt;_sunrise();</span>
+<span class="lineNum">     206 </span>            : 
+<span class="lineNum">     207 </span><span class="lineNoCov">          0 :   if ( !_stop_flag )</span>
+<span class="lineNum">     208 </span>            :   {
+<span class="lineNum">     209 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_BEGIN(&quot;After start handlers... &quot;)</span>
+<span class="lineNum">     210 </span><span class="lineNoCov">          0 :     this-&gt;global()-&gt;after_start.fire();</span>
+<span class="lineNum">     211 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_END(&quot;After start handlers&quot;)</span>
+<span class="lineNum">     212 </span>            :   }
+<span class="lineNum">     213 </span>            : 
+<span class="lineNum">     214 </span><span class="lineNoCov">          0 :   if ( !_stop_flag )</span>
+<span class="lineNum">     215 </span>            :   {
+<span class="lineNum">     216 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;***************************************&quot;)</span>
+<span class="lineNum">     217 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;************* started *****************&quot;)</span>
+<span class="lineNum">     218 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;instance name: &quot; &lt;&lt; this-&gt;global()-&gt;instance_name &lt;&lt; std::endl)</span>
+<span class="lineNum">     219 </span>            :   }
+<span class="lineNum">     220 </span><span class="lineNoCov">          0 :   else if ( _abort_flag )</span>
+<span class="lineNum">     221 </span>            :   {
+<span class="lineNum">     222 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_WARNING(&quot;!!! START ABORTED! Смотрите выше.&quot;)</span>
+<span class="lineNum">     223 </span>            :   }
+<span class="lineNum">     224 </span>            : 
+<span class="lineNum">     225 </span><span class="lineNoCov">          0 :   workflow_options qopt;</span>
+<span class="lineNum">     226 </span><span class="lineNoCov">          0 :   qopt.use_asio = true;</span>
+<span class="lineNum">     227 </span><span class="lineNoCov">          0 :   qopt.wrnsize = 0;</span>
+<span class="lineNum">     228 </span><span class="lineNoCov">          0 :   qopt.maxsize = 0;</span>
+<span class="lineNum">     229 </span><span class="lineNoCov">          0 :   qopt.threads = 0;</span>
+<span class="lineNum">     230 </span><span class="lineNoCov">          0 :   _core_workflow = std::make_shared&lt; workflow &gt;( this-&gt;global()-&gt;io_service, qopt );</span>
+<span class="lineNum">     231 </span><span class="lineNoCov">          0 :   return this-&gt;_main_loop();</span>
+<a name="232"><span class="lineNum">     232 </span>            : }</a>
+<span class="lineNum">     233 </span>            : 
+<span class="lineNum">     234 </span><span class="lineNoCov">          0 : void core::core_reconfigure()</span>
+<span class="lineNum">     235 </span>            : {
+<span class="lineNum">     236 </span><span class="lineNoCov">          0 :   _reconfigure_flag = true;</span>
+<a name="237"><span class="lineNum">     237 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     238 </span>            : 
+<span class="lineNum">     239 </span><span class="lineNoCov">          0 : void core::core_stop()</span>
+<span class="lineNum">     240 </span>            : {
+<span class="lineNum">     241 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(&quot;wfc_core: stop!&quot;)</span>
+<span class="lineNum">     242 </span><span class="lineNoCov">          0 :   _stop_flag = true;</span>
+<a name="243"><span class="lineNum">     243 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     244 </span>            : 
+<span class="lineNum">     245 </span><span class="lineNoCov">          0 : void core::core_abort( std::string message ) </span>
+<span class="lineNum">     246 </span>            : {
+<span class="lineNum">     247 </span><span class="lineNoCov">          0 :   if ( auto g = ::wfc::wfcglobal::static_global )</span>
+<span class="lineNum">     248 </span>            :   {
+<span class="lineNum">     249 </span><span class="lineNoCov">          0 :     if ( g-&gt;stop_signal_flag == false )</span>
+<span class="lineNum">     250 </span>            :     {
+<span class="lineNum">     251 </span><span class="lineNoCov">          0 :       g-&gt;stop_signal_flag = true;</span>
+<span class="lineNum">     252 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_FATAL(message)</span>
+<span class="lineNum">     253 </span>            :     }
+<span class="lineNum">     254 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     255 </span><span class="lineNoCov">          0 :   gs_stop_signal = true;</span>
+<span class="lineNum">     256 </span><span class="lineNoCov">          0 :   _stop_flag = true;</span>
+<span class="lineNum">     257 </span><span class="lineNoCov">          0 :   _abort_flag = true;</span>
+<a name="258"><span class="lineNum">     258 </span><span class="lineNoCov">          0 : }</span></a>
+<span class="lineNum">     259 </span>            : 
+<span class="lineNum">     260 </span><span class="lineNoCov">          0 : bool core::_idle()</span>
+<span class="lineNum">     261 </span>            : {
+<span class="lineNum">     262 </span><span class="lineNoCov">          0 :   if ( gs_stop_signal )</span>
+<span class="lineNum">     263 </span>            :   {
+<span class="lineNum">     264 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;wfc_core: stop signal&quot;)</span>
+<span class="lineNum">     265 </span><span class="lineNoCov">          0 :     _stop_flag = true;</span>
+<span class="lineNum">     266 </span>            :   }
+<span class="lineNum">     267 </span>            : 
+<span class="lineNum">     268 </span><span class="lineNoCov">          0 :   if ( _stop_flag )</span>
+<span class="lineNum">     269 </span>            :   {
+<span class="lineNum">     270 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_BEGIN(&quot;wfc_core: io_service stop...&quot;)</span>
+<span class="lineNum">     271 </span><span class="lineNoCov">          0 :     this-&gt;global()-&gt;io_service.stop();</span>
+<span class="lineNum">     272 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_END(&quot;wfc_core: io_service stop done!&quot;)</span>
+<span class="lineNum">     273 </span><span class="lineNoCov">          0 :     return false;</span>
+<span class="lineNum">     274 </span>            :   }
+<span class="lineNum">     275 </span>            : 
+<span class="lineNum">     276 </span><span class="lineNoCov">          0 :   if ( _reconfigure_flag )</span>
+<span class="lineNum">     277 </span>            :   {
+<span class="lineNum">     278 </span><span class="lineNoCov">          0 :     _reconfigure_flag = false;</span>
+<span class="lineNum">     279 </span><span class="lineNoCov">          0 :     this-&gt;_sunrise();</span>
+<span class="lineNum">     280 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;Daemon reconfigured!&quot;)</span>
+<span class="lineNum">     281 </span>            :   }
+<span class="lineNum">     282 </span>            : 
+<span class="lineNum">     283 </span><span class="lineNoCov">          0 :   if ( !_stop_flag )</span>
+<span class="lineNum">     284 </span>            :   {
+<span class="lineNum">     285 </span><span class="lineNoCov">          0 :     ::wfc::cpuset&amp; cpumgr = this-&gt;global()-&gt;cpu;</span>
+<span class="lineNum">     286 </span><span class="lineNoCov">          0 :     if ( cpumgr.clean_dirty() )</span>
+<span class="lineNum">     287 </span>            :     {
+<span class="lineNum">     288 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_BEGIN(&quot;CPU threads reconfiguring... ProcID=&quot; &lt;&lt; ::getpid() &lt;&lt; &quot; ParentId=&quot; &lt;&lt; ::getppid() )</span>
+<span class="lineNum">     289 </span><span class="lineNoCov">          0 :       auto all_pids = ::wfc::core::get_threads();</span>
+<span class="lineNum">     290 </span><span class="lineNoCov">          0 :       auto wfc_cpu = this-&gt;options().wfc_cpu;</span>
+<span class="lineNum">     291 </span><span class="lineNoCov">          0 :       auto sys_cpu = this-&gt;options().sys_cpu;</span>
+<span class="lineNum">     292 </span><span class="lineNoCov">          0 :       auto pids = cpumgr.get_pids();</span>
+<span class="lineNum">     293 </span><span class="lineNoCov">          0 :       for ( pid_t p : pids )</span>
+<span class="lineNum">     294 </span>            :       {
+<span class="lineNum">     295 </span><span class="lineNoCov">          0 :         all_pids.erase(p);</span>
+<span class="lineNum">     296 </span><span class="lineNoCov">          0 :         auto cpu = cpumgr.get_cpu(p);</span>
+<span class="lineNum">     297 </span><span class="lineNoCov">          0 :         if ( cpu.empty() )</span>
+<span class="lineNum">     298 </span><span class="lineNoCov">          0 :           cpu = wfc_cpu;</span>
+<span class="lineNum">     299 </span><span class="lineNoCov">          0 :         if ( cpu.empty() )</span>
+<span class="lineNum">     300 </span><span class="lineNoCov">          0 :           continue;</span>
+<span class="lineNum">     301 </span><span class="lineNoCov">          0 :         std::string scpu = setaffinity( p, cpu );</span>
+<span class="lineNum">     302 </span><span class="lineNoCov">          0 :         SYSTEM_LOG_MESSAGE(&quot;For WFC thread &quot; &lt;&lt; p &lt;&lt; &quot; ('&quot; &lt;&lt; cpumgr.get_name(p) &lt;&lt; &quot;') CPU set &quot; &lt;&lt; scpu )</span>
+<span class="lineNum">     303 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     304 </span>            :       
+<span class="lineNum">     305 </span><span class="lineNoCov">          0 :       if ( !sys_cpu.empty() )</span>
+<span class="lineNum">     306 </span>            :       {
+<span class="lineNum">     307 </span><span class="lineNoCov">          0 :         for ( pid_t p : all_pids )</span>
+<span class="lineNum">     308 </span>            :         {
+<span class="lineNum">     309 </span><span class="lineNoCov">          0 :           std::string scpu = setaffinity( p, sys_cpu );</span>
+<span class="lineNum">     310 </span><span class="lineNoCov">          0 :           SYSTEM_LOG_MESSAGE(&quot;For SYS thread &quot; &lt;&lt; p &lt;&lt; &quot; CPU set &quot; &lt;&lt; scpu )</span>
+<span class="lineNum">     311 </span><span class="lineNoCov">          0 :         }</span>
+<span class="lineNum">     312 </span>            :       }
+<span class="lineNum">     313 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_END(&quot;CPU threads reconfigured.&quot;)</span>
+<span class="lineNum">     314 </span>            :     }
+<span class="lineNum">     315 </span>            :   }
+<span class="lineNum">     316 </span>            :   else
+<span class="lineNum">     317 </span>            :   {
+<span class="lineNum">     318 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_WARNING(&quot;Stop signal after reconfigure. Probably an initialization error&quot; )</span>
+<span class="lineNum">     319 </span><span class="lineNoCov">          0 :     return this-&gt;_idle();</span>
+<span class="lineNum">     320 </span>            :   }
+<span class="lineNum">     321 </span><span class="lineNoCov">          0 :   return true;</span>
+<a name="322"><span class="lineNum">     322 </span>            : }</a>
+<span class="lineNum">     323 </span>            : 
+<span class="lineNum">     324 </span><span class="lineNoCov">          0 : int core::_main_loop()</span>
+<span class="lineNum">     325 </span>            : {
+<span class="lineNum">     326 </span><span class="lineNoCov">          0 :   this-&gt;global()-&gt;common_workflow-&gt;start();</span>
+<span class="lineNum">     327 </span><span class="lineNoCov">          0 :   std::weak_ptr&lt;core&gt; wthis = this-&gt;shared_from_this();</span>
+<span class="lineNum">     328 </span>            : 
+<a name="329"><span class="lineNum">     329 </span><span class="lineNoCov">          0 :   _core_workflow-&gt;create_timer(</span></a>
+<span class="lineNum">     330 </span><span class="lineNoCov">          0 :     std::chrono::milliseconds(this-&gt;options().idle_timeout_ms),</span>
+<span class="lineNum">     331 </span><span class="lineNoCov">          0 :     [wthis]()-&gt;bool </span>
+<span class="lineNum">     332 </span>            :     {
+<span class="lineNum">     333 </span><span class="lineNoCov">          0 :       if (auto pthis = wthis.lock() )</span>
+<span class="lineNum">     334 </span>            :       {
+<span class="lineNum">     335 </span><span class="lineNoCov">          0 :         pthis-&gt;global()-&gt;idle.fire();</span>
+<span class="lineNum">     336 </span><span class="lineNoCov">          0 :         return pthis-&gt;_stop_flag==false;</span>
+<span class="lineNum">     337 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     338 </span><span class="lineNoCov">          0 :       return false;</span>
+<span class="lineNum">     339 </span>            :     }
+<span class="lineNum">     340 </span><span class="lineNoCov">          0 :   );</span>
+<span class="lineNum">     341 </span>            :   
+<a name="342"><span class="lineNum">     342 </span><span class="lineNoCov">          0 :   _core_workflow-&gt;create_timer(</span></a>
+<span class="lineNum">     343 </span><span class="lineNoCov">          0 :     std::chrono::milliseconds(this-&gt;options().core_timeout_ms),</span>
+<span class="lineNum">     344 </span><span class="lineNoCov">          0 :     [wthis]()-&gt;bool </span>
+<span class="lineNum">     345 </span>            :     {
+<span class="lineNum">     346 </span><span class="lineNoCov">          0 :       if (auto pthis = wthis.lock() )</span>
+<span class="lineNum">     347 </span>            :       {
+<span class="lineNum">     348 </span><span class="lineNoCov">          0 :         return pthis-&gt;_idle();</span>
+<span class="lineNum">     349 </span><span class="lineNoCov">          0 :       }</span>
+<span class="lineNum">     350 </span><span class="lineNoCov">          0 :       return false;</span>
+<span class="lineNum">     351 </span>            :     }
+<span class="lineNum">     352 </span><span class="lineNoCov">          0 :   );</span>
+<span class="lineNum">     353 </span>            :   
+<span class="lineNum">     354 </span><span class="lineNoCov">          0 :   this-&gt;global()-&gt;io_service.run();</span>
+<span class="lineNum">     355 </span><span class="lineNoCov">          0 :   this-&gt;global()-&gt;io_service.reset();</span>
+<span class="lineNum">     356 </span><span class="lineNoCov">          0 :   this-&gt;_stop();</span>
+<span class="lineNum">     357 </span><span class="lineNoCov">          0 :   return 0;</span>
+<span class="lineNum">     358 </span>            : }
+<span class="lineNum">     359 </span>            : 
+<span class="lineNum">     360 </span>            : ///
+<span class="lineNum">     361 </span>            : /// sunrise
+<a name="362"><span class="lineNum">     362 </span>            : ///</a>
+<span class="lineNum">     363 </span>            : 
+<span class="lineNum">     364 </span><span class="lineNoCov">          0 : void core::_sunrise()</span>
+<span class="lineNum">     365 </span>            : {
+<span class="lineNum">     366 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(&quot;----------- configuration -------------&quot;)</span>
+<span class="lineNum">     367 </span><span class="lineNoCov">          0 :   this-&gt;_configure();</span>
+<span class="lineNum">     368 </span>            :   
+<span class="lineNum">     369 </span><span class="lineNoCov">          0 :   if ( _stop_flag ) return;</span>
+<span class="lineNum">     370 </span><span class="lineNoCov">          0 :   if ( !_abort_flag )</span>
+<span class="lineNum">     371 </span>            :   {
+<span class="lineNum">     372 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;----------- initialization ------------&quot;)</span>
+<span class="lineNum">     373 </span><span class="lineNoCov">          0 :     this-&gt;_initialize();</span>
+<span class="lineNum">     374 </span>            :   }
+<span class="lineNum">     375 </span>            :   
+<span class="lineNum">     376 </span><span class="lineNoCov">          0 :   if ( _stop_flag ) return;</span>
+<span class="lineNum">     377 </span><span class="lineNoCov">          0 :   if ( !_abort_flag )</span>
+<span class="lineNum">     378 </span>            :   {
+<span class="lineNum">     379 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;-------------- starting ---------------&quot;)</span>
+<span class="lineNum">     380 </span><span class="lineNoCov">          0 :     this-&gt;_start();</span>
+<span class="lineNum">     381 </span>            :   }
+<span class="lineNum">     382 </span>            :   
+<span class="lineNum">     383 </span><span class="lineNoCov">          0 :   if ( _stop_flag ) </span>
+<span class="lineNum">     384 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">     385 </span>            : 
+<span class="lineNum">     386 </span><span class="lineNoCov">          0 :   if ( !_abort_flag )</span>
+<span class="lineNum">     387 </span>            :   {
+<span class="lineNum">     388 </span><span class="lineNoCov">          0 :     WSYSLOG_INFO(&quot;daemon &quot; &lt;&lt; this-&gt;global()-&gt;program_name &lt;&lt; &quot; started!&quot;)</span>
+<span class="lineNum">     389 </span>            :   }
+<span class="lineNum">     390 </span>            :   else
+<span class="lineNum">     391 </span>            :   {
+<span class="lineNum">     392 </span><span class="lineNoCov">          0 :     WSYSLOG_ALERT(&quot;daemon &quot; &lt;&lt; this-&gt;global()-&gt;program_name &lt;&lt; &quot; fail at the starting &quot;)    </span>
+<span class="lineNum">     393 </span>            :   }
+<a name="394"><span class="lineNum">     394 </span>            : }</a>
+<span class="lineNum">     395 </span>            : 
+<span class="lineNum">     396 </span><span class="lineNoCov">          0 : bool core::_configure()</span>
+<span class="lineNum">     397 </span>            : {
+<span class="lineNum">     398 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     399 </span>            : 
+<span class="lineNum">     400 </span><span class="lineNoCov">          0 :   if ( g == nullptr)</span>
+<span class="lineNum">     401 </span><span class="lineNoCov">          0 :     return true;</span>
+<span class="lineNum">     402 </span>            : 
+<a name="403"><span class="lineNum">     403 </span><span class="lineNoCov">          0 :   if ( auto conf = g-&gt;registry.get_target&lt;iconfig&gt;(&quot;config&quot;) )</span></a>
+<span class="lineNum">     404 </span>            :   {
+<span class="lineNum">     405 </span><span class="lineNoCov">          0 :     g-&gt;registry.for_each&lt;icomponent&gt;(&quot;component&quot;, [this, conf](const std::string&amp; component_name, std::shared_ptr&lt;icomponent&gt; obj)</span>
+<span class="lineNum">     406 </span>            :     {
+<span class="lineNum">     407 </span><span class="lineNoCov">          0 :       if ( this-&gt;_abort_flag )</span>
+<span class="lineNum">     408 </span>            :       {
+<span class="lineNum">     409 </span><span class="lineNoCov">          0 :         SYSTEM_LOG_MESSAGE(&quot;Configure component '&quot; &lt;&lt; component_name &lt;&lt; &quot;' aborted!&quot;)</span>
+<span class="lineNum">     410 </span><span class="lineNoCov">          0 :         return;</span>
+<span class="lineNum">     411 </span>            :       }
+<span class="lineNum">     412 </span><span class="lineNoCov">          0 :       std::string confstr = conf-&gt;get_config(component_name);</span>
+<span class="lineNum">     413 </span><span class="lineNoCov">          0 :       if ( !confstr.empty() )</span>
+<span class="lineNum">     414 </span>            :       {
+<span class="lineNum">     415 </span>            :         //SYSTEM_LOG_BEGIN(&quot;Configure component '&quot; &lt;&lt; component_name &lt;&lt; &quot;'...&quot;)
+<span class="lineNum">     416 </span><span class="lineNoCov">          0 :         json::json_error er;</span>
+<span class="lineNum">     417 </span><span class="lineNoCov">          0 :         if ( !obj-&gt;configure(confstr, &amp;er ) )</span>
+<span class="lineNum">     418 </span>            :         {
+<span class="lineNum">     419 </span><span class="lineNoCov">          0 :           auto message = json::strerror::message( er);</span>
+<span class="lineNum">     420 </span><span class="lineNoCov">          0 :           auto trace = json::strerror::trace( er, confstr.begin(), confstr.end() );</span>
+<span class="lineNum">     421 </span><span class="lineNoCov">          0 :           SYSTEM_LOG_ERROR(</span>
+<span class="lineNum">     422 </span>            :             &quot;Json unserialize error for component '&quot; &lt;&lt; component_name &lt;&lt; &quot;':&quot; 
+<span class="lineNum">     423 </span>            :             &lt;&lt; message &lt;&lt; &quot;. &quot; &lt;&lt; std::endl &lt;&lt; trace
+<span class="lineNum">     424 </span>            :           )
+<span class="lineNum">     425 </span><span class="lineNoCov">          0 :           this-&gt;_abort_flag = true;</span>
+<span class="lineNum">     426 </span>            :         }
+<span class="lineNum">     427 </span>            :         
+<span class="lineNum">     428 </span><span class="lineNoCov">          0 :         if ( !this-&gt;_abort_flag ) { /*SYSTEM_LOG_END(&quot;Configure component '&quot; &lt;&lt; component_name &lt;&lt; &quot;'...Done&quot;)*/ }</span>
+<span class="lineNum">     429 </span><span class="lineNoCov">          0 :         else { SYSTEM_LOG_END(&quot;Configure component '&quot; &lt;&lt; component_name &lt;&lt; &quot;'...aborted!&quot;) }</span>
+<span class="lineNum">     430 </span>            :       }
+<span class="lineNum">     431 </span>            :       else
+<span class="lineNum">     432 </span>            :       {
+<span class="lineNum">     433 </span><span class="lineNoCov">          0 :         SYSTEM_LOG_MESSAGE(&quot;Configuration for '&quot; &lt;&lt; component_name &lt;&lt; &quot;' is not set&quot;)</span>
+<span class="lineNum">     434 </span>            :       }
+<span class="lineNum">     435 </span><span class="lineNoCov">          0 :     });</span>
+<span class="lineNum">     436 </span>            :   }
+<span class="lineNum">     437 </span>            :   else
+<span class="lineNum">     438 </span>            :   {
+<span class="lineNum">     439 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_WARNING(&quot;Configure module is not set&quot;)</span>
+<span class="lineNum">     440 </span><span class="lineNoCov">          0 :   }</span>
+<span class="lineNum">     441 </span><span class="lineNoCov">          0 :   return true;</span>
+<a name="442"><span class="lineNum">     442 </span>            : }</a>
+<span class="lineNum">     443 </span>            : 
+<span class="lineNum">     444 </span><span class="lineNoCov">          0 : void core::_initialize()</span>
+<span class="lineNum">     445 </span>            : {
+<span class="lineNum">     446 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     447 </span>            : 
+<span class="lineNum">     448 </span><span class="lineNoCov">          0 :   if ( g == nullptr)</span>
+<span class="lineNum">     449 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">     450 </span>            : 
+<span class="lineNum">     451 </span>            :   typedef std::shared_ptr&lt;iinstance&gt; instance_ptr;
+<span class="lineNum">     452 </span>            :   typedef std::vector&lt;instance_ptr&gt; instance_list;
+<span class="lineNum">     453 </span><span class="lineNoCov">          0 :   instance_list instances;</span>
+<a name="454"><span class="lineNum">     454 </span><span class="lineNoCov">          0 :   instances.reserve(100);</span></a>
+<span class="lineNum">     455 </span><span class="lineNoCov">          0 :   bool dirty_flag = g-&gt;registry.dirty();</span>
+<span class="lineNum">     456 </span><span class="lineNoCov">          0 :   g-&gt;registry.for_each&lt;iinstance&gt;(&quot;instance&quot;, [&amp;instances, dirty_flag](const std::string&amp; /*name*/, std::shared_ptr&lt;iinstance&gt; obj)</span>
+<span class="lineNum">     457 </span>            :   {
+<span class="lineNum">     458 </span><span class="lineNoCov">          0 :     if ( dirty_flag || obj-&gt;is_reconfigured() )</span>
+<span class="lineNum">     459 </span><span class="lineNoCov">          0 :       instances.push_back(obj);</span>
+<span class="lineNum">     460 </span><span class="lineNoCov">          0 :   });</span>
+<span class="lineNum">     461 </span>            :   
+<span class="lineNum">     462 </span><span class="lineNoCov">          0 :   if ( instances.empty() )</span>
+<span class="lineNum">     463 </span>            :   {
+<span class="lineNum">     464 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;Initialization does not require. No changes to the registry objects.&quot;)</span>
+<span class="lineNum">     465 </span><span class="lineNoCov">          0 :     return;</span>
+<a name="466"><span class="lineNum">     466 </span>            :   }</a>
+<span class="lineNum">     467 </span>            :   
+<span class="lineNum">     468 </span><span class="lineNoCov">          0 :   std::sort(instances.begin(), instances.end(), [](const instance_ptr&amp; left, const instance_ptr&amp; right)-&gt;bool</span>
+<span class="lineNum">     469 </span>            :   {
+<span class="lineNum">     470 </span><span class="lineNoCov">          0 :     return left-&gt;startup_priority() &lt; right-&gt;startup_priority();</span>
+<a name="471"><span class="lineNum">     471 </span><span class="lineNoCov">          0 :   } );</span></a>
+<span class="lineNum">     472 </span>            : 
+<span class="lineNum">     473 </span><span class="lineNoCov">          0 :   std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr&amp; m)</span>
+<span class="lineNum">     474 </span>            :   {
+<span class="lineNum">     475 </span><span class="lineNoCov">          0 :     if ( this-&gt;_abort_flag )</span>
+<span class="lineNum">     476 </span>            :     {
+<span class="lineNum">     477 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_WARNING(&quot;Initialize instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;' aborted!&quot;)</span>
+<span class="lineNum">     478 </span><span class="lineNoCov">          0 :       return;</span>
+<span class="lineNum">     479 </span>            :     }
+<span class="lineNum">     480 </span>            : 
+<span class="lineNum">     481 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_BEGIN(&quot;Initialize instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;'... startup_priority=&quot;  &lt;&lt; m-&gt;startup_priority() )</span>
+<span class="lineNum">     482 </span><span class="lineNoCov">          0 :     m-&gt;initialize();</span>
+<span class="lineNum">     483 </span>            :  
+<span class="lineNum">     484 </span><span class="lineNoCov">          0 :     if ( !this-&gt;_abort_flag ) { SYSTEM_LOG_END(&quot;Initialize instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;'...Done&quot;) }</span>
+<span class="lineNum">     485 </span><span class="lineNoCov">          0 :     else { SYSTEM_LOG_WARNING(&quot;Initialize instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;'...aborted!&quot;) }</span>
+<span class="lineNum">     486 </span>            : 
+<span class="lineNum">     487 </span><span class="lineNoCov">          0 :     g-&gt;io_service.poll();</span>
+<span class="lineNum">     488 </span><span class="lineNoCov">          0 :     g-&gt;io_service.reset();</span>
+<span class="lineNum">     489 </span><span class="lineNoCov">          0 :   });</span>
+<span class="lineNum">     490 </span>            :   
+<span class="lineNum">     491 </span><span class="lineNoCov">          0 :   if ( auto d = g-&gt;registry.reset_dirty() )</span>
+<span class="lineNum">     492 </span>            :   {
+<span class="lineNum">     493 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;Full initialization finished for &quot; &lt;&lt; d &lt;&lt; &quot; registry changed.&quot;)</span>
+<span class="lineNum">     494 </span>            :   }
+<span class="lineNum">     495 </span>            :   else
+<span class="lineNum">     496 </span>            :   {
+<span class="lineNum">     497 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_MESSAGE(&quot;Partial initialization finished for &quot; &lt;&lt; instances.size() &lt;&lt; &quot; reconfigured object.&quot;)</span>
+<span class="lineNum">     498 </span><span class="lineNoCov">          0 :   }</span>
+<a name="499"><span class="lineNum">     499 </span>            : }</a>
+<span class="lineNum">     500 </span>            : 
+<span class="lineNum">     501 </span><span class="lineNoCov">          0 : void core::_start()</span>
+<span class="lineNum">     502 </span>            : {
+<span class="lineNum">     503 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     504 </span>            : 
+<span class="lineNum">     505 </span><span class="lineNoCov">          0 :   if ( g == nullptr)</span>
+<span class="lineNum">     506 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span>            :   typedef std::shared_ptr&lt;iinstance&gt; instance_ptr;
+<span class="lineNum">     509 </span>            :   typedef std::vector&lt;instance_ptr&gt; instance_list;
+<a name="510"><span class="lineNum">     510 </span><span class="lineNoCov">          0 :   instance_list instances;</span></a>
+<span class="lineNum">     511 </span><span class="lineNoCov">          0 :   instances.reserve(100);</span>
+<span class="lineNum">     512 </span><span class="lineNoCov">          0 :   g-&gt;registry.for_each&lt;iinstance&gt;(&quot;instance&quot;, [&amp;instances](const std::string&amp; /*name*/, std::shared_ptr&lt;iinstance&gt; obj)</span>
+<span class="lineNum">     513 </span>            :   {
+<span class="lineNum">     514 </span><span class="lineNoCov">          0 :     instances.push_back(obj);</span>
+<a name="515"><span class="lineNum">     515 </span><span class="lineNoCov">          0 :   });</span></a>
+<span class="lineNum">     516 </span>            : 
+<span class="lineNum">     517 </span><span class="lineNoCov">          0 :   std::sort(instances.begin(), instances.end(), [](const instance_ptr&amp; left, const instance_ptr&amp; right)-&gt;bool</span>
+<span class="lineNum">     518 </span>            :   {
+<span class="lineNum">     519 </span><span class="lineNoCov">          0 :     return left-&gt;startup_priority() &lt; right-&gt;startup_priority();</span>
+<a name="520"><span class="lineNum">     520 </span><span class="lineNoCov">          0 :   });</span></a>
+<span class="lineNum">     521 </span>            : 
+<span class="lineNum">     522 </span><span class="lineNoCov">          0 :   std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr&amp; m)</span>
+<span class="lineNum">     523 </span>            :   {
+<span class="lineNum">     524 </span><span class="lineNoCov">          0 :     if ( this-&gt;_abort_flag )</span>
+<span class="lineNum">     525 </span>            :     {
+<span class="lineNum">     526 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_WARNING(&quot;Start instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;' aborted!&quot;)</span>
+<span class="lineNum">     527 </span><span class="lineNoCov">          0 :       return;</span>
+<span class="lineNum">     528 </span>            :     }
+<span class="lineNum">     529 </span>            : 
+<span class="lineNum">     530 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_BEGIN(&quot;Start instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;'...&quot;)</span>
+<span class="lineNum">     531 </span><span class="lineNoCov">          0 :     m-&gt;start(std::string());</span>
+<span class="lineNum">     532 </span><span class="lineNoCov">          0 :     if ( !this-&gt;_abort_flag ) { SYSTEM_LOG_END(&quot;Start instance '&quot; &lt;&lt;  m-&gt;name() &lt;&lt; &quot;'...Done&quot;) }</span>
+<span class="lineNum">     533 </span><span class="lineNoCov">          0 :     else { SYSTEM_LOG_WARNING(&quot;Start instance '&quot; &lt;&lt;  m-&gt;name() &lt;&lt; &quot;'...aborted!&quot;) }</span>
+<span class="lineNum">     534 </span>            :     
+<span class="lineNum">     535 </span><span class="lineNoCov">          0 :     g-&gt;io_service.poll();</span>
+<span class="lineNum">     536 </span><span class="lineNoCov">          0 :     g-&gt;io_service.reset();</span>
+<span class="lineNum">     537 </span><span class="lineNoCov">          0 :   });</span>
+<a name="538"><span class="lineNum">     538 </span>            : }</a>
+<span class="lineNum">     539 </span>            : 
+<span class="lineNum">     540 </span><span class="lineNoCov">          0 : void core::_stop()</span>
+<span class="lineNum">     541 </span>            : {
+<span class="lineNum">     542 </span><span class="lineNoCov">          0 :   auto g = this-&gt;global();</span>
+<span class="lineNum">     543 </span>            : 
+<span class="lineNum">     544 </span><span class="lineNoCov">          0 :   if ( g == nullptr)</span>
+<span class="lineNum">     545 </span><span class="lineNoCov">          0 :     return;</span>
+<span class="lineNum">     546 </span>            : 
+<span class="lineNum">     547 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_BEGIN(&quot;stop '&quot; &lt;&lt; g-&gt;instance_name &lt;&lt; &quot;'...&quot;)</span>
+<span class="lineNum">     548 </span>            :   
+<span class="lineNum">     549 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_BEGIN(&quot;before stop handler&quot;)</span>
+<span class="lineNum">     550 </span><span class="lineNoCov">          0 :   g-&gt;before_stop.fire();</span>
+<span class="lineNum">     551 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_END(&quot;before stop handler&quot;)</span>
+<span class="lineNum">     552 </span>            : 
+<span class="lineNum">     553 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(&quot;----------- stopping... ---------------&quot;)</span>
+<span class="lineNum">     554 </span>            : 
+<span class="lineNum">     555 </span>            :   typedef std::shared_ptr&lt;iinstance&gt; instance_ptr;
+<span class="lineNum">     556 </span>            :   typedef std::vector&lt;instance_ptr&gt; instance_list;
+<span class="lineNum">     557 </span><span class="lineNoCov">          0 :   instance_list instances;</span>
+<a name="558"><span class="lineNum">     558 </span><span class="lineNoCov">          0 :   instances.reserve(100);</span></a>
+<span class="lineNum">     559 </span>            : 
+<span class="lineNum">     560 </span><span class="lineNoCov">          0 :   g-&gt;registry.for_each&lt;iinstance&gt;(&quot;instance&quot;, [&amp;instances](const std::string&amp; /*name*/, std::shared_ptr&lt;iinstance&gt; obj)</span>
+<span class="lineNum">     561 </span>            :   {
+<span class="lineNum">     562 </span><span class="lineNoCov">          0 :     instances.push_back(obj);</span>
+<a name="563"><span class="lineNum">     563 </span><span class="lineNoCov">          0 :   });</span></a>
+<span class="lineNum">     564 </span>            : 
+<span class="lineNum">     565 </span><span class="lineNoCov">          0 :   std::sort(instances.begin(), instances.end(), [](const instance_ptr&amp; left, const instance_ptr&amp; right)-&gt;bool {</span>
+<span class="lineNum">     566 </span><span class="lineNoCov">          0 :     return left-&gt;shutdown_priority() &lt; right-&gt;shutdown_priority();</span>
+<a name="567"><span class="lineNum">     567 </span><span class="lineNoCov">          0 :   } );</span></a>
+<span class="lineNum">     568 </span>            : 
+<span class="lineNum">     569 </span><span class="lineNoCov">          0 :   std::for_each(instances.begin(), instances.end(), [this,g](const instance_ptr&amp; m)</span>
+<span class="lineNum">     570 </span>            :   {
+<span class="lineNum">     571 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_BEGIN(&quot;Stop instance '&quot; &lt;&lt; m-&gt;name() &lt;&lt; &quot;'...&quot;)</span>
+<span class="lineNum">     572 </span><span class="lineNoCov">          0 :     if ( m-&gt;name()==&quot;logger&quot; &amp;&amp; this-&gt;_abort_flag )</span>
+<span class="lineNum">     573 </span>            :     {
+<span class="lineNum">     574 </span><span class="lineNoCov">          0 :       SYSTEM_LOG_WARNING(&quot;!!! WFC ABORTED! Смотрите выше.&quot;)</span>
+<span class="lineNum">     575 </span>            :     }
+<span class="lineNum">     576 </span>            : 
+<span class="lineNum">     577 </span><span class="lineNoCov">          0 :     m-&gt;stop(std::string());</span>
+<span class="lineNum">     578 </span><span class="lineNoCov">          0 :     SYSTEM_LOG_END(&quot;Stop instance '&quot; &lt;&lt;  m-&gt;name() &lt;&lt; &quot;'...Done&quot;)</span>
+<span class="lineNum">     579 </span><span class="lineNoCov">          0 :   });</span>
+<span class="lineNum">     580 </span>            : 
+<span class="lineNum">     581 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_BEGIN(&quot;After stop handlers run...&quot;)</span>
+<span class="lineNum">     582 </span><span class="lineNoCov">          0 :   g-&gt;after_stop.fire();</span>
+<span class="lineNum">     583 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_END(&quot;After stop handlers ... Done&quot;)</span>
+<span class="lineNum">     584 </span>            : 
+<span class="lineNum">     585 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_BEGIN(&quot;Stop common workflow...&quot;)</span>
+<span class="lineNum">     586 </span><span class="lineNoCov">          0 :   g-&gt;io_service.stop();</span>
+<span class="lineNum">     587 </span><span class="lineNoCov">          0 :   g-&gt;common_workflow-&gt;stop();</span>
+<span class="lineNum">     588 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_END(&quot;Stop common workflow ... Done&quot;)</span>
+<span class="lineNum">     589 </span>            : 
+<span class="lineNum">     590 </span><span class="lineNoCov">          0 :   if ( !_abort_flag )</span>
+<span class="lineNum">     591 </span>            :   {
+<span class="lineNum">     592 </span><span class="lineNoCov">          0 :     WSYSLOG_INFO(&quot;daemon &quot; &lt;&lt; this-&gt;global()-&gt;program_name &lt;&lt; &quot; stopped!&quot;)</span>
+<span class="lineNum">     593 </span>            :   }
+<span class="lineNum">     594 </span>            :   else
+<span class="lineNum">     595 </span>            :   {
+<span class="lineNum">     596 </span><span class="lineNoCov">          0 :     WSYSLOG_ALERT(&quot;daemon &quot; &lt;&lt; this-&gt;global()-&gt;program_name &lt;&lt; &quot;(&quot; &lt;&lt; this-&gt;global()-&gt;instance_name &lt;&lt; &quot;) Abnormal Shutdown!&quot;)    </span>
+<span class="lineNum">     597 </span>            :   }
+<span class="lineNum">     598 </span>            : 
+<span class="lineNum">     599 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_END(&quot;Stop daemon '&quot; &lt;&lt; g-&gt;instance_name &lt;&lt; &quot;'...Done&quot;)</span>
+<span class="lineNum">     600 </span><span class="lineNoCov">          0 :   _same = nullptr;</span>
+<span class="lineNum">     601 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(&quot;==================== Bye! ====================&quot;)</span>
+<span class="lineNum">     602 </span><span class="lineNoCov">          0 :   SYSTEM_LOG_MESSAGE(std::endl)</span>
+<a name="603"><span class="lineNum">     603 </span>            : }</a>
+<span class="lineNum">     604 </span>            : 
+<span class="lineNum">     605 </span><span class="lineCov">          3 : }}</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - wfc_core-coverage.info - package/statistics/statistics_aggregator/statistics_config_json.hpp</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">package/statistics/statistics_aggregator</a> - statistics_config_json.hpp<span style="font-size: 80%;"> (source / <a href="statistics_config_json.hpp.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">wfc_core-coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2019-09-05</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">0</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntryLo">0.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : //</a>
+<span class="lineNum">       2 </span>            : // Author: Vladimir Migashko &lt;migashko@gmail.com&gt;, (C) 2013-2018
+<span class="lineNum">       3 </span>            : //
+<span class="lineNum">       4 </span>            : // Copyright: See COPYING file that comes with this distribution
+<span class="lineNum">       5 </span>            : //
+<span class="lineNum">       6 </span>            : 
+<span class="lineNum">       7 </span>            : #pragma once
+<span class="lineNum">       8 </span>            : 
+<span class="lineNum">       9 </span>            : #include &quot;statistics_config.hpp&quot;
+<span class="lineNum">      10 </span>            : #include &lt;wfc/json.hpp&gt;
+<span class="lineNum">      11 </span>            : #include &lt;wfc/statistics/stat_options_json.hpp&gt;
+<span class="lineNum">      12 </span>            : 
+<span class="lineNum">      13 </span>            : namespace wfc{ namespace core{
+<span class="lineNum">      14 </span>            : 
+<span class="lineNum">      15 </span>            : struct statistics_config_json
+<span class="lineNum">      16 </span>            : {
+<span class="lineNum">      17 </span>            :   JSON_NAME(perseconds)
+<span class="lineNum">      18 </span>            :   JSON_NAME(seconds)
+<span class="lineNum">      19 </span>            :   JSON_NAME(milliseconds)
+<span class="lineNum">      20 </span>            :   JSON_NAME(microseconds)
+<span class="lineNum">      21 </span>            :   JSON_NAME(nanoseconds)
+<span class="lineNum">      22 </span>            :   JSON_NAME(hide)
+<span class="lineNum">      23 </span>            : 
+<span class="lineNum">      24 </span>            :   typedef json::enumerator&lt;
+<span class="lineNum">      25 </span>            :     int,
+<span class="lineNum">      26 </span>            :     json::member_list&lt;
+<span class="lineNum">      27 </span>            :       json::enum_value&lt;n_hide,         int, -1&gt;,
+<span class="lineNum">      28 </span>            :       json::enum_value&lt;n_perseconds,   int, 0&gt;,
+<span class="lineNum">      29 </span>            :       json::enum_value&lt;n_nanoseconds,  int, 1&gt;,
+<span class="lineNum">      30 </span>            :       json::enum_value&lt;n_microseconds, int, 1000&gt;,
+<span class="lineNum">      31 </span>            :       json::enum_value&lt;n_milliseconds, int, 1000000&gt;,
+<span class="lineNum">      32 </span>            :       json::enum_value&lt;n_seconds,      int, 1000000000&gt;
+<span class="lineNum">      33 </span>            :     &gt;
+<span class="lineNum">      34 </span>            :   &gt; enum_json;
+<a name="35"><span class="lineNum">      35 </span>            : </a>
+<a name="36"><span class="lineNum">      36 </span>            :   JSON_NAME(target)</a>
+<span class="lineNum">      37 </span><span class="lineNoCov">          0 :   JSON_NAME(targets)</span>
+<a name="38"><span class="lineNum">      38 </span><span class="lineNoCov">          0 :   JSON_NAME(workers)</span></a>
+<a name="39"><span class="lineNum">      39 </span>            :   JSON_NAME(hash_size)</a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineNoCov">          0 :   JSON_NAME(aggregate_timeout_ms)</span></a>
+<span class="lineNum">      41 </span><span class="lineNoCov">          0 :   JSON_NAME(startup_ignore_ms)</span>
+<span class="lineNum">      42 </span><span class="lineNoCov">          0 :   JSON_NAME(suspend_push)</span>
+<span class="lineNum">      43 </span>            : 
+<span class="lineNum">      44 </span>            :   
+<span class="lineNum">      45 </span>            :   typedef json::object&lt;
+<span class="lineNum">      46 </span>            :     statistics_config,
+<span class="lineNum">      47 </span>            :     json::member_list&lt;
+<span class="lineNum">      48 </span>            :       json::base&lt;wrtstat::wrtstat_options_json&gt;,
+<span class="lineNum">      49 </span>            :       /*json::member&lt; n_target,   statistics_config, std::string, &amp;statistics_config::target&gt;,*/
+<span class="lineNum">      50 </span>            :       json::member&lt; n_targets,  statistics_config, std::vector&lt;std::string&gt;, &amp;statistics_config::targets, 
+<span class="lineNum">      51 </span>            :                     json::vector_of_strings&lt;&gt; &gt;,
+<span class="lineNum">      52 </span>            :       json::member&lt; n_workers,   statistics_config, size_t, &amp;statistics_config::workers&gt;,
+<span class="lineNum">      53 </span>            :       json::member&lt; n_suspend_push,   statistics_config, bool, &amp;statistics_config::suspend_push&gt;,
+<span class="lineNum">      54 </span>            :       //json::member&lt; n_hash_size,   statistics_config, size_t, &amp;statistics_config::hash_size&gt;,
+<span class="lineNum">      55 </span>            :       json::member&lt; n_aggregate_timeout_ms, statistics_config, time_t, &amp;statistics_config::aggregate_timeout_ms&gt;,
+<span class="lineNum">      56 </span>            :       json::member&lt; n_startup_ignore_ms, statistics_config, time_t,      &amp;statistics_config::startup_ignore_ms&gt;
+<span class="lineNum">      57 </span>            :       
+<span class="lineNum">      58 </span>            :      &gt;,
+<span class="lineNum">      59 </span>            :     json::strict_mode
+<span class="lineNum">      60 </span>            :   &gt; type;
+<span class="lineNum">      61 </span>            :   
+<span class="lineNum">      62 </span>            :   typedef type::target target;
+<span class="lineNum">      63 </span>            :   typedef type::serializer serializer;
+<span class="lineNum">      64 </span>            :   typedef type::member_list member_list;
+<span class="lineNum">      65 </span>            : };
+<span class="lineNum">      66 </span>            : 
+<span class="lineNum">      67 </span>            : }}
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
