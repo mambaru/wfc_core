@@ -415,7 +415,11 @@ int startup_domain::perform_start_( )
   char buffer[128]={0};
   pid_t pid = ::getpid();
   wjson::value<pid_t>::serializer()( pid, std::begin(buffer) );
-  ::write(pid_file, buffer, strlen(buffer) );
+  if ( -1 == ::write(pid_file, buffer, strlen(buffer) ) )
+  {
+    std::cerr << "ERROR write pid: " << strerror(errno) << std::endl;
+  }
+
   std::clog << "Process identifier (PID): " << pid << std::endl;
 
   if ( _pa.daemonize && _pa.autoup )
