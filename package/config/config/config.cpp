@@ -303,6 +303,7 @@ namespace
 {
   static void signal_sighup_handler(int)
   {
+    SYSTEM_LOG_WARNING("SIGHUP signal handler")
     if ( auto g = wfcglobal::static_global )
     {
       g->io_service.post([g]()

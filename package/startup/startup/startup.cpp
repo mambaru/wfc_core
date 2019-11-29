@@ -31,7 +31,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
 {
   /* Базовый domain_object доступен ограниченно, система не инициализирована работаем через global */
   parse_arguments( _pa, argc, argv);
-  
+
   auto g = this->global();
   if ( g == nullptr )
   {
@@ -39,7 +39,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     std::cerr << "global is nullptr" << std::endl;
     std::cerr << "wfcglobal::static_global initialization required" << std::endl;
   }
-  
+
   g->program_name  = _pa.program_name;
   g->instance_name  = _pa.instance_name;
 
@@ -70,7 +70,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
       {
         std::string component_name;
         std::string component_args;
-        
+
         size_t pos_params = helpparams.find(':');
         if ( pos_params == std::string::npos )
         {
@@ -81,7 +81,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
           component_name = helpparams.substr(0, pos_params);
           component_args = helpparams.substr(pos_params + 1);
         }
-        
+
         if ( auto p = g->registry.get_object<icomponent>("component", component_name , true) )
         {
           std::cout << p->help(component_args) << std::endl << std::endl;
@@ -96,10 +96,10 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   }
   else if ( _pa.version )
   {
-    std::cout << _pa.program_name << " " << g->program_build_info->version() 
-              << std::endl << g->program_build_info->compiler_version() 
-              << std::endl << g->program_build_info->build_date() 
-              << std::endl << g->program_build_info->build_type() 
+    std::cout << _pa.program_name << " " << g->program_build_info->version()
+              << std::endl << g->program_build_info->compiler_version()
+              << std::endl << g->program_build_info->build_date()
+              << std::endl << g->program_build_info->build_type()
               << std::endl;
     return 0;
   }
@@ -189,47 +189,52 @@ bool startup_domain::ready_for_run()
   return _ready;
 }
 
+void startup_domain::clean_finalize()
+{
+  if ( _pid_path.empty() )
+    return;
 
-namespace {
-
-  bool loc_file_pid( std::string path, const std::string& name)
+  int code = ::remove(_pid_path.c_str());
+  if ( code != 0 )
   {
-    if ( !path.empty() && path.back()!='/' )
-      path += '/';
-
-    std::string fname = path + name + ".pid";
-    int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);
-    if ( pid_file == -1)
-    {
-      std::cerr << fname << " open error: " << strerror(errno) << std::endl;
-      return false;
-    }
-    int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
-    if (rc) 
-    {
-      if( EWOULDBLOCK == errno)
-      {
-        std::cerr << fname << " blocked for another instance" << std::endl;
-        std::cerr << "FAIL :  another instance '"<< name <<"' is running" << std::endl;
-        return false; // another instance is running
-      }
-      std::cerr << fname << " blocked error: " << strerror(errno) << std::endl;
-    }
-    else 
-    {
-      std::clog << fname << " blocked for this instance" << std::endl;
-    }
-    return true;
+    std::cerr << "ERROR: pid file: " << strerror(errno) << std::endl;
   }
 }
 
 namespace {
-  
+
+  int loc_file_pid( const std::string& fname)
+  {
+    int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);
+    if ( pid_file == -1)
+    {
+      std::cerr << fname << " open error: " << strerror(errno) << std::endl;
+      return pid_file;
+    }
+    int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
+    if (rc)
+    {
+      std::cerr << fname << " blocked error: " << strerror(errno) << std::endl;
+      if( EWOULDBLOCK == errno)
+      {
+        return -1; // another instance is running
+      }
+    }
+    else
+    {
+      std::clog << fname << " blocked for this instance. " << std::endl;
+    }
+    return pid_file;
+  }
+}
+
+namespace {
+
   struct checked_item
   {
     std::string name;
   };
-  
+
   struct checked_item_json
   {
     JSON_NAME(name)
@@ -243,7 +248,7 @@ namespace {
     typedef type::target target;
     typedef type::member_list member_list;
   };
-  
+
   bool check_options(const std::string& path, const std::set<std::string>& required )
   {
     std::map<std::string, std::string> conf;
@@ -259,13 +264,13 @@ namespace {
     );
 
     conf_json(conf, std::begin(jsonconf), std::end(jsonconf), &er );
-    
+
     if (er)
     {
       std::cerr << "ERROR: " << wjson::strerror::message(er) << std::endl;
       return false;
     }
-    
+
     bool status = true;
     for (const auto& item : conf )
     {
@@ -291,14 +296,14 @@ namespace {
         {
           if ( !conf_names.insert(chk.name).second )
           {
-            std::cerr << "ERROR: instance '" << chk.name 
+            std::cerr << "ERROR: instance '" << chk.name
                       << "' already exist. Check the configuration for duplication of entities." << std::endl;
             status = false;
           }
         }
       }
     }//
-    
+
     for ( const auto& name : required )
     {
       if ( conf_names.count(name) == 0 )
@@ -314,7 +319,7 @@ namespace {
 int startup_domain::perform_start_( )
 {
   auto g = this->global();
-  
+
   if ( auto c = g->registry.get_target<iconfig>("config") )
   {
     if ( !c->load_and_configure(_pa.config_path) )
@@ -332,7 +337,7 @@ int startup_domain::perform_start_( )
 
   std::clog << "Program name: " << g->program_name << std::endl;
   std::clog << "Instance name: " << g->instance_name << std::endl;
-  
+
   if ( !_pa.user_name.empty() )
   {
     std::string err;
@@ -343,7 +348,7 @@ int startup_domain::perform_start_( )
     }
     std::clog << "New user name: " << _pa.user_name << std::endl;
   }
-    
+
   if ( !_pa.working_directory.empty() )
   {
     std::string err;
@@ -355,11 +360,22 @@ int startup_domain::perform_start_( )
     std::clog << "New working directory: " << _pa.user_name << std::endl;
   }
 
-  if ( !loc_file_pid(_pa.pid_dir, _pa.instance_name) )
+  _pid_path = _pa.pid_dir;
+  if ( !_pid_path.empty() && _pid_path.back()!='/' )
+      _pid_path += '/';
+
+  _pid_path += _pa.instance_name + ".pid";
+  int pid_file = loc_file_pid(_pid_path);
+
+  if ( pid_file == -1 )
   {
+    std::cerr << _pid_path << " blocked for another instance" << std::endl;
+    std::cerr << "FAIL :  another instance '"<< _pa.instance_name <<"' is running" << std::endl;
+    std::cout << "ERROR: " << strerror(errno) << std::endl;
+    _pid_path.clear();
     return 8;
   }
-  
+
   if ( _pa.working_time != 0 )
   {
     g->after_start.insert([this]
@@ -371,23 +387,23 @@ int startup_domain::perform_start_( )
       return true;
     });
   }
-  
+
 
   if ( _pa.daemonize )
   {
     if ( _pa.autoup )
       std::clog << "autoup process enabled" << std::endl;
-    
+
     std::clog << "daemonize... see log for startup status" << std::endl;
-    
+
     if ( _pa.wait_daemonize )
       std::clog << "wait for finalize daemon startup" << std::endl;
-    
+
     if ( auto fun = ::wfc::daemonize(_pa.wait_daemonize) )
     {
       g->after_start.insert( [fun](){ fun(); return false;} );
     }
-  } 
+  }
   else if ( _pa.autoup || _pa.wait_daemonize)
   {
     if ( _pa.autoup )
@@ -396,17 +412,23 @@ int startup_domain::perform_start_( )
       std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
 
+  char buffer[128]={0};
+  pid_t pid = ::getpid();
+  wjson::value<pid_t>::serializer()( pid, std::begin(buffer) );
+  ::write(pid_file, buffer, strlen(buffer) );
+  std::clog << "Process identifier (PID): " << pid << std::endl;
+
   if ( _pa.daemonize && _pa.autoup )
   {
     bool success_autoup = _pa.success_autoup;
-    ::wfc::autoup( 
+    ::wfc::autoup(
       _pa.autoup_timeout,
       success_autoup,
       nullptr,
       [this, g](int count, int status, time_t work_time)
       {
         this->_pa.startup_options.clear();
-        
+
         g->after_start.insert([count, status, work_time]()
         {
           SYSTEM_LOG_BEGIN("------------------------------------------------")
@@ -425,7 +447,7 @@ int startup_domain::perform_start_( )
       }
     );
   }
-  
+
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);
 
@@ -443,7 +465,7 @@ int startup_domain::perform_start_( )
 void startup_domain::show_usage_()
 {
   auto g = this->global();
-  
+
   std::cout <<  "Usage:" << std::endl;
   std::cout <<  "  " << g->program_name << " --help" << std::endl;
   std::cout <<  "  " << g->program_name << " --version" << std::endl;
@@ -459,7 +481,7 @@ bool startup_domain::show_info_(const std::string& package_name)
 
   if ( g==nullptr )
     return false;
-  
+
   if ( !package_name.empty() )
   {
     if ( auto p = g->registry.get_object<ipackage>("package", package_name, true) )
@@ -469,11 +491,11 @@ bool startup_domain::show_info_(const std::string& package_name)
       std::cout << "\tDescription: " << p->description() << std::endl;
       std::cout << "\tList of modules:" << std::endl;
       auto modules = p->modules();
-      for( auto m: modules ) 
+      for( auto m: modules )
       {
           std::cout << "\t\t" << m->name() << ". " << m->description() << std::endl;
           auto components = m->components();
-          for( auto o: components ) 
+          for( auto o: components )
           {
             std::cout << "\t\t\t" << o->name() << " - " << o->description() << std::endl;
           }
@@ -499,11 +521,11 @@ bool startup_domain::show_info_(const std::string& package_name)
     this->show_build_info_(g->wfc_build_info, false);
     std::cout << "Package List:" << std::endl;
 
-    g->registry.for_each<ipackage>("package", 
+    g->registry.for_each<ipackage>("package",
       [this](const std::string&, std::shared_ptr<ipackage> p)
       {
         this->show_build_info_(p->build_info(), true);
-      }, 
+      },
       [](std::shared_ptr<ipackage> left, std::shared_ptr<ipackage> right)
       {
         return left->order() < right->order();
@@ -517,11 +539,11 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
 {
   if ( b==nullptr )
     return;
-  
+
   if ( shortinfo )
   {
-    std::cout << std::setw(20) << std::right << b->name() 
-              << " " << std::setw(17) << std::left << b->version() 
+    std::cout << std::setw(20) << std::right << b->name()
+              << " " << std::setw(17) << std::left << b->version()
               << " " << b->initial_author() << std::endl;
   }
   else
@@ -551,7 +573,7 @@ void startup_domain::show_build_info_(std::shared_ptr<ibuild_info> b, bool short
 bool startup_domain::generate_()
 {
   auto g = this->global();
-  
+
   if ( auto c = g->registry.get_target<iconfig>("config") )
   {
     std::string genstr;

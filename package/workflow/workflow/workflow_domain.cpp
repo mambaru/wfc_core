@@ -32,8 +32,9 @@ void workflow_domain::reconfigure()
 {
   auto opt = this->options();
   opt.id = this->name();
-  opt.control_workflow = this->get_common_workflow();
-  _workflow->reconfigure(opt);
+  wflow::workflow_handlers hndl;
+  hndl.control_workflow = this->get_common_workflow();
+  _workflow->reconfigure(opt, hndl);
 }
 
 void workflow_domain::initialize()
@@ -78,11 +79,11 @@ void workflow_domain::restart()
 {
   auto opt = this->options();
   auto statopt = this->statistics_options();
-
+  wflow::workflow_handlers whndl;
   //auto g = this->global();
   opt.id = this->name();
-  opt.startup_handler = std::bind( &self::reg_thread, this );
-  opt.finish_handler = std::bind( &self::unreg_thread, this );
+  whndl.startup_handler = std::bind( &self::reg_thread, this );
+  whndl.finish_handler = std::bind( &self::unreg_thread, this );
 
   if ( this->get_statistics() != nullptr )
   {
@@ -92,9 +93,9 @@ void workflow_domain::restart()
     value_meter proto_time;
     value_meter proto_total;
     auto tcount = std::make_shared< std::atomic<int> >();
-    opt.statistics_handler  = 
+    whndl.statistics_handler  = 
       [wthis, first, proto_time, proto_total, tcount, statopt]
-    (std::thread::id, size_t count, workflow_options::statistics_duration span) mutable
+    (std::thread::id, size_t count, wflow::workflow_handlers::statistics_duration span) mutable
     {
       if ( auto pthis = wthis.lock() )
       {
@@ -121,7 +122,7 @@ void workflow_domain::restart()
       }
     };
   }
-  _workflow->reconfigure( opt );
+  _workflow->reconfigure( opt, whndl );
 
 }
 

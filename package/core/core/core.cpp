@@ -27,9 +27,10 @@ namespace
 {
   static std::atomic<bool> gs_stop_signal;
 
-  static void signal_sigint_handler(int)
+  static void signal_sigint_handler(int sig)
   {
-    std::clog << "Stop signal handler" << std::endl;
+    // std::clog << "Stop signal handler" << std::endl;
+    SYSTEM_LOG_WARNING("Stop signal handler " << sig)
     if ( auto g = ::wfc::wfcglobal::static_global )
       g->stop_signal_flag = true;
     gs_stop_signal = true;
@@ -98,12 +99,13 @@ void core::reconfigure()
 {
   auto opt = this->options();
   auto cw_opt = opt.common_workflow;
+  wflow::workflow_handlers cw_hndl;
   cw_opt.id = this->name();
   if ( auto g = this->global() )
   {
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
-    cw_opt.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
-    cw_opt.finish_handler = [g]( std::thread::id id)
+    cw_hndl.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
+    cw_hndl.finish_handler = [g]( std::thread::id id)
     {
       SYSTEM_LOG_MESSAGE( "common_workflow thread finished. std::thread::id=" << id )
       g->cpu.del_current_thread();
@@ -111,11 +113,11 @@ void core::reconfigure()
     
     if ( g->common_workflow==nullptr )
     {
-      g->common_workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt );
+      g->common_workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt, cw_hndl );
       g->common_workflow->start();
     }
     else
-      g->common_workflow->reconfigure(cw_opt);
+      g->common_workflow->reconfigure(cw_opt, cw_hndl);
     
     g->disable_statistics = opt.disable_statistics;
     
@@ -598,7 +600,6 @@ void core::_stop()
 
   SYSTEM_LOG_END("Stop daemon '" << g->instance_name << "'...Done")
   _same = nullptr;
-  SYSTEM_LOG_MESSAGE("==================== Bye! ====================")
   SYSTEM_LOG_MESSAGE(std::endl)
 }
 

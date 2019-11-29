@@ -1,4 +1,3 @@
-include(BuildInfo)
 
 SET(
   wfc_core_source_list
@@ -7,7 +6,7 @@ SET(
   core/core_module.cpp
   core/core/core_singleton.cpp
   core/core/core.cpp
-  
+
   startup/startup/parse_arguments.cpp
   startup/startup/startup.cpp
   startup/startup/startup_singleton.cpp
@@ -33,14 +32,14 @@ if ( WFC_ENABLE_STAT OR STANDALONE )
     statistics/statistics_module.cpp
     statistics/statistics_aggregator/statistics_multiton.cpp
     statistics/statistics_aggregator/statistics_domain.cpp
-    
+
     statistics/statistics_log/statlog_multiton.cpp
     statistics/statistics_log/statlog_domain.cpp
 
     statistics/system_statistics/system_statistics_multiton.cpp
     statistics/system_statistics/system_statistics_domain.cpp
     statistics/system_statistics/impl/get_procstat.cpp
-    
+
     statistics/statistics_gateway/statistics_gateway_multiton.cpp
     statistics/statistics_service/statistics_service_multiton.cpp
   )
@@ -48,8 +47,12 @@ endif()
 
 add_library(wfc_core ${wfc_core_source_list})
 
-build_info(wfc_core core)
+wci_targets(wfc_core)
 
-target_link_libraries(wfc_core ${WFC_LIBRARIES})
+target_include_directories(wfc_core PUBLIC ${wfc_core_SOURCE_DIR})
+
+target_link_libraries(wfc_core PUBLIC wfc)
+
+build_info(wfc_core core)
 
 install(TARGETS wfc_core DESTINATION ${CMAKE_INSTALL_PREFIX})

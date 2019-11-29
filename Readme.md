@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/mambaru/wfc_core/workflows/C++%20CI/badge.svg?branch=master)](https://github.com/mambaru/wfc_core/tree/master)
+[![Build Status](https://github.com/mambaru/wfc_core/workflows/C++%20CI/badge.svg?branch=mambaru)](https://github.com/mambaru/wfc_core/tree/mambaru)
+[![Coverage Report](http://github.lan/cpp/wfc_core/badges/pre-release/coverage.svg)](http://github.lan/cpp/wfc_core/commits/pre-release)
 
 # wfc_core: Пакет ядра WFC
 
