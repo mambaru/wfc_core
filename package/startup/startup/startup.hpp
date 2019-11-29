@@ -24,6 +24,7 @@ public:
   virtual ~startup_domain();
   virtual int startup( int argc, char* argv[], std::string helpstring) override;
   virtual bool ready_for_run() override;
+  virtual void clean_finalize() override;
 private:
   int perform_start_();
   bool generate_();
@@ -33,6 +34,7 @@ private:
 private:
   program_arguments _pa;
   bool _ready = false;
+  std::string _pid_path;
 };
 
 }}

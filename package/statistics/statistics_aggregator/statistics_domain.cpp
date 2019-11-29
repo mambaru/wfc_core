@@ -2,6 +2,7 @@
 #include <wfc/iinterface.hpp>
 #include "statistics_domain.hpp"
 #include <wfc/statistics/statistics.hpp>
+#include <fas/utility/ignore_args.hpp>
 #include <ctime>
 
 namespace wfc{ namespace core{
@@ -60,13 +61,11 @@ void statistics_domain::reconfigure()
 
 void statistics_domain::initialize() 
 {
-  auto opt = this->options();
   std::lock_guard<mutex_type> lk(_mutex);
   _targets.reserve(64);
   _targets.clear();
   for ( auto target: this->options().targets )
     _targets.push_back( this->get_target<istatistics>(target) );
-  //_target = this->get_target<istatistics>( opt.target );
 }
 
 void statistics_domain::restart() 
@@ -93,31 +92,6 @@ void statistics_domain::restart()
       );
     }
   }
-  
-  
-  /*
-  if ( opt.workers < 1 )
-    opt.workers = 1;
-  stat_list stats = _stat_list;
-  stats.insert(stats.begin(), _stat);
-  if ( auto wf = this->get_workflow() )
-  {
-    for ( int id : _timers)
-      wf->release_timer(id);
-    _timers.clear();
-    for ( auto st : stats )
-    {
-      for (int i = 0; i < opt.workers; ++i)
-      {
-        int id = wf->create_timer( 
-          std::chrono::milliseconds(opt.aggregate_timeout_ms), 
-          std::bind(&statistics_domain::handler_, this, st, i, opt.workers) 
-        );
-        _timers.push_back(id);
-      }
-    }
-  }
-  */
   
   if ( auto st = this->get_statistics() )
   {
@@ -176,15 +150,9 @@ void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::stat
       }, nullptr);
     }
   }
-  /*
-  if ( auto st = this->get_stat_(req->name) )
-  {
-    bool status = _suspend_push ? false : st->add( req->name, *req);
-    if ( res!= nullptr )
-      res->status = status;
-  }
-  */
+
   this->send_response( std::move(res), std::move(cb) );
+  fas::ignore_args(tm, vm);
 }
 
 void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) 

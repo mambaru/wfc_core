@@ -149,7 +149,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
       for (auto m : modules)
       {
         auto components = m->components();
-        for (auto c : components )
+        for (const auto& c : components )
         {
           vectconf.push_back( std::make_pair(c->name(), c->generate("") ) );
         }
@@ -303,6 +303,7 @@ namespace
 {
   static void signal_sighup_handler(int)
   {
+    SYSTEM_LOG_WARNING("SIGHUP signal handler")
     if ( auto g = wfcglobal::static_global )
     {
       g->io_service.post([g]()

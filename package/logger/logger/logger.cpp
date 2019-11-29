@@ -61,10 +61,10 @@ void logger::release()
     if ( _last_message!=nullptr)
       lm = std::make_unique<message_t>( *_last_message );
   }
-  // TODO: записать финальное сообщение 
+  
+  auto tp = wlog::time_point::clock::now();
   if (lm != nullptr && log!=nullptr )
   {
-    auto tp = wlog::time_point::clock::now();
     log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     log(tp, "", "FINAL", "---------- Abnormal Shutdown! ----------\n");
     {
@@ -100,6 +100,10 @@ void logger::release()
     }
     log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
   }
+  else
+  {
+    log(tp, "", "MESSAGE","==================== Bye! ====================\n");
+  }
 }
 
 void logger::reconfigure()
@@ -109,23 +113,6 @@ void logger::reconfigure()
 
 void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
 {
-  /*
-  bool fatal_found = false;
-  bool final_found = false;
-  bool syslog_found = false;
-  for ( const auto& c : opt.customize )
-  {
-    for ( const auto& n : c.names)
-    {
-      if ( !fatal_found && n == "FATAL")
-        fatal_found = true;
-      if ( !final_found && n == "FINAL")
-        final_found = true;
-      if ( !syslog_found && n == "SYSLOG")
-        syslog_found = true;
-    }
-  }
-  */
   bool fatal_found = opt.get_customize("FATAL")!=nullptr;
   bool final_found = opt.get_customize("FINAL")!=nullptr;
   bool syslog_found = opt.get_customize("SYSLOG")!=nullptr;
