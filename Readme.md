@@ -1,6 +1,10 @@
+
+[![tag](https://img.shields.io/github/v/tag/mambaru/wfc_core.svg?sort=semver)](https://github.com/mambaru/wfc_core/tree/master)
 [![Build Status](https://github.com/mambaru/wfc_core/workflows/C++%20CI/badge.svg?branch=master)](https://github.com/mambaru/wfc_core/tree/master)
 [![Build Status](https://github.com/mambaru/wfc_core/workflows/C++%20CI/badge.svg?branch=mambaru)](https://github.com/mambaru/wfc_core/tree/mambaru)
-[![Coverage Report](http://github.lan/cpp/wfc_core/badges/pre-release/coverage.svg)](http://github.lan/cpp/wfc_core/commits/pre-release)
+[![Build Status](https://travis-ci.com/mambaru/wfc_core.svg?branch=master)](https://travis-ci.com/mambaru/wfc_core)
+[![Build Status](https://travis-ci.com/mambaru/wfc_core.svg?branch=mambaru)](https://travis-ci.com/mambaru/wfc_core)
+[![codecov](https://codecov.io/gh/mambaru/wfc_core/branch/master/graph/badge.svg)](https://codecov.io/gh/mambaru/wfc_core)
 
 # wfc_core: Пакет ядра WFC
 
