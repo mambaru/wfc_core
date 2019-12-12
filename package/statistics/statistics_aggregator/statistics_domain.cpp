@@ -45,14 +45,15 @@ void statistics_domain::reconfigure()
   _stat_list.reserve(opt.workers);
   _workflow_list.reserve(opt.workers);
   workflow_options wopt;
+  workflow_handlers whnd; 
   wopt.threads = 1;
-  wopt.startup_handler=[this](std::thread::id){ this->reg_thread();};
-  wopt.finish_handler=[this](std::thread::id){ this->unreg_thread();};
+  whnd.startup_handler=[this](std::thread::id){ this->reg_thread();};
+  whnd.finish_handler=[this](std::thread::id){ this->unreg_thread();};
   for (size_t i = 0 ; i < opt.workers; ++i)
   {
     _stat_list.push_back( std::make_shared<stat_push>( opt ) );
     _stat_list.back()->enable( !this->suspended() );
-    _workflow_list.push_back( std::make_shared<workflow_type>(this->global()->io_service, wopt) );
+    _workflow_list.push_back( std::make_shared<workflow_type>(this->global()->io_service, wopt, whnd) );
     _workflow_list.back()->start();
   }
   

@@ -3,6 +3,6 @@ missingInclude:./package/core_package.cpp:2
 unmatchedSuppression:./package/core_package.cpp:2
 unusedFunction:
 duplicateCondition:./package/core/core/core.cpp:216
-useStlAlgorithm:./package/statistics/statistics_aggregator/statistics_domain.cpp:68
+useStlAlgorithm:./package/statistics/statistics_aggregator/statistics_domain.cpp:69
 useStlAlgorithm:./package/config/config/config.cpp:154
 

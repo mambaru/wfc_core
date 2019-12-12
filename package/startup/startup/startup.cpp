@@ -404,12 +404,9 @@ int startup_domain::perform_start_( )
       g->after_start.insert( [fun](){ fun(); return false;} );
     }
   }
-  else if ( _pa.autoup || _pa.wait_daemonize)
+  else if ( _pa.wait_daemonize)
   {
-    if ( _pa.autoup )
-      std::clog << "WARNING: autoup argument ignored. Only with -d worked" << std::endl;
-    if (_pa.wait_daemonize)
-      std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
+    std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
 
   char buffer[128]={0};
@@ -422,13 +419,20 @@ int startup_domain::perform_start_( )
 
   std::clog << "Process identifier (PID): " << pid << std::endl;
 
-  if ( _pa.daemonize && _pa.autoup )
+  bool parent_proc = true;
+  if ( /*_pa.daemonize &&*/ _pa.autoup )
   {
     bool success_autoup = _pa.success_autoup;
-    ::wfc::autoup(
+    parent_proc = ::wfc::autoup(
       _pa.autoup_timeout,
       success_autoup,
-      nullptr,
+      [](pid_t pid1, int count, int status, time_t work_time) -> bool
+      {
+        std::clog << "Process PID=" << pid1 << " terminated with status " << status << " and will be restarted" << std::endl;
+        std::clog << "Work Time: " << work_time << " seconds" << std::endl;
+        std::clog << "Restart count: " << count << std::endl;
+        return true;
+      },
       [this, g](int count, int status, time_t work_time)
       {
         this->_pa.startup_options.clear();
@@ -450,6 +454,15 @@ int startup_domain::perform_start_( )
         });
       }
     );
+  }
+
+  if ( parent_proc )
+  {
+    if ( !_pid_path.empty() )
+      unlink( _pid_path.c_str() );
+
+    if ( _pa.autoup )
+      return 0;
   }
 
   g->args.insert(_pa.startup_options);

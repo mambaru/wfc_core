@@ -25,7 +25,7 @@ SET(
   workflow/workflow/workflow_domain.cpp
 )
 
-if ( WFC_ENABLE_STAT OR STANDALONE )
+if ( WFC_ENABLE_STAT )
   SET(
     wfc_core_source_list
     ${wfc_core_source_list}
