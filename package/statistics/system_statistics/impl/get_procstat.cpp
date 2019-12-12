@@ -17,7 +17,7 @@ int get_procstat(pid_t pid, procstat* pinfo)
   char szFileName [_POSIX_PATH_MAX],
     szStatStr [2048],
     *s, *t;
-  FILE *fp = NULL;
+  FILE *fp = nullptr;
   struct stat st;
   
   if ( nullptr == pinfo) {
@@ -40,11 +40,11 @@ int get_procstat(pid_t pid, procstat* pinfo)
   }
   
   
-  if ((fp = ::fopen (szFileName, "r")) == NULL) {
+  if ((fp = ::fopen (szFileName, "r")) == nullptr) {
     return (pinfo->pid = -1);
-  } /** IF_NULL **/
+  } /** IF_nullptr **/
   
-  if ((s = ::fgets (szStatStr, 2048, fp)) == NULL) {
+  if ((s = ::fgets (szStatStr, 2048, fp)) == nullptr) {
     ::fclose (fp);
     return (pinfo->pid = -1);
   }
