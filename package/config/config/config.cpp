@@ -10,6 +10,7 @@
 #include <wfc/module/ipackage.hpp>
 #include <wfc/module/imodule.hpp>
 #include <wfc/module/icomponent.hpp>
+#include <wlog/init.hpp>
 
 #include <string>
 #include <fstream>
@@ -149,10 +150,12 @@ bool config::generate_config( const generate_options& go, const std::string& pat
       for (auto m : modules)
       {
         auto components = m->components();
+        wlog::disable();
         for (const auto& c : components )
         {
           vectconf.push_back( std::make_pair(c->name(), c->generate("") ) );
         }
+        wlog::disable();
       }
     },
     [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
