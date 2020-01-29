@@ -41,6 +41,7 @@ private:
   typedef std::tuple<wlog::time_point, std::string, std::string, std::string> message_t;
   std::unique_ptr<message_t> _last_message;
   mutable mutex_type _mutex;
+  bool _initialized = false;
 };
 
 }}

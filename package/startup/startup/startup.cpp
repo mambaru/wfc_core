@@ -203,7 +203,7 @@ void startup_domain::clean_finalize()
 
 namespace {
 
-  int loc_file_pid( const std::string& fname)
+  int loc_file_pid(const std::string& fname)
   {
     int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);
     if ( pid_file == -1)
@@ -211,7 +211,9 @@ namespace {
       std::cerr << fname << " open error: " << strerror(errno) << std::endl;
       return pid_file;
     }
+    
     int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
+    
     if (rc)
     {
       std::cerr << fname << " blocked error: " << strerror(errno) << std::endl;
@@ -225,6 +227,24 @@ namespace {
       std::clog << fname << " blocked for this instance. " << std::endl;
     }
     return pid_file;
+  }
+  
+  int write_loc_pid( int fileid, pid_t pid)
+  {
+    if ( -1 ==  ftruncate(fileid, 0) )
+    {
+      std::cerr << "ERROR ftruncate pid: " << strerror(errno) << std::endl;
+      return -1;
+    }
+      
+    char buffer[128]={0};
+    wjson::value<pid_t>::serializer()( pid, std::begin(buffer) );
+    if ( -1 == ::write(fileid, buffer, strlen(buffer) ) )
+    {
+      std::cerr << "ERROR write pid: " << strerror(errno) << std::endl;
+      return -1;
+    }
+    return 0;
   }
 }
 
@@ -359,7 +379,7 @@ int startup_domain::perform_start_( )
     }
     std::clog << "New working directory: " << _pa.user_name << std::endl;
   }
-
+  
   _pid_path = _pa.pid_dir;
   if ( !_pid_path.empty() && _pid_path.back()!='/' )
       _pid_path += '/';
@@ -388,7 +408,6 @@ int startup_domain::perform_start_( )
     });
   }
 
-
   if ( _pa.daemonize )
   {
     if ( _pa.autoup )
@@ -409,18 +428,17 @@ int startup_domain::perform_start_( )
     std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
 
-  char buffer[128]={0};
+  // Это основной или мониторящий процесс (получаем pid после демонизации)
   pid_t pid = ::getpid();
-  wjson::value<pid_t>::serializer()( pid, std::begin(buffer) );
-  if ( -1 == ::write(pid_file, buffer, strlen(buffer) ) )
+  if ( -1 == write_loc_pid(pid_file, pid) )
   {
-    std::cerr << "ERROR write pid: " << strerror(errno) << std::endl;
+    return 9;
   }
 
   std::clog << "Process identifier (PID): " << pid << std::endl;
 
   bool parent_proc = true;
-  if ( /*_pa.daemonize &&*/ _pa.autoup )
+  if ( _pa.autoup )
   {
     bool success_autoup = _pa.success_autoup;
     parent_proc = ::wfc::autoup(

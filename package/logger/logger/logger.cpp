@@ -30,8 +30,7 @@ logger::logger()
 
 logger::domain_config logger::generate(const std::string& arg) 
 {
-  domain_config
-  conf;
+  domain_config  conf;
   conf.finalize();
   conf.stdout.color_map.clear();
   if ( arg == "example" )
@@ -62,8 +61,11 @@ void logger::release()
       lm = std::make_unique<message_t>( *_last_message );
   }
   
+  if ( log == nullptr )
+    return;
+  
   auto tp = wlog::time_point::clock::now();
-  if (lm != nullptr && log!=nullptr )
+  if ( lm != nullptr )
   {
     log(tp, "", "FINAL", "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     log(tp, "", "FINAL", "---------- Abnormal Shutdown! ----------\n");
@@ -102,7 +104,8 @@ void logger::release()
   }
   else
   {
-    log(tp, "", "MESSAGE","==================== Bye! ====================\n");
+    if ( _initialized )
+      log(tp, "", "MESSAGE","==================== Bye! ====================\n");
   }
 }
 
@@ -165,6 +168,7 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
 
 void logger::initialize()
 {
+  _initialized = true;
   auto logs= this->select_objects<ilogger>("logger");
   if ( !logs.empty() )
   {

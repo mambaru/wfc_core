@@ -242,6 +242,8 @@ void core::core_stop()
 {
   SYSTEM_LOG_MESSAGE("wfc_core: stop!")
   _stop_flag = true;
+  if ( auto g = ::wfc::wfcglobal::static_global )
+    g->stop_signal_flag = true;
 }
 
 void core::core_abort( std::string message ) 
