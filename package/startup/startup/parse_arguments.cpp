@@ -162,7 +162,7 @@ namespace
       size_t end = opt.find(":", beg);
       if ( end != std::string::npos)
       {
-        parse_pair(std::string(opt.begin()+static_cast<std::ptrdiff_t>(beg), opt.begin()+static_cast<std::ptrdiff_t>(beg)), res);
+        parse_pair(std::string(opt.begin()+static_cast<std::ptrdiff_t>(beg), opt.begin()+static_cast<std::ptrdiff_t>(end)), res);
         beg = end+1;
       }
       else

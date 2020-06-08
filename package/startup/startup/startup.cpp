@@ -208,7 +208,7 @@ namespace {
     int pid_file = ::open(fname.c_str(), O_CREAT | O_RDWR, 0666);
     if ( pid_file == -1)
     {
-      std::cerr << fname << " open error: " << strerror(errno) << std::endl;
+      std::cerr << fname << " open ERROR: " << strerror(errno) << std::endl;
       return pid_file;
     }
     
@@ -216,11 +216,13 @@ namespace {
     
     if (rc)
     {
-      std::cerr << fname << " blocked error: " << strerror(errno) << std::endl;
+      std::cerr << fname << " blocked ERROR: " << strerror(errno) << std::endl;
       if( EWOULDBLOCK == errno)
       {
-        return -1; // another instance is running
+        std::cerr << fname << " blocked for another instance" << std::endl;
+        return -2; // another instance is running
       }
+      return -1;
     }
     else
     {
@@ -387,11 +389,10 @@ int startup_domain::perform_start_( )
   _pid_path += _pa.instance_name + ".pid";
   int pid_file = loc_file_pid(_pid_path);
 
-  if ( pid_file == -1 )
+  if ( pid_file < 0 )
   {
-    std::cerr << _pid_path << " blocked for another instance" << std::endl;
-    std::cerr << "FAIL :  another instance '"<< _pa.instance_name <<"' is running" << std::endl;
-    std::cout << "ERROR: " << strerror(errno) << std::endl;
+    if ( pid_file == -2 )
+      std::cerr << "FAIL :  another instance '"<< _pa.instance_name <<"' is running" << std::endl;
     _pid_path.clear();
     return 8;
   }
