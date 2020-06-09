@@ -2,7 +2,7 @@
 #include "workflow_domain.hpp"
 
 namespace wfc{ namespace core{
- 
+
 class workflow_domain::impl
   : public iinterface
   , public workflow
@@ -22,13 +22,15 @@ workflow_domain::~workflow_domain()
 {
 }
 
-void workflow_domain::configure() 
+void workflow_domain::configure()
 {
-  _workflow = std::make_shared<impl>( this->global()->io_service, this->options() );
+  auto opt = this->options();
+  opt.id = this->name();
+  _workflow = std::make_shared<impl>( this->global()->io_service, opt );
   this->reg_object( "workflow", this->name(), _workflow );
 }
 
-void workflow_domain::reconfigure() 
+void workflow_domain::reconfigure()
 {
   auto opt = this->options();
   opt.id = this->name();
@@ -69,13 +71,13 @@ void workflow_domain::initialize()
 
 void workflow_domain::start()
 {
-  
+
   this->restart();
   _workflow->start();
-  
+
 }
 
-void workflow_domain::restart() 
+void workflow_domain::restart()
 {
   auto opt = this->options();
   auto statopt = this->statistics_options();
@@ -88,12 +90,12 @@ void workflow_domain::restart()
   if ( this->get_statistics() != nullptr )
   {
     std::weak_ptr<workflow_domain> wthis = this->shared_from_this();
-    
+
     bool first = true;
     value_meter proto_time;
     value_meter proto_total;
     auto tcount = std::make_shared< std::atomic<int> >();
-    whndl.statistics_handler  = 
+    whndl.statistics_handler  =
       [wthis, first, proto_time, proto_total, tcount, statopt]
     (std::thread::id, size_t count, wflow::workflow_handlers::statistics_duration span) mutable
     {
@@ -126,7 +128,7 @@ void workflow_domain::restart()
 
 }
 
-void workflow_domain::stop() 
+void workflow_domain::stop()
 {
   if ( auto core = this->global()->common_workflow )
     core->release_timer(_stat_timer);
