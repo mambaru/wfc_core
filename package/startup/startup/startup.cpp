@@ -135,7 +135,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     },
     [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
     {
-      return l->order() < r->order();
+      return l->show_order() < r->show_order();
     });
   }
   else if ( _pa.component_list )
@@ -157,7 +157,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     },
     [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
     {
-      return l->order() < r->order();
+      return l->show_order() < r->show_order();
     });
   }
   else if ( _pa.generate )
@@ -211,9 +211,9 @@ namespace {
       std::cerr << fname << " open ERROR: " << strerror(errno) << std::endl;
       return pid_file;
     }
-    
+
     int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
-    
+
     if (rc)
     {
       std::cerr << fname << " blocked ERROR: " << strerror(errno) << std::endl;
@@ -230,7 +230,7 @@ namespace {
     }
     return pid_file;
   }
-  
+
   int write_loc_pid( int fileid, pid_t pid)
   {
     if ( -1 ==  ftruncate(fileid, 0) )
@@ -238,7 +238,7 @@ namespace {
       std::cerr << "ERROR ftruncate pid: " << strerror(errno) << std::endl;
       return -1;
     }
-      
+
     char buffer[128]={0};
     wjson::value<pid_t>::serializer()( pid, std::begin(buffer) );
     if ( -1 == ::write(fileid, buffer, strlen(buffer) ) )
@@ -381,7 +381,7 @@ int startup_domain::perform_start_( )
     }
     std::clog << "New working directory: " << _pa.user_name << std::endl;
   }
-  
+
   _pid_path = _pa.pid_dir;
   if ( !_pid_path.empty() && _pid_path.back()!='/' )
       _pid_path += '/';
@@ -564,7 +564,7 @@ bool startup_domain::show_info_(const std::string& package_name)
       },
       [](std::shared_ptr<ipackage> left, std::shared_ptr<ipackage> right)
       {
-        return left->order() < right->order();
+        return left->show_order() < right->show_order();
       }
     );
   }

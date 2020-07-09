@@ -10,8 +10,8 @@
 #include <wfc/module/module_list.hpp>
 
 namespace wfc{
-  
-namespace 
+
+namespace
 {
   class impl: public ::wfc::module_list<
     core_build_info,
@@ -29,8 +29,8 @@ namespace
     {
       return "WFC core modules";
     }
-    
-    virtual int order() const override
+
+    virtual int show_order() const override
     {
       return 0;
     }

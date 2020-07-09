@@ -23,7 +23,7 @@
 
 namespace wfc{  namespace core{
 
-namespace 
+namespace
 {
   static std::atomic<bool> gs_stop_signal;
 
@@ -35,7 +35,7 @@ namespace
       g->stop_signal_flag = true;
     gs_stop_signal = true;
   }
-  
+
   std::set<pid_t> get_threads()
   {
     std::set<pid_t> pids;
@@ -46,7 +46,7 @@ namespace
     boost::filesystem::directory_iterator beg( dirname, ec), end;
     if (ec)
       return pids;
-  
+
     std::for_each(beg, end, [&pids](const boost::filesystem::directory_entry& de)
     {
       boost::filesystem::path p(de, fas_null_param);
@@ -59,13 +59,13 @@ namespace
     });
     return pids;
   }
-  
+
   std::string setaffinity(pid_t pid, const std::set<int>& cpu)
   {
     std::string ss = "[";
     cpu_set_t  mask;
     CPU_ZERO(&mask);
-    
+
     for (int id : cpu )
     {
       ss += std::to_string(id) +  ",";
@@ -110,22 +110,22 @@ void core::reconfigure()
       SYSTEM_LOG_MESSAGE( "common_workflow thread finished. std::thread::id=" << id )
       g->cpu.del_current_thread();
     };
-    
+
     if ( g->common_workflow==nullptr )
     {
-      g->common_workflow = std::make_shared<wfc::workflow>( g->io_service, cw_opt, cw_hndl );
+      g->common_workflow = std::make_shared<wflow::workflow>( g->io_context, cw_opt, cw_hndl );
       g->common_workflow->start();
     }
     else
       g->common_workflow->reconfigure(cw_opt, cw_hndl);
-    
+
     g->disable_statistics = opt.disable_statistics;
-    
+
     bool nca = opt.nocall_callback_abort;
     bool ncs = opt.nocall_callback_show;
     bool dca = opt.double_callback_abort;
     bool dcs = opt.double_callback_show;
-    
+
     g->nocall_handler = [g, nca, ncs](const std::string& objname)
     {
       if ( g->stop_signal_flag )
@@ -158,7 +158,7 @@ void core::reconfigure()
       }
     };
   }
-  
+
   if ( opt.rlimit_as_mb != 0 )
   {
     rlim_t limit = opt.rlimit_as_mb*1024*1024;
@@ -180,10 +180,10 @@ void core::reconfigure()
     }
   }
   this->global()->cpu.set_current_thread( this->name() );
-  
+
 }
 
-void core::stop() 
+void core::stop()
 {
   _same = this->shared_from_this();
   SYSTEM_LOG_MESSAGE("************* void core::stop()  *****************")
@@ -194,7 +194,7 @@ int core::run()
 {
   if ( this->global()->common_workflow==nullptr )
     this->reconfigure();
-  
+
   gs_stop_signal = false;
 
   signal(SIGPIPE,  SIG_IGN);
@@ -229,7 +229,7 @@ int core::run()
   qopt.wrnsize = 0;
   qopt.maxsize = 0;
   qopt.threads = 0;
-  _core_workflow = std::make_shared< workflow >( this->global()->io_service, qopt );
+  _core_workflow = std::make_shared< wflow::workflow >( this->global()->io_context, qopt );
   return this->_main_loop();
 }
 
@@ -246,7 +246,7 @@ void core::core_stop()
     g->stop_signal_flag = true;
 }
 
-void core::core_abort( std::string message ) 
+void core::core_abort( const std::string& message )
 {
   if ( auto g = ::wfc::wfcglobal::static_global )
   {
@@ -271,9 +271,9 @@ bool core::_idle()
 
   if ( _stop_flag )
   {
-    SYSTEM_LOG_BEGIN("wfc_core: io_service stop...")
-    this->global()->io_service.stop();
-    SYSTEM_LOG_END("wfc_core: io_service stop done!")
+    SYSTEM_LOG_BEGIN("wfc_core: io_context stop...")
+    this->global()->io_context.stop();
+    SYSTEM_LOG_END("wfc_core: io_context stop done!")
     return false;
   }
 
@@ -305,7 +305,7 @@ bool core::_idle()
         std::string scpu = setaffinity( p, cpu );
         SYSTEM_LOG_MESSAGE("For WFC thread " << p << " ('" << cpumgr.get_name(p) << "') CPU set " << scpu )
       }
-      
+
       if ( !sys_cpu.empty() )
       {
         for ( pid_t p : all_pids )
@@ -332,7 +332,7 @@ int core::_main_loop()
 
   _core_workflow->create_timer(
     std::chrono::milliseconds(this->options().idle_timeout_ms),
-    [wthis]()->bool 
+    [wthis]()->bool
     {
       if (auto pthis = wthis.lock() )
       {
@@ -342,10 +342,10 @@ int core::_main_loop()
       return false;
     }
   );
-  
+
   _core_workflow->create_timer(
     std::chrono::milliseconds(this->options().core_timeout_ms),
-    [wthis]()->bool 
+    [wthis]()->bool
     {
       if (auto pthis = wthis.lock() )
       {
@@ -354,9 +354,9 @@ int core::_main_loop()
       return false;
     }
   );
-  
-  this->global()->io_service.run();
-  this->global()->io_service.reset();
+
+  this->global()->io_context.run();
+  this->global()->io_context.restart();
   this->_stop();
   return 0;
 }
@@ -369,22 +369,22 @@ void core::_sunrise()
 {
   SYSTEM_LOG_MESSAGE("----------- configuration -------------")
   this->_configure();
-  
+
   if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
     SYSTEM_LOG_MESSAGE("----------- initialization ------------")
     this->_initialize();
   }
-  
+
   if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
     SYSTEM_LOG_MESSAGE("-------------- starting ---------------")
     this->_start();
   }
-  
-  if ( _stop_flag ) 
+
+  if ( _stop_flag )
     return;
 
   if ( !_abort_flag )
@@ -393,7 +393,7 @@ void core::_sunrise()
   }
   else
   {
-    WSYSLOG_ALERT("daemon " << this->global()->program_name << " fail at the starting ")    
+    WSYSLOG_ALERT("daemon " << this->global()->program_name << " fail at the starting ")
   }
 }
 
@@ -423,12 +423,12 @@ bool core::_configure()
           auto message = json::strerror::message( er);
           auto trace = json::strerror::trace( er, confstr.begin(), confstr.end() );
           SYSTEM_LOG_ERROR(
-            "Json unserialize error for component '" << component_name << "':" 
+            "Json unserialize error for component '" << component_name << "':"
             << message << ". " << std::endl << trace
           )
           this->_abort_flag = true;
         }
-        
+
         if ( !this->_abort_flag ) { /*SYSTEM_LOG_END("Configure component '" << component_name << "'...Done")*/ }
         else { SYSTEM_LOG_END("Configure component '" << component_name << "'...aborted!") }
       }
@@ -462,13 +462,13 @@ void core::_initialize()
     if ( dirty_flag || obj->is_reconfigured() )
       instances.push_back(obj);
   });
-  
+
   if ( instances.empty() )
   {
     SYSTEM_LOG_MESSAGE("Initialization does not require. No changes to the registry objects.")
     return;
   }
-  
+
   std::sort(instances.begin(), instances.end(), [](const instance_ptr& left, const instance_ptr& right)->bool
   {
     return left->startup_priority() < right->startup_priority();
@@ -484,14 +484,14 @@ void core::_initialize()
 
     SYSTEM_LOG_BEGIN("Initialize instance '" << m->name() << "'... startup_priority="  << m->startup_priority() )
     m->initialize();
- 
+
     if ( !this->_abort_flag ) { SYSTEM_LOG_END("Initialize instance '" << m->name() << "'...Done") }
     else { SYSTEM_LOG_WARNING("Initialize instance '" << m->name() << "'...aborted!") }
 
-    g->io_service.poll();
-    g->io_service.reset();
+    g->io_context.poll();
+    g->io_context.restart();
   });
-  
+
   if ( auto d = g->registry.reset_dirty() )
   {
     SYSTEM_LOG_MESSAGE("Full initialization finished for " << d << " registry changed.")
@@ -535,9 +535,9 @@ void core::_start()
     m->start(std::string());
     if ( !this->_abort_flag ) { SYSTEM_LOG_END("Start instance '" <<  m->name() << "'...Done") }
     else { SYSTEM_LOG_WARNING("Start instance '" <<  m->name() << "'...aborted!") }
-    
-    g->io_service.poll();
-    g->io_service.reset();
+
+    g->io_context.poll();
+    g->io_context.restart();
   });
 }
 
@@ -549,7 +549,7 @@ void core::_stop()
     return;
 
   SYSTEM_LOG_BEGIN("stop '" << g->instance_name << "'...")
-  
+
   SYSTEM_LOG_BEGIN("before stop handler")
   g->before_stop.fire();
   SYSTEM_LOG_END("before stop handler")
@@ -587,7 +587,7 @@ void core::_stop()
   SYSTEM_LOG_END("After stop handlers ... Done")
 
   SYSTEM_LOG_BEGIN("Stop common workflow...")
-  g->io_service.stop();
+  g->io_context.stop();
   g->common_workflow->stop();
   SYSTEM_LOG_END("Stop common workflow ... Done")
 
@@ -597,7 +597,7 @@ void core::_stop()
   }
   else
   {
-    WSYSLOG_ALERT("daemon " << this->global()->program_name << "(" << this->global()->instance_name << ") Abnormal Shutdown!")    
+    WSYSLOG_ALERT("daemon " << this->global()->program_name << "(" << this->global()->instance_name << ") Abnormal Shutdown!")
   }
 
   SYSTEM_LOG_END("Stop daemon '" << g->instance_name << "'...Done")

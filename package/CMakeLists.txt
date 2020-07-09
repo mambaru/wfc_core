@@ -52,7 +52,7 @@ wci_targets(wfc_core)
 target_include_directories(wfc_core PUBLIC ${wfc_core_SOURCE_DIR})
 
 target_link_libraries(wfc_core PUBLIC wfc)
-
+target_compile_definitions(wfc_core PRIVATE -DBOOST_ASIO_NO_DEPRECATED)
 build_info(wfc_core core)
 
 install(TARGETS wfc_core DESTINATION ${CMAKE_INSTALL_PREFIX})
