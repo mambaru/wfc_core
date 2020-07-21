@@ -49,6 +49,10 @@ add_library(wfc_core ${wfc_core_source_list})
 
 wci_targets(wfc_core)
 
+if (WFC_ENABLE_STAT)
+  target_compile_definitions(wfc_core PRIVATE -DWFC_ENABLE_STAT)
+endif()
+
 target_include_directories(wfc_core PUBLIC ${wfc_core_SOURCE_DIR})
 
 target_link_libraries(wfc_core PUBLIC wfc)
