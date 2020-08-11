@@ -189,7 +189,7 @@ bool startup_domain::ready_for_run()
   return _ready;
 }
 
-void startup_domain::clean_finalize()
+void startup_domain::stop()
 {
   if ( _pid_path.empty() )
     return;
@@ -429,20 +429,11 @@ int startup_domain::perform_start_( )
     std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
 
-  // Это основной или мониторящий процесс (получаем pid после демонизации)
-  pid_t pid = ::getpid();
-  if ( -1 == write_loc_pid(pid_file, pid) )
-  {
-    return 9;
-  }
-
-  std::clog << "Process identifier (PID): " << pid << std::endl;
-
-  bool parent_proc = true;
+  bool working_proccess = true;
   if ( _pa.autoup )
   {
     bool success_autoup = _pa.success_autoup;
-    parent_proc = ::wfc::autoup(
+    working_proccess = !wfc::autoup(
       _pa.autoup_timeout,
       success_autoup,
       [](pid_t pid1, int count, int status, time_t work_time) -> bool
@@ -475,6 +466,24 @@ int startup_domain::perform_start_( )
     );
   }
 
+  // Это основной и не мониторящий процесс (получаем pid после демонизации)
+  if ( working_proccess )
+  {
+    pid_t pid = ::getpid();
+    if ( -1 == write_loc_pid(pid_file, pid) )
+    {
+      return 9;
+    }
+
+    g->after_start.insert( [pid](){
+      SYSTEM_LOG_MESSAGE( "Process identifier (PID): " << pid );
+      return false;
+    } );
+  }
+  else if ( _pa.autoup )
+    return 0;
+
+  /*
   if ( parent_proc )
   {
     if ( !_pid_path.empty() )
@@ -483,6 +492,7 @@ int startup_domain::perform_start_( )
     if ( _pa.autoup )
       return 0;
   }
+  */
 
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);

@@ -2,17 +2,18 @@
 #include <boost/program_options.hpp>
 #include <iow/boost.hpp>
 #include <iostream>
+#include <wjson/wjson.hpp>
 
 namespace wfc{ namespace core{
-  
-namespace 
+
+namespace
 {
   inline void parse_pair( const std::string& opt, program_arguments::map1& res);
-  
+
   inline void parse_options( const std::string& opt, program_arguments::map1& res);
 
   inline void parse_instance( const std::string& opt, program_arguments::map2& res);
-  
+
   inline program_arguments::map2 parse_custom_options( std::vector<std::string> opts);
 }
 
@@ -27,11 +28,11 @@ try
 #if defined(__GNUC__) && !defined(__clang__)
   #pragma GCC diagnostic pop
 #endif
-  
+
   pa.usage = ( argc == 1 );
   if ( pa.usage )
     return;
-  
+
   using namespace boost::program_options;
   typedef std::vector<std::string> vstrings;
   //typedef std::vector<vstrings> vstrings2;
@@ -48,23 +49,25 @@ try
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
     ("check-config", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file without start")
-    
+
     ;
 
   vstrings object_options;
   vstrings startup_options;
 
+  std::string working_time;
   desc_startup.add_options()
     ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
     ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "Change working directory")
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "Run as daemon")
     ("wait-daemonize,W", value<bool>(&pa.wait_daemonize)->zero_tokens(), "Do not leave the parent process until the start procedure is complete")
-    
-    ("working_time,t", value<time_t>(&pa.working_time)->default_value(0), "Work time in seconds [no limit]")
+
+    //("working_time,t", value<time_t>(&pa.working_time)->default_value(0), "Work time in seconds [no limit]")
+    ("working_time,t", value<std::string>(&working_time)->default_value(""), "Work time daemon in seconds or '1d2h4m5s' format")
     ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "Auto restart daemon [minimum uptime in sec]")
     ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "Auto restart daemon with success")
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "Allow core dump")
-    
+
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
@@ -77,6 +80,20 @@ try
   parsed_options parsed = command_line_parser(argc, argv).options(desc).run();
   store(parsed, vm);
   notify(vm);
+
+  if ( !working_time.empty() )
+  {
+    if ( working_time.end() != wjson::parser::parse_integer(working_time.begin(), working_time.end(), nullptr ) )
+      working_time = "\"" + working_time + "\"";
+    wjson::time_interval<time_t, 1>::serializer serializer;
+    wjson::json_error er;
+    serializer(pa.working_time, working_time.begin(), working_time.end(), &er);
+    if (er)
+    {
+      pa.errorstring = "Program option working_time invalid value";
+      return;
+    }
+  }
 
   pa.help = vm.count("help");
   pa.version = vm.count("version");
@@ -97,15 +114,15 @@ try
         = std::string(g.begin() + static_cast<std::ptrdiff_t>(pos) + 1 , g.end() );
     }
   }
-  
+
   pa.object_options = parse_custom_options( object_options );
   pa.startup_options = parse_custom_options( startup_options );
-  
+
   if ( pa.help )
   {
     std::stringstream ss;
     desc.print(ss);
-    
+
     if ( !pa.object_options.empty() )
     {
       ss << std::endl << "Instance options:" << std::endl;
@@ -139,7 +156,7 @@ catch(...)
   pa.errorstring = "unhandled exception: Parameter is not valid ";
 }
 
-namespace 
+namespace
 {
   inline void parse_pair( const std::string& opt, program_arguments::map1& res)
   {
@@ -153,7 +170,7 @@ namespace
     }
     res[key]=val;
   }
-  
+
   inline void parse_options( const std::string& opt, program_arguments::map1& res)
   {
     size_t beg = 0;
@@ -188,7 +205,7 @@ namespace
       parse_options(value, res[name]);
     }
   }
-  
+
   inline program_arguments::map2 parse_custom_options( std::vector<std::string> opts)
   {
     program_arguments::map2 res;

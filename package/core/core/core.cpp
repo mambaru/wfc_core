@@ -355,6 +355,7 @@ int core::_main_loop()
     }
   );
 
+
   this->global()->io_context.run();
   this->global()->io_context.restart();
   this->_stop();
