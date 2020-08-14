@@ -33,6 +33,7 @@ public:
   virtual void core_reconfigure() override;
   virtual void core_stop( ) override;
   virtual void core_abort( const std::string& message ) override;
+  virtual void core_restart() override;
 
 private:
   void _sunrise();
@@ -47,6 +48,7 @@ private:
   std::atomic<bool> _reconfigure_flag;
   std::atomic<bool> _stop_flag;
   std::atomic<bool> _abort_flag;
+  std::atomic<bool> _restart_flag;
   std::shared_ptr<core> _same;
   std::shared_ptr< wflow::workflow > _core_workflow;
 };

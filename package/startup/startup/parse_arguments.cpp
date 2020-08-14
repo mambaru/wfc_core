@@ -47,7 +47,8 @@ try
     ("info,i", value< vstrings >(&pa.info_options)->multitoken()->zero_tokens(), "Display build information [package-list]")
     ("module-list", value<bool>(&pa.module_list)->zero_tokens(), "Display list of modules from all packages")
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
-    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(), "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
+    ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(),
+                   "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
     ("check-config", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file without start")
 
     ;
@@ -56,16 +57,18 @@ try
   vstrings startup_options;
 
   std::string working_time;
+  std::string autoup_timeout;
   desc_startup.add_options()
     ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
     ("working-directory,w", value<std::string>(&pa.working_directory)->default_value(""), "Change working directory")
     ("daemonize,d", value<bool>(&pa.daemonize)->zero_tokens(), "Run as daemon")
     ("wait-daemonize,W", value<bool>(&pa.wait_daemonize)->zero_tokens(), "Do not leave the parent process until the start procedure is complete")
 
-    //("working_time,t", value<time_t>(&pa.working_time)->default_value(0), "Work time in seconds [no limit]")
-    ("working_time,t", value<std::string>(&working_time)->default_value(""), "Work time daemon in seconds or '1d2h4m5s' format")
-    ("autoup,a", value<time_t>(&pa.autoup_timeout)->default_value(-1), "Auto restart daemon [minimum uptime in sec]")
+    ("autoup,a", value<std::string>(&autoup_timeout)->default_value(""), "Auto restart daemon [minimum uptime in sec or '1d2h4m5s' format]")
     ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "Auto restart daemon with success")
+    ("shutdown-time,T", value<std::string>(&pa.shutdown_time)->default_value(""), "Shutdown time in the format '22:00:00' + working_time")
+    ("working-time,t", value<std::string>(&working_time)->default_value(""), "Work time daemon in seconds or '1d2h4m5s' format after shutdown_time")
+    ("restart-by-timer,R", value<bool>(&pa.restart_by_timer)->zero_tokens(), "Restart daemon by timer if set (-T or -t) and -a")
     ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "Allow core dump")
 
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
@@ -94,6 +97,23 @@ try
       return;
     }
   }
+
+  if ( !autoup_timeout.empty() )
+  {
+    if ( autoup_timeout.end() != wjson::parser::parse_integer(autoup_timeout.begin(), autoup_timeout.end(), nullptr ) )
+      autoup_timeout = "\"" + autoup_timeout + "\"";
+    wjson::time_interval<time_t, 1>::serializer serializer;
+    wjson::json_error er;
+    serializer(pa.autoup_timeout, autoup_timeout.begin(), autoup_timeout.end(), &er);
+    if (er)
+    {
+      pa.errorstring = "Program option autoup_timeout invalid value";
+      return;
+    }
+  }
+  else
+    pa.autoup_timeout = -1;
+
 
   pa.help = vm.count("help");
   pa.version = vm.count("version");

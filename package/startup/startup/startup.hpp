@@ -27,6 +27,8 @@ public:
   virtual void stop() override;
 private:
   int perform_start_();
+  bool init_shutdown_timer_();
+  void init_working_timer_();
   bool generate_();
   void show_usage_();
   bool show_info_(const std::string& package_name);

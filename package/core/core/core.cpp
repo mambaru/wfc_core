@@ -261,6 +261,16 @@ void core::core_abort( const std::string& message )
   _abort_flag = true;
 }
 
+void core::core_restart()
+{
+  SYSTEM_LOG_MESSAGE("wfc_core: restart!")
+  _stop_flag = true;
+  _restart_flag = true;
+  if ( auto g = ::wfc::wfcglobal::static_global )
+    g->stop_signal_flag = true;
+}
+
+
 bool core::_idle()
 {
   if ( gs_stop_signal )
@@ -359,7 +369,7 @@ int core::_main_loop()
   this->global()->io_context.run();
   this->global()->io_context.restart();
   this->_stop();
-  return 0;
+  return _restart_flag ? -1 : 0;
 }
 
 ///

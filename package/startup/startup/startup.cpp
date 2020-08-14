@@ -397,17 +397,7 @@ int startup_domain::perform_start_( )
     return 8;
   }
 
-  if ( _pa.working_time != 0 )
-  {
-    g->after_start.insert([this]
-    {
-      this->get_common_workflow()->post(
-        std::chrono::seconds(_pa.working_time),
-        wfc_exit
-      );
-      return true;
-    });
-  }
+  g->after_start.insert(std::bind<bool>(&startup_domain::init_shutdown_timer_, this) );
 
   if ( _pa.daemonize )
   {
@@ -483,17 +473,6 @@ int startup_domain::perform_start_( )
   else if ( _pa.autoup )
     return 0;
 
-  /*
-  if ( parent_proc )
-  {
-    if ( !_pid_path.empty() )
-      unlink( _pid_path.c_str() );
-
-    if ( _pa.autoup )
-      return 0;
-  }
-  */
-
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);
 
@@ -503,6 +482,46 @@ int startup_domain::perform_start_( )
   _ready = true;
   return 0;
 }
+
+
+bool startup_domain::init_shutdown_timer_()
+{
+  if ( !_pa.shutdown_time.empty() )
+  {
+    this->get_common_workflow()->safe_post(
+      _pa.shutdown_time,
+      std::bind(&startup_domain::init_working_timer_, this)
+    );
+  }
+  else if ( _pa.working_time!=0 )
+  {
+    this->init_working_timer_();
+  }
+
+  return false;
+}
+
+void startup_domain::init_working_timer_()
+{
+  if ( _pa.restart_by_timer )
+  {
+    SYSTEM_LOG_MESSAGE("*** Restart by timer! ***")
+    this->get_common_workflow()->post(
+      std::chrono::seconds(_pa.working_time),
+      std::bind(wfc_restart)
+    );
+  }
+  else
+  {
+    SYSTEM_LOG_MESSAGE("*** Shutdown by timer! ***")
+    this->get_common_workflow()->post(
+      std::chrono::seconds(_pa.working_time),
+      std::bind(wfc_exit)
+    );
+  }
+
+}
+
 
 ///
 /// help
