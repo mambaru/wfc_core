@@ -139,10 +139,22 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     return false;
   }
 
-  if ( go.empty() )
+  std::string defarg;
+
+  bool empty_opt = go.empty();
+
+  if ( go.count("all")!=0 )
   {
+
+    defarg = go.at("all");
+    empty_opt = go.size() == 1;
+  }
+
+  if ( empty_opt )
+  {
+
     std::vector< std::pair<std::string, std::string> > vectconf;
-    g->registry.for_each<ipackage>("package", [&vectconf](const std::string&, std::shared_ptr<ipackage> pkg)
+    g->registry.for_each<ipackage>("package", [&vectconf, &defarg](const std::string&, std::shared_ptr<ipackage> pkg)
     {
       if ( pkg == nullptr )
         return;
@@ -153,7 +165,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
         wlog::disable();
         for (const auto& c : components )
         {
-          vectconf.push_back( std::make_pair(c->name(), c->generate("") ) );
+          vectconf.push_back( std::make_pair(c->name(), c->generate(defarg) ) );
         }
         wlog::disable();
       }
@@ -172,7 +184,9 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     {
       if ( auto obj = g->registry.get_object<icomponent>("component", opt.first, true) )
       {
-        mainconf[opt.first] = obj->generate(opt.second);
+        std::string genopt = opt.second;
+        if ( genopt.empty() ) genopt = defarg;
+        mainconf[opt.first] = obj->generate(genopt);
       }
       else
       {

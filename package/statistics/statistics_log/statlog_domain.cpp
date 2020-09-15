@@ -1,14 +1,14 @@
-
+#include <algorithm>
 #include <wfc/iinterface.hpp>
 #include <wfc/statistics/meters.hpp>
 #include "statlog_domain.hpp"
+#include <algorithm>
 
 namespace wfc{ namespace core{
- 
 
-namespace 
+namespace
 {
-  void wlog_metric( std::stringstream& os, long int val, int metric)
+  void write_metric( std::stringstream& os, long int val, int metric)
   {
     // statistics_duration::period::den - microseconds
     val*= std::chrono::nanoseconds::period::den/statistics_duration::period::den;
@@ -23,24 +23,59 @@ namespace
       default: os << "?s";
     }
   }
-  
-  void wlog( std::stringstream& os, const std::string& name, long int val, int metric)
+
+  void write_log( std::stringstream& os, const std::string& name, long int val, int metric)
   {
     if ( metric < 0 )
       return;
 
     os << name << ":";
 
-    if ( metric==0 ) 
+    if ( metric==0 )
     {
       if (val!=0) val = 1000000000/val;
       else val = -1;
       os << val << "ps";
     }
     else
-      wlog_metric( os, val, metric);
+      write_metric( os, val, metric);
     os << " ";
   }
+}
+
+template<typename T>
+void statlog_domain::write_field_(std::stringstream& ss, const std::string& logname, const T& field) const
+{
+  const auto& sol = _table_format.sequence_of_list;
+  bool has_field = std::any_of(
+    std::begin(sol), std::end(sol),
+    [&logname](const std::string& n) -> bool { return n == logname;}
+  );
+
+  if ( !has_field )
+  {
+    ss << std::setfill(' ') << std::setw(_table_format.default_field_width) << "#" << " |";
+    return;
+  }
+
+  int field_width = _table_format.default_field_width;
+  if ( _table_format.width_map.count(logname) != 0 )
+    field_width = _table_format.width_map.at(logname);
+
+  ss << std::setfill(' ') << std::setw(field_width) << field << " |";
+}
+
+
+void statlog_domain::configure()
+{
+  std::lock_guard<mutex_type> lk(_mutex);
+  this->configure_();
+}
+
+void statlog_domain::reconfigure()
+{
+  std::lock_guard<mutex_type> lk(_mutex);
+  this->configure_();
 }
 
 void statlog_domain::initialize()
@@ -58,10 +93,10 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
     }
     return;
   }
-  
+
   if ( this->bad_request(req, cb) )
     return;
-  
+
   auto opt = this->options();
   int metric = opt.log_metric;
   auto log = opt.common_log;
@@ -70,48 +105,55 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
     std::stringstream ss;
     ss << req->name << " ";
     ss << "count:"    << req->count << " ";
-    wlog( ss, "min", req->min, metric );
-    wlog( ss, "perc80", req->perc80, metric );
-    wlog( ss, "perc99", req->perc99, metric );
-    wlog( ss, "perc100", req->perc100, metric );
-    wlog( ss, "max", req->max, metric );
+    write_log( ss, "min", req->min, metric );
+    write_log( ss, "perc80", req->perc80, metric );
+    write_log( ss, "perc99", req->perc99, metric );
+    write_log( ss, "perc100", req->perc100, metric );
+    write_log( ss, "max", req->max, metric );
     ss << "lossy:"    << req->lossy << " ";
     WFC_LOG_MESSAGE(log, ss.str() )
   }
-  
-  int id = 0;
-  log = opt.legend_log;
-  if ( !log.empty() )
+
+  log = opt.table_format.table_log;
+  bool show_legend = opt.table_format.show_legend;
+  if ( show_legend )
   {
     std::lock_guard<mutex_type> lk(_mutex);
     auto itr = _legend.find(req->name);
     if ( itr == _legend.end() )
     {
-      id = ++_id_counter;
-      _legend[req->name] = id;
-      WFC_LOG_MESSAGE(log, id << ":" << req->name );
+      _legend.insert(req->name);
+      std::stringstream ss;
+      for ( const std::string& field : _table_format.sequence_of_list)
+      {
+        this->write_field_( ss, field, field );
+      }
+
+      WFC_LOG_MESSAGE( log, "|" << ss.str() )
     }
-    else
-      id = itr->second;
   }
 
-  log = opt.table_log;
   if ( !log.empty() )
   {
     std::stringstream ss;
-    ss << "|" << id 
-       << "|" << req->count
-       << "|" << req->lossy
-       << "|" << req->min
-       << "|" << req->perc50
-       << "|" << req->perc80
-       << "|" << req->perc95
-       << "|" << req->perc99
-       << "|" << req->perc100
-       << "|" << req->max
-       << "|" << req->avg
-       << "|" << req->ts
-       << "|";
+
+    for ( const auto& field : _table_format.sequence_of_list)
+    {
+      if ( field == "name" ) this->write_field_( ss, "name", req->name );
+      if ( field == "count" ) this->write_field_( ss, "count", req->count );
+      if ( field == "lossy" ) this->write_field_( ss, "lossy", req->lossy );
+      if ( field == "min" )    this->write_field_( ss, "min",   req->min );
+      if ( field == "perc50" ) this->write_field_( ss, "perc50", req->perc50 );
+      if ( field == "perc80" ) this->write_field_( ss, "perc80", req->perc80 );
+      if ( field == "perc95" ) this->write_field_( ss, "perc95", req->perc95 );
+      if ( field == "perc99" ) this->write_field_( ss, "perc99", req->perc99 );
+      if ( field == "perc100" ) this->write_field_( ss, "perc100", req->perc100 );
+      if ( field == "max" ) this->write_field_( ss, "max", req->max );
+      if ( field == "avg" ) this->write_field_( ss, "avg", req->avg );
+      if ( field == "ts" ) this->write_field_( ss, "ts", req->ts );
+
+    }
+
     WFC_LOG_MESSAGE(log, ss.str() )
   }
 
@@ -126,10 +168,61 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
   }
 }
 
-void statlog_domain::del( request::del::ptr, response::del::handler cb ) 
+void statlog_domain::del( request::del::ptr, response::del::handler cb )
 {
   if ( cb!=nullptr )
     cb(nullptr);
+}
+
+void statlog_domain::configure_()
+{
+  _table_format = this->options().table_format;
+
+    table_format_options::sequence_of_list_t orig_sequence;
+    std::swap(orig_sequence, _table_format.sequence_of_list);
+    std::vector<std::string> def_sequence = {
+        "name", "count", "lossy", "min", "perc50", "perc80",
+        "perc95", "perc99", "perc100", "max", "avg", "ts"
+    };
+
+    size_t orig_size = orig_sequence.size();
+    if ( orig_size > def_sequence.size() )
+       orig_size = def_sequence.size(); // Защита от дурака
+
+    for (size_t i = 0 ; i != orig_size; ++i)
+    {
+      size_t j = 0;
+      for (; j < def_sequence.size() && def_sequence[j]!=orig_sequence[i]; ++j);
+
+      if ( orig_sequence[i] == "#" )
+      {
+        // принудительно отключаем
+        _table_format.width_map[def_sequence[j]] = -1;
+        if ( i == orig_size - 1 )
+        {
+          def_sequence.clear();
+          // отключаем хвост
+          // Если нужно отключить последний элемент в списке, но остальные добавить, то комбинация "#", "$"
+        }
+      }
+      else if ( orig_sequence[i] == "$" )
+      {
+        _table_format.sequence_of_list.push_back(def_sequence[j]);
+      }
+      else
+      {
+        _table_format.sequence_of_list.push_back(orig_sequence[i]);
+      }
+
+      def_sequence[j]="#";
+    }
+
+    for (const auto& def_intem: def_sequence)
+    {
+      if ( def_intem == "#" )
+        continue;
+      _table_format.sequence_of_list.push_back(def_intem);
+    }
 }
 
 

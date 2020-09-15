@@ -20,16 +20,24 @@ class statlog_domain
   : public domain_object<istatistics, statlog_config>
 {
 public:
+  virtual void configure() override;
+  virtual void reconfigure() override;
+
   virtual void initialize() override;
   virtual void push( request::push::ptr req, response::push::handler cb ) override;
   virtual void del( request::del::ptr req, response::del::handler cb ) override;
 private:
+  void configure_();
+
+  template<typename T>
+  void write_field_( std::stringstream& ss, const std::string& logname, const T& field ) const;
+
+private:
   typedef std::mutex mutex_type;
   std::weak_ptr<istatistics> _target;
+  table_format_options _table_format;
   mutex_type _mutex;
-  int _id_counter = 0;
-  std::map< std::string, int > _legend;
-  
+  std::set< std::string> _legend;
 };
 
 }}

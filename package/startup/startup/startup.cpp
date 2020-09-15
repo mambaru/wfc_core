@@ -68,27 +68,43 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     {
       for (std::string helpparams : _pa.help_options )
       {
-        std::string component_name;
+        std::string components_names;
         std::string component_args;
 
         size_t pos_params = helpparams.find(':');
         if ( pos_params == std::string::npos )
         {
-          component_name=helpparams;
+          components_names=helpparams;
         }
         else
         {
-          component_name = helpparams.substr(0, pos_params);
+          components_names = helpparams.substr(0, pos_params);
           component_args = helpparams.substr(pos_params + 1);
         }
 
-        if ( auto p = g->registry.get_object<icomponent>("component", component_name , true) )
+        std::vector<std::string> component_list;
+        boost::split( component_list, components_names, boost::is_any_of(",") );
+
+        for (const std::string& component_name: component_list)
         {
-          std::cout << p->help(component_args) << std::endl << std::endl;
-        }
-        else
-        {
-          std::cout << "ERROR: component '" << component_name  << "' is not exist." << std::endl << std::endl;
+          if ( auto p = g->registry.get_object<icomponent>("component", component_name, true) )
+          {
+            if ( component_list.size() > 1 )
+              std::cout << "***** " << "Help for '" << component_name << "' *****" << std::endl;
+            std::cout << p->help(component_args) << std::endl << std::endl;
+          }
+          else if ( component_name!="all" )
+          {
+            std::cout << "ERROR: component '" << component_name  << "' is not exist." << std::endl << std::endl;
+          }
+          else
+          {
+            g->registry.for_each<icomponent>("component", [component_args](const std::string& cmp_name, std::shared_ptr<icomponent> p1 )
+            {
+              std::cout << "***** " << "Help for '" << cmp_name << "' *****" << std::endl;
+              std::cout << p1->help(component_args) << std::endl << std::endl;
+            });
+          }
         }
       }
     }
