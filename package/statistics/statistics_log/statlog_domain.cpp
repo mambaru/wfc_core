@@ -83,6 +83,36 @@ void statlog_domain::initialize()
   _target = this->get_target<istatistics>( this->options().target );
 }
 
+void statlog_domain::multi_push( request::multi_push::ptr req, response::multi_push::handler cb ) 
+{
+  if ( this->suspended() )
+  {
+    if ( auto t = _target.lock() )
+    {
+      t->multi_push( std::move(req), cb);
+    }
+    return;
+  }
+  
+  if ( this->bad_request(req, cb) )
+    return;
+
+  for (const request::push& p : req->data )
+  {
+    this->push_log_(p);
+  }
+  
+  if ( auto t = _target.lock() )
+  {
+    t->multi_push( std::move(req), cb);
+  }
+  else if ( auto res = this->create_response(cb) )
+  {
+    res->status = true;
+    this->send_response( std::move(res), cb);
+  }
+}
+
 void statlog_domain::push( request::push::ptr req, response::push::handler cb )
 {
   if ( this->suspended() )
@@ -97,65 +127,7 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
   if ( this->bad_request(req, cb) )
     return;
 
-  auto opt = this->options();
-  int metric = opt.log_metric;
-  auto log = opt.common_log;
-  if ( !log.empty() )
-  {
-    std::stringstream ss;
-    ss << req->name << " ";
-    ss << "count:"    << req->count << " ";
-    write_log( ss, "min", req->min, metric );
-    write_log( ss, "perc80", req->perc80, metric );
-    write_log( ss, "perc99", req->perc99, metric );
-    write_log( ss, "perc100", req->perc100, metric );
-    write_log( ss, "max", req->max, metric );
-    ss << "lossy:"    << req->lossy << " ";
-    WFC_LOG_MESSAGE(log, ss.str() )
-  }
-
-  log = opt.table_format.table_log;
-  bool show_legend = opt.table_format.show_legend;
-  if ( show_legend )
-  {
-    std::lock_guard<mutex_type> lk(_mutex);
-    auto itr = _legend.find(req->name);
-    if ( itr == _legend.end() )
-    {
-      _legend.insert(req->name);
-      std::stringstream ss;
-      for ( const std::string& field : _table_format.sequence_of_list)
-      {
-        this->write_field_( ss, field, field );
-      }
-
-      WFC_LOG_MESSAGE( log, "|" << ss.str() )
-    }
-  }
-
-  if ( !log.empty() )
-  {
-    std::stringstream ss;
-
-    for ( const auto& field : _table_format.sequence_of_list)
-    {
-      if ( field == "name" ) this->write_field_( ss, "name", req->name );
-      if ( field == "count" ) this->write_field_( ss, "count", req->count );
-      if ( field == "lossy" ) this->write_field_( ss, "lossy", req->lossy );
-      if ( field == "min" )    this->write_field_( ss, "min",   req->min );
-      if ( field == "perc50" ) this->write_field_( ss, "perc50", req->perc50 );
-      if ( field == "perc80" ) this->write_field_( ss, "perc80", req->perc80 );
-      if ( field == "perc95" ) this->write_field_( ss, "perc95", req->perc95 );
-      if ( field == "perc99" ) this->write_field_( ss, "perc99", req->perc99 );
-      if ( field == "perc100" ) this->write_field_( ss, "perc100", req->perc100 );
-      if ( field == "max" ) this->write_field_( ss, "max", req->max );
-      if ( field == "avg" ) this->write_field_( ss, "avg", req->avg );
-      if ( field == "ts" ) this->write_field_( ss, "ts", req->ts );
-
-    }
-
-    WFC_LOG_MESSAGE(log, ss.str() )
-  }
+  this->push_log_(*req);
 
   if ( auto t = _target.lock() )
   {
@@ -224,6 +196,71 @@ void statlog_domain::configure_()
       _table_format.sequence_of_list.push_back(def_intem);
     }
 }
+
+void statlog_domain::push_log_( const request::push& ag)
+{
+  auto opt = this->options();
+  int metric = opt.log_metric;
+  auto log = opt.common_log;
+  if ( !log.empty() )
+  {
+    std::stringstream ss;
+    ss << ag.name << " ";
+    ss << "count:"    << ag.count << " ";
+    write_log( ss, "min", ag.min, metric );
+    write_log( ss, "perc80", ag.perc80, metric );
+    write_log( ss, "perc99", ag.perc99, metric );
+    write_log( ss, "perc100", ag.perc100, metric );
+    write_log( ss, "max", ag.max, metric );
+    ss << "lossy:"    << ag.lossy << " ";
+    WFC_LOG_MESSAGE(log, ss.str() )
+  }
+  
+  log = opt.table_format.table_log;
+  bool show_legend = opt.table_format.show_legend;
+  if ( show_legend )
+  {
+    std::lock_guard<mutex_type> lk(_mutex);
+    auto itr = _legend.find(ag.name);
+    if ( itr == _legend.end() )
+    {
+      _legend.insert(ag.name);
+      std::stringstream ss;
+      for ( const std::string& field : _table_format.sequence_of_list)
+      {
+        this->write_field_( ss, field, field );
+      }
+      
+      WFC_LOG_MESSAGE( log, "|" << ss.str() )
+    }
+  }
+  
+  if ( !log.empty() )
+  {
+    std::stringstream ss;
+    
+    for ( const auto& field : _table_format.sequence_of_list)
+    {
+      if ( field == "name" ) this->write_field_( ss, "name", ag.name );
+      if ( field == "count" ) this->write_field_( ss, "count", ag.count );
+      if ( field == "lossy" ) this->write_field_( ss, "lossy", ag.lossy );
+      if ( field == "min" )    this->write_field_( ss, "min",   ag.min );
+      if ( field == "perc50" ) this->write_field_( ss, "perc50", ag.perc50 );
+      if ( field == "perc80" ) this->write_field_( ss, "perc80", ag.perc80 );
+      if ( field == "perc95" ) this->write_field_( ss, "perc95", ag.perc95 );
+      if ( field == "perc99" ) this->write_field_( ss, "perc99", ag.perc99 );
+      if ( field == "perc100" ) this->write_field_( ss, "perc100", ag.perc100 );
+      if ( field == "max" ) this->write_field_( ss, "max", ag.max );
+      if ( field == "avg" ) this->write_field_( ss, "avg", ag.avg );
+      if ( field == "ts" ) this->write_field_( ss, "ts", ag.ts );
+      
+    }
+    
+    WFC_LOG_MESSAGE(log, ss.str() )
+  }
+  
+}
+
 
 
 }}

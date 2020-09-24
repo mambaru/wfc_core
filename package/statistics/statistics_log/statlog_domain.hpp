@@ -25,10 +25,12 @@ public:
 
   virtual void initialize() override;
   virtual void push( request::push::ptr req, response::push::handler cb ) override;
+  virtual void multi_push( request::multi_push::ptr req, response::multi_push::handler cb ) override;
   virtual void del( request::del::ptr req, response::del::handler cb ) override;
 private:
   void configure_();
-
+  void push_log_( const request::push& ag );
+  
   template<typename T>
   void write_field_( std::stringstream& ss, const std::string& logname, const T& field ) const;
 

@@ -122,41 +122,30 @@ void statistics_domain::stop()
   }
 }
 
-void statistics_domain::push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb)
+void statistics_domain::push( statistics::request::push::ptr req, statistics::response::push::handler cb)
 {
   if ( this->bad_request(req, cb) )
     return;
 
-  time_point tm;
-  size_point vm;
-  if ( auto st = this->get_statistics() )
-  {
-    tm = _push_meter.create( static_cast<wrtstat::size_type>(1) );
-    vm = _count_meter.create( static_cast<wrtstat::value_type>(req->data.size()) );
-  }
-
-  if ( req->ts == 0 )
-    req->ts = time(nullptr) * 1000000;
+  this->push_( std::move(*req) );
 
   auto res = this->create_response(cb);
-  {
-    read_lock<mutex_type> lk(_mutex);
-    size_t pos = std::hash<std::string>()(req->name) % _stat_list.size();
-    if (auto wf = _workflow_list[pos] )
-    {
-      auto st = _stat_list[pos];
-      auto preq = std::make_shared<wfc::statistics::request::push>( std::move(*req) );
-      wf->post([st, preq](){
-        st->add( preq->name, *preq);
-      }, nullptr);
-    }
-  }
-
   this->send_response( std::move(res), std::move(cb) );
-  fas::ignore_args(tm, vm);
 }
 
-void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb)
+void statistics_domain::multi_push( statistics::request::multi_push::ptr req, statistics::response::multi_push::handler cb)
+{
+  if ( this->bad_request(req, cb) )
+    return;
+  
+  for (statistics::request::push& p: req->data )
+    this->push_( std::move(p) );
+  
+  auto res = this->create_response(cb);
+  this->send_response( std::move(res), std::move(cb) );
+}
+
+void statistics_domain::del( statistics::request::del::ptr req, statistics::response::del::handler cb)
 {
   if ( this->bad_request(req, cb) )
     return;
@@ -176,12 +165,7 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
 
   if ( res != nullptr )
     res->status = true;
-  /*
-  if ( auto st = this->get_stat_(req->name) )
-  {
-    res->status = st->del(req->name);
-  }
-  */
+
   this->send_response( std::move(res), std::move(cb) );
 
   for ( auto wt : _targets ) if ( auto t = wt.lock() )
@@ -189,12 +173,35 @@ void statistics_domain::del( wfc::statistics::request::del::ptr req, wfc::statis
     auto rreq = std::make_unique<wfc::statistics::request::del>( *req );
     t->del( std::move(rreq), nullptr );
   }
-  /*if ( auto t = _target.lock() )
-  {
-    t->del( std::move(req), nullptr );
-  }*/
 }
 
+void statistics_domain::push_( statistics::request::push&& req)
+{
+  time_point tm;
+  size_point vm;
+  if ( auto st = this->get_statistics() )
+  {
+    tm = _push_meter.create( static_cast<wrtstat::size_type>(1) );
+    vm = _count_meter.create( static_cast<wrtstat::value_type>(req.data.size()) );
+  }
+  
+  if ( req.ts == 0 )
+    req.ts = time(nullptr) * 1000000;
+  
+  {
+    read_lock<mutex_type> lk(_mutex);
+    size_t pos = std::hash<std::string>()(req.name) % _stat_list.size();
+    if (auto wf = _workflow_list[pos] )
+    {
+      auto st = _stat_list[pos];
+      auto preq = std::make_shared<statistics::request::push>( std::move(req) );
+      wf->post([st, preq](){
+        st->add( preq->name, *preq);
+      }, nullptr);
+    }
+  }
+  fas::ignore_args(tm, vm);
+}
 
 template<typename StatPtr>
 bool statistics_domain::handler_(StatPtr st, size_t offset, size_t step)
@@ -235,28 +242,5 @@ bool statistics_domain::handler_(StatPtr st, size_t offset, size_t step)
   }
   return true;
 }
-
-/*
-statistics_domain::stat_ptr statistics_domain::get_stat_(const std::string& name)
-{
-  read_lock<mutex_type> lk(_mutex);
-  if ( _stat_list.empty() )
-    return _stat;
-  size_t pos = std::hash<std::string>()(name) % _stat_list.size();
-  return _stat_list[pos];
-}
-*/
-
-/*
-statistics_domain::workflow_ptr statistics_domain::get_workflow_(const std::string& name)
-{
-  read_lock<mutex_type> lk(_mutex);
-  if ( _wor_list.empty() )
-    return _stat;
-  size_t pos = std::hash<std::string>()(name) % _stat_list.size();
-  return _stat_list[pos];
-}
-*/
-
 
 }}

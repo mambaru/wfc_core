@@ -30,8 +30,11 @@ public:
   virtual void restart() override;
   virtual void stop() override;
   virtual void start() override;
-  virtual void push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) override final;
-  virtual void del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) override final;
+  
+  // istatistics
+  virtual void push( statistics::request::push::ptr req, statistics::response::push::handler cb) override final;
+  virtual void multi_push( statistics::request::multi_push::ptr req, statistics::response::multi_push::handler cb) override final;
+  virtual void del( statistics::request::del::ptr req, statistics::response::del::handler cb) override final;
 private:
   typedef std::shared_ptr<stat_impl> stat_ptr;
   typedef wrtstat::wrtstat stat_push;
@@ -45,6 +48,8 @@ private:
   template<typename StatPtr>
   bool handler_(StatPtr st, size_t offset, size_t step);
 
+  void push_( statistics::request::push&& req);
+  
   stat_ptr _stat;
   stat_list _stat_list;
   workflow_list _workflow_list;
