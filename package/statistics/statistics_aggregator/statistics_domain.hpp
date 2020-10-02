@@ -19,7 +19,7 @@
 namespace wfc{ namespace core{
 
 class statistics_domain
-  : public domain_object<istatistics, statistics_config, defstat>
+: public domain_object<istatistics, aggreagtor_config, aggreagtor_statistics_config>
 {
   class stat_impl;
 public:
@@ -66,6 +66,8 @@ private:
   
   time_meter _push_meter;
   size_meter _count_meter;
+  time_meter _multi_push_meter;
+  size_meter _multi_count_meter;
   
   typedef rwlock<std::mutex> mutex_type;
   mutex_type _mutex;

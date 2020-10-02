@@ -14,6 +14,7 @@
 #include <wfc/logger.hpp>
 #include <wfc/asio.hpp>
 
+#include <iostream>
 #include <fstream>
 #include <syslog.h>
 

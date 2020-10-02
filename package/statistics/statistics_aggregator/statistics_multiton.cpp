@@ -13,18 +13,18 @@ namespace {
 
   WFC_NAME2(object_name, "statistics-aggregator")
 
-  class impl: public ::wfc::multiton<
+  class impl: public multiton<
     object_name,
-    ::wfc::instance<statistics_domain>,
-    statistics_config_json,
-    ::wfc::component_features::EnableCPU/*,
-    stat_options_json*/
+    instance<statistics_domain>,
+    aggreagtor_config_json,
+    component_features::EnableCPU,
+    aggreagtor_statistics_config_json
   >
   {
   public:
     virtual std::string interface_name() const override
     {
-      return std::string("");
+      return std::string("istatistics");
     }
 
     virtual std::string description() const override

@@ -96,6 +96,9 @@ void statistics_domain::restart()
 
   if ( auto st = this->get_statistics() )
   {
+    _multi_push_meter = st->create_time_meter("multi_push.time");
+    _multi_count_meter = st->create_size_meter("multi_push.push_count");
+
     _push_meter = st->create_time_meter("push.time");
     _count_meter = st->create_size_meter("push.values");
   }
@@ -138,11 +141,20 @@ void statistics_domain::multi_push( statistics::request::multi_push::ptr req, st
   if ( this->bad_request(req, cb) )
     return;
   
+  time_point tm;
+  size_point vm;
+  if ( auto st = this->get_statistics() )
+  {
+    tm = _multi_push_meter.create( static_cast<wrtstat::size_type>(1) );
+    vm = _multi_count_meter.create( static_cast<wrtstat::value_type>(req->data.size()) );
+  }
+  
   for (statistics::request::push& p: req->data )
     this->push_( std::move(p) );
   
   auto res = this->create_response(cb);
   this->send_response( std::move(res), std::move(cb) );
+  fas::ignore_args(tm, vm);
 }
 
 void statistics_domain::del( statistics::request::del::ptr req, statistics::response::del::handler cb)
