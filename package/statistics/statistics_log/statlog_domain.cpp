@@ -83,7 +83,7 @@ void statlog_domain::initialize()
   _target = this->get_target<istatistics>( this->options().target );
 }
 
-void statlog_domain::multi_push( request::multi_push::ptr req, response::multi_push::handler cb ) 
+void statlog_domain::multi_push( multi_push_ptr req, multi_push_handler cb ) 
 {
   if ( this->suspended() )
   {
@@ -97,7 +97,7 @@ void statlog_domain::multi_push( request::multi_push::ptr req, response::multi_p
   if ( this->bad_request(req, cb) )
     return;
 
-  for (const request::push& p : req->data )
+  for (const push_ptr::element_type& p : req->data )
   {
     this->push_log_(p);
   }
@@ -113,7 +113,7 @@ void statlog_domain::multi_push( request::multi_push::ptr req, response::multi_p
   }
 }
 
-void statlog_domain::push( request::push::ptr req, response::push::handler cb )
+void statlog_domain::push( push_ptr req, push_handler cb )
 {
   if ( this->suspended() )
   {
@@ -140,7 +140,7 @@ void statlog_domain::push( request::push::ptr req, response::push::handler cb )
   }
 }
 
-void statlog_domain::del( request::del::ptr, response::del::handler cb )
+void statlog_domain::del( del_ptr, del_handler cb )
 {
   if ( cb!=nullptr )
     cb(nullptr);
@@ -197,7 +197,7 @@ void statlog_domain::configure_()
     }
 }
 
-void statlog_domain::push_log_( const request::push& ag)
+void statlog_domain::push_log_( const push_ptr::element_type& ag)
 {
   auto opt = this->options();
   int metric = opt.log_metric;

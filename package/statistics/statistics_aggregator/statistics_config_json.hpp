@@ -8,7 +8,7 @@
 
 #include "statistics_config.hpp"
 #include <wfc/json.hpp>
-#include <wfc/statistics/stat_options_json.hpp>
+#include <wrtstat/wrtstat_options_json.hpp>
 
 namespace wfc{ namespace core{
 

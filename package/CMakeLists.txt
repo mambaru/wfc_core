@@ -42,6 +42,7 @@ if ( WFC_ENABLE_STAT )
 
     statistics/statistics_gateway/statistics_gateway_multiton.cpp
     statistics/statistics_service/statistics_service_multiton.cpp
+    statistics/statistics_service/statistics_service_compact_multiton.cpp
   )
 endif()
 

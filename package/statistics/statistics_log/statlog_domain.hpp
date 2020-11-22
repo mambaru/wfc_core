@@ -24,12 +24,12 @@ public:
   virtual void reconfigure() override;
 
   virtual void initialize() override;
-  virtual void push( request::push::ptr req, response::push::handler cb ) override;
-  virtual void multi_push( request::multi_push::ptr req, response::multi_push::handler cb ) override;
-  virtual void del( request::del::ptr req, response::del::handler cb ) override;
+  virtual void push( push_ptr req, push_handler cb ) override;
+  virtual void multi_push( multi_push_ptr req, multi_push_handler cb ) override;
+  virtual void del( del_ptr req, del_handler cb ) override;
 private:
   void configure_();
-  void push_log_( const request::push& ag );
+  void push_log_( const push_ptr::element_type& ag );
   
   template<typename T>
   void write_field_( std::stringstream& ss, const std::string& logname, const T& field ) const;

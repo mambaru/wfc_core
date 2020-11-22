@@ -4,7 +4,7 @@
 #include "statistics_config_json.hpp"
 #include <wfc/module/multiton.hpp>
 #include <wfc/module/instance.hpp>
-#include <wfc/statistics/stat_options_json.hpp>
+#include <wrtstat/wrtstat_options_json.hpp>
 #include <wfc/name.hpp>
 
 namespace wfc{ namespace core{

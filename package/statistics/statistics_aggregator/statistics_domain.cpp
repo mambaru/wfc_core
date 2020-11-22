@@ -3,6 +3,7 @@
 #include "statistics_domain.hpp"
 #include <wfc/statistics/statistics.hpp>
 #include <fas/utility/ignore_args.hpp>
+#include <wrtstat/multi_packer/basic_packer.hpp>
 #include <ctime>
 
 namespace wfc{ namespace core{
@@ -125,7 +126,7 @@ void statistics_domain::stop()
   }
 }
 
-void statistics_domain::push( statistics::request::push::ptr req, statistics::response::push::handler cb)
+void statistics_domain::push( push_ptr req, push_handler cb)
 {
   if ( this->bad_request(req, cb) )
     return;
@@ -136,7 +137,7 @@ void statistics_domain::push( statistics::request::push::ptr req, statistics::re
   this->send_response( std::move(res), std::move(cb) );
 }
 
-void statistics_domain::multi_push( statistics::request::multi_push::ptr req, statistics::response::multi_push::handler cb)
+void statistics_domain::multi_push( multi_push_ptr req, multi_push_handler cb)
 {
   if ( this->bad_request(req, cb) )
     return;
@@ -149,7 +150,19 @@ void statistics_domain::multi_push( statistics::request::multi_push::ptr req, st
     vm = _multi_count_meter.create( static_cast<wrtstat::value_type>(req->data.size()) );
   }
   
-  for (statistics::request::push& p: req->data )
+  
+  std::string err;
+  if ( !wrtstat::basic_packer::recompact(req.get(), &err) )
+  {
+    DOMAIN_LOG_ERROR("Recompact statistics_domain::multi_push: " << err)
+    if ( auto res = this->create_response(cb) )
+    {
+      res->status = false;
+      res->error = err;
+    }
+  }
+  
+  for (push_ptr::element_type& p: req->data )
     this->push_( std::move(p) );
   
   auto res = this->create_response(cb);
@@ -157,11 +170,14 @@ void statistics_domain::multi_push( statistics::request::multi_push::ptr req, st
   fas::ignore_args(tm, vm);
 }
 
-void statistics_domain::del( statistics::request::del::ptr req, statistics::response::del::handler cb)
+void statistics_domain::del( del_ptr req, del_handler cb)
 {
   if ( this->bad_request(req, cb) )
     return;
 
+  // TODO: реализовать через выборку
+  abort();
+  /*
   auto res = this->create_response(cb);
 
   {
@@ -170,7 +186,7 @@ void statistics_domain::del( statistics::request::del::ptr req, statistics::resp
     if (auto wf = _workflow_list[pos] )
     {
       auto st = _stat_list[pos];
-      auto preq = std::make_shared<wfc::statistics::request::del>( std::move(*req) );
+      auto preq = std::make_shared<wrtstat::request::del>( std::move(*req) );
       wf->post([st, preq](){ st->del( preq->name); }, nullptr);
     }
   }
@@ -182,12 +198,12 @@ void statistics_domain::del( statistics::request::del::ptr req, statistics::resp
 
   for ( auto wt : _targets ) if ( auto t = wt.lock() )
   {
-    auto rreq = std::make_unique<wfc::statistics::request::del>( *req );
+    auto rreq = std::make_unique<wrtstat::request::del>( *req );
     t->del( std::move(rreq), nullptr );
-  }
+  }*/
 }
 
-void statistics_domain::push_( statistics::request::push&& req)
+void statistics_domain::push_( push_ptr::element_type&& req)
 {
   time_point tm;
   size_point vm;
@@ -206,7 +222,7 @@ void statistics_domain::push_( statistics::request::push&& req)
     if (auto wf = _workflow_list[pos] )
     {
       auto st = _stat_list[pos];
-      auto preq = std::make_shared<statistics::request::push>( std::move(req) );
+      auto preq = std::make_shared<push_ptr::element_type>( std::move(req) );
       wf->post([st, preq](){
         st->add( preq->name, *preq);
       }, nullptr);
@@ -234,7 +250,7 @@ bool statistics_domain::handler_(StatPtr st, size_t offset, size_t step)
     while (auto ag = st->pop(i) )
     {
       typedef wrtstat::aggregated_data aggregated;
-      auto req = std::make_unique<statistics::request::push>();
+      auto req = std::make_unique<wrtstat::request::push>();
       req->name = sname;
       static_cast<aggregated&>(*req) = std::move(*ag);
 
@@ -242,7 +258,7 @@ bool statistics_domain::handler_(StatPtr st, size_t offset, size_t step)
       {
         for ( size_t j = 1; j < _targets.size(); ++j ) if ( auto t = _targets[j].lock() )
         {
-          t->push(std::make_unique<wfc::statistics::request::push>(*req), nullptr);
+          t->push(std::make_unique<wrtstat::request::push>(*req), nullptr);
         }
 
         if ( auto t = _targets[0].lock() )

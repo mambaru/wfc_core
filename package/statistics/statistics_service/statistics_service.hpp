@@ -6,16 +6,17 @@
 
 #pragma once
 
-#include <wfc/statistics/api/push_json.hpp>
-#include <wfc/statistics/api/multi_push_json.hpp>
-#include <wfc/statistics/api/del_json.hpp>
+#include <wrtstat/api/push_json.hpp>
+#include <wrtstat/api/multi_push_json.hpp>
+#include <wrtstat/api/del_json.hpp>
 #include <wfc/statistics/istatistics.hpp>
 #include <wfc/jsonrpc.hpp>
 
 namespace wfc{ namespace core{ namespace statistics{
 
 using namespace ::wfc::statistics;
-  
+using namespace ::wrtstat;
+
 JSONRPC_TAG(push)
 JSONRPC_TAG(multi_push)
 JSONRPC_TAG(del)
