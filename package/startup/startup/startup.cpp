@@ -211,10 +211,17 @@ void startup_domain::stop()
   if ( _pid_path.empty() )
     return;
 
-  int code = ::remove(_pid_path.c_str());
-  if ( code != 0 )
+  if ( auto g = this->global() )
   {
-    std::cerr << "ERROR: pid file: " << strerror(errno) << std::endl;
+    std::string pid_path = _pid_path;
+    g->after_stop.insert([pid_path](){
+      int code = ::remove(pid_path.c_str());
+      if ( code != 0 )
+      {
+        std::cerr << "ERROR: pid file: " << strerror(errno) << std::endl;
+      }
+      return false;
+    });
   }
 }
 
