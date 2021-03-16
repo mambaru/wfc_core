@@ -69,8 +69,7 @@ try
     ("shutdown-time,T", value<std::string>(&pa.shutdown_time)->default_value(""), "Shutdown time in the format '22:00:00' + working_time")
     ("working-time,t", value<std::string>(&working_time)->default_value(""), "Work time daemon in seconds or '1d2h4m5s' format after shutdown_time")
     ("restart-by-timer,R", value<bool>(&pa.restart_by_timer)->zero_tokens(), "Restart daemon by timer if set (-T or -t) and -a")
-    ("coredump,c", value<bool>(&pa.coredump)->zero_tokens(), "Allow core dump")
-
+    ("coredump,c", value<bool>(&pa.coredump)->implicit_value(true)->default_value(false), "Allow or deny core dump")
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")

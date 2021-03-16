@@ -493,8 +493,23 @@ int startup_domain::perform_start_( )
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);
 
-  if ( _pa.coredump )
-    ::wfc::dumpable();
+  bool enable_dump = _pa.coredump;
+  g->after_start.insert( [enable_dump](){
+    int resdump = wfc::dumpable(enable_dump);
+    if ( resdump == -2 )
+    {
+      SYSTEM_LOG_WARNING( "DUMPABLE (--coredump) is not set because prctl not detected" );
+    }
+    else if (resdump == 0)
+    {
+      SYSTEM_LOG_WARNING( "DUMPABLE (--coredump) is not set because prctl error: " <<  strerror(errno) );
+    }
+    else
+    {
+      SYSTEM_LOG_MESSAGE("SET_DUMPABLE:" << enable_dump)
+    }
+    return false;
+  });
 
   _ready = true;
   return 0;
