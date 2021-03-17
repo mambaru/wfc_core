@@ -208,7 +208,7 @@ bool startup_domain::ready_for_run()
 
 void startup_domain::stop()
 {
-  if ( _pid_path.empty() )
+/*  if ( _pid_path.empty() )
     return;
 
   if ( auto g = this->global() )
@@ -223,6 +223,7 @@ void startup_domain::stop()
       return false;
     });
   }
+ */ 
 }
 
 namespace {
@@ -493,6 +494,17 @@ int startup_domain::perform_start_( )
       SYSTEM_LOG_MESSAGE( "Process identifier (PID): " << pid );
       return false;
     } );
+    
+    std::string pid_path = _pid_path;
+    g->after_stop.insert([pid_path](){
+      int code = ::remove(pid_path.c_str());
+      if ( code != 0 )
+      {
+        SYSTEM_LOG_ERROR("ERROR: pid file: " << strerror(errno) );
+      }
+      return false;
+    });
+
   }
   else if ( _pa.autoup )
     return 0;
