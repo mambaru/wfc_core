@@ -8,11 +8,11 @@
 
 #include "statistics_config.hpp"
 #include <wfc/json.hpp>
-#include <wfc/statistics/stat_options_json.hpp>
+#include <wrtstat/wrtstat_options_json.hpp>
 
 namespace wfc{ namespace core{
 
-struct statistics_config_json
+struct aggreagtor_config_json
 {
   JSON_NAME(perseconds)
   JSON_NAME(seconds)
@@ -43,19 +43,43 @@ struct statistics_config_json
 
   
   typedef json::object<
-    statistics_config,
+    aggreagtor_config,
     json::member_list<
       json::base<wrtstat::wrtstat_options_json>,
-      /*json::member< n_target,   statistics_config, std::string, &statistics_config::target>,*/
-      json::member< n_targets,  statistics_config, std::vector<std::string>, &statistics_config::targets, 
+      /*json::member< n_target,   aggreagtor_config, std::string, &aggreagtor_config::target>,*/
+      json::member< n_targets,  aggreagtor_config, std::vector<std::string>, &aggreagtor_config::targets, 
                     json::vector_of_strings<> >,
-      json::member< n_workers,   statistics_config, size_t, &statistics_config::workers>,
-      json::member< n_suspend_push,   statistics_config, bool, &statistics_config::suspend_push>,
-      //json::member< n_hash_size,   statistics_config, size_t, &statistics_config::hash_size>,
-      json::member< n_aggregate_timeout_ms, statistics_config, time_t, &statistics_config::aggregate_timeout_ms>,
-      json::member< n_startup_ignore_ms, statistics_config, time_t,      &statistics_config::startup_ignore_ms>
+      json::member< n_workers,   aggreagtor_config, size_t, &aggreagtor_config::workers>,
+      json::member< n_suspend_push,   aggreagtor_config, bool, &aggreagtor_config::suspend_push>,
+      //json::member< n_hash_size,   aggreagtor_config, size_t, &aggreagtor_config::hash_size>,
+      json::member< n_aggregate_timeout_ms, aggreagtor_config, time_t, &aggreagtor_config::aggregate_timeout_ms>,
+      json::member< n_startup_ignore_ms, aggreagtor_config, time_t,      &aggreagtor_config::startup_ignore_ms>
       
      >,
+    json::strict_mode
+  > type;
+  
+  typedef type::target target;
+  typedef type::serializer serializer;
+  typedef type::member_list member_list;
+};
+
+
+struct aggreagtor_statistics_config_json
+{
+  JSON_NAME2(n_multi_push_meter, "multi_push.time")
+  JSON_NAME2(n_multi_count_meter, "multi_push.values")
+  JSON_NAME2(n_push_meter, "push.time")
+  JSON_NAME2(n_count_meter, "push.values")
+  
+  typedef json::object<
+    aggreagtor_statistics_config,
+    json::member_list<
+      json::member< n_multi_push_meter,   aggreagtor_statistics_config, std::string, &aggreagtor_statistics_config::multi_push_meter>,
+      json::member< n_multi_count_meter,   aggreagtor_statistics_config, std::string, &aggreagtor_statistics_config::multi_count_meter>,
+      json::member< n_push_meter,   aggreagtor_statistics_config, std::string, &aggreagtor_statistics_config::push_meter>,
+      json::member< n_count_meter,   aggreagtor_statistics_config, std::string, &aggreagtor_statistics_config::count_meter>
+    >,
     json::strict_mode
   > type;
   

@@ -19,7 +19,7 @@
 namespace wfc{ namespace core{
 
 class statistics_domain
-  : public domain_object<istatistics, statistics_config, defstat>
+: public domain_object<istatistics, aggreagtor_config, aggreagtor_statistics_config>
 {
   class stat_impl;
 public:
@@ -30,8 +30,11 @@ public:
   virtual void restart() override;
   virtual void stop() override;
   virtual void start() override;
-  virtual void push( wfc::statistics::request::push::ptr req, wfc::statistics::response::push::handler cb) override final;
-  virtual void del( wfc::statistics::request::del::ptr req, wfc::statistics::response::del::handler cb) override final;
+  
+  // istatistics
+  virtual void push(push_ptr req, push_handler cb) override final;
+  virtual void multi_push( multi_push_ptr req, multi_push_handler cb) override final;
+  virtual void del( del_ptr req, del_handler cb) override final;
 private:
   typedef std::shared_ptr<stat_impl> stat_ptr;
   typedef wrtstat::wrtstat stat_push;
@@ -45,6 +48,8 @@ private:
   template<typename StatPtr>
   bool handler_(StatPtr st, size_t offset, size_t step);
 
+  void push_( push_ptr::element_type&& req);
+  
   stat_ptr _stat;
   stat_list _stat_list;
   workflow_list _workflow_list;
@@ -61,6 +66,8 @@ private:
   
   time_meter _push_meter;
   size_meter _count_meter;
+  time_meter _multi_push_meter;
+  size_meter _multi_count_meter;
   
   typedef rwlock<std::mutex> mutex_type;
   mutex_type _mutex;

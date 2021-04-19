@@ -18,7 +18,7 @@ namespace wfc{ namespace core{
 logger::~logger()
 {
   // Логгер инициализируеться на этапе конфигурации
-  // Но если система не была запущщена из=за ошибки, 
+  // Но если система не была запущщена из=за ошибки,
   // то метод stop не будет вызван
   this->release();
 }
@@ -28,7 +28,7 @@ logger::logger()
   wlog::init();
 }
 
-logger::domain_config logger::generate(const std::string& arg) 
+logger::domain_config logger::generate(const std::string& arg)
 {
   domain_config  conf;
   conf.finalize();
@@ -60,10 +60,10 @@ void logger::release()
     if ( _last_message!=nullptr)
       lm = std::make_unique<message_t>( *_last_message );
   }
-  
+
   if ( log == nullptr )
     return;
-  
+
   auto tp = wlog::time_point::clock::now();
   if ( lm != nullptr )
   {
@@ -119,29 +119,29 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
   bool fatal_found = opt.get_customize("FATAL")!=nullptr;
   bool final_found = opt.get_customize("FINAL")!=nullptr;
   bool syslog_found = opt.get_customize("SYSLOG")!=nullptr;
-  
-  
+
+
   if ( !fatal_found )
   {
     opt.customize.resize( opt.customize.size() + 1 );
     opt.customize.back().names.push_back("FATAL");
     opt.customize.back().stdout.color_map["$all"] = "red";
   }
-    
+
   if ( !final_found )
   {
     opt.customize.resize( opt.customize.size() + 1 );
     opt.customize.back().names.push_back("FINAL");
     opt.customize.back().stdout.color_map["$all"] = "light_red";
   }
-  
+
   if ( !syslog_found )
   {
     opt.customize.resize( opt.customize.size() + 1 );
     opt.customize.back().names.push_back("SYSLOG");
     opt.customize.back().syslog.name=this->global()->program_name;
   }
-  
+
   bool stop_by_fatal = this->options().stop_with_fatal_log_entry;
   dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& logname, const std::string& ident, const std::string& message)
   {
@@ -157,12 +157,12 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
 
         if ( stop_by_fatal && g->stop_signal_flag == false )
         {
-          wfc_exit_with_error("Abnormal Shutdown by 'FATAL' message!");
+          wfc_abort("Abnormal Shutdown by 'FATAL' message!");
         }
       }
     }
   });
-  
+
   wlog::init( opt, dlh );
 }
 
@@ -183,7 +183,7 @@ void logger::initialize()
       dlh.customize[fmt.first].file_writer   = fmt.second->file_writer();
       dlh.customize[fmt.first].stdout_writer = fmt.second->stdout_writer();
       dlh.customize[fmt.first].syslog_writer = fmt.second->syslog_writer();
-      
+
       if ( auto log_ptr = fmt.second->options() )
       {
         if (wlog::custom_logger_options* cstm_opt = opt.get_customize(fmt.first) )
@@ -199,7 +199,7 @@ void logger::initialize()
         }
       }
     }
-    // Это повторная инициализация, поэтому отключаем 
+    // Это повторная инициализация, поэтому отключаем
     opt.startup_rotate = false;
     for (auto& o : opt.customize ) o.startup_rotate = false;
     this->init_log_(opt, dlh);
@@ -239,11 +239,11 @@ void logger::perform_io(data_ptr /*d*/, io_id_t /*io_id*/, output_handler_t /*ca
   }
   else if ( cmd == "list" )
   {
-    
+
   }
   else if ( cmd == "get" )
   {
-    
+
   }
   else if ( cmd == "set" )
   {
@@ -311,7 +311,7 @@ void logger::perform_io(data_ptr /*d*/, io_id_t /*io_id*/, output_handler_t /*ca
       else
       {
         ready = false;
-        result = std::string("ERROR: unkown field: ") + field; 
+        result = std::string("ERROR: unkown field: ") + field;
       }
 
       if ( ready )

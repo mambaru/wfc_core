@@ -24,9 +24,11 @@ public:
   virtual ~startup_domain();
   virtual int startup( int argc, char* argv[], std::string helpstring) override;
   virtual bool ready_for_run() override;
-  virtual void clean_finalize() override;
+  virtual void stop() override;
 private:
   int perform_start_();
+  bool init_shutdown_timer_();
+  void init_working_timer_();
   bool generate_();
   void show_usage_();
   bool show_info_(const std::string& package_name);

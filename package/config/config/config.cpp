@@ -30,7 +30,7 @@ namespace
 
 config::~config()
 {
-  
+
 }
 
 config::config()
@@ -43,11 +43,11 @@ void config::restart()
 {
   this->global()->common_workflow->release_timer(_timer_id);
   _timer_id = 0;
-  
+
   if ( this->options().reload_changed_ms != 0 )
   {
-    _timer_id = this->global()->common_workflow->create_timer( 
-      std::chrono::milliseconds(this->options().reload_changed_ms), 
+    _timer_id = this->global()->common_workflow->create_timer(
+      std::chrono::milliseconds(this->options().reload_changed_ms),
       this->wrap( std::bind(&config::timer_handler_, this), [](){return false;} )
     );
   }
@@ -59,7 +59,7 @@ void config::start()
   {
     signal(SIGHUP, signal_sighup_handler);
   }
-  
+
   this->_config_changed = get_modify_time(this->_path);
   this->restart();
 }
@@ -108,7 +108,7 @@ bool config::load_and_configure(std::string path)
 }
 
 
-bool config::load_and_check(std::string path) 
+bool config::load_and_check(std::string path)
 {
   std::string confstr = load_from_file_(path);
   if ( confstr.empty() )
@@ -138,11 +138,23 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     result = "the system is not initialized";
     return false;
   }
-  
-  if ( go.empty() )
+
+  std::string defarg;
+
+  bool empty_opt = go.empty();
+
+  if ( go.count("all")!=0 )
   {
+
+    defarg = go.at("all");
+    empty_opt = go.size() == 1;
+  }
+
+  if ( empty_opt )
+  {
+
     std::vector< std::pair<std::string, std::string> > vectconf;
-    g->registry.for_each<ipackage>("package", [&vectconf](const std::string&, std::shared_ptr<ipackage> pkg)
+    g->registry.for_each<ipackage>("package", [&vectconf, &defarg](const std::string&, std::shared_ptr<ipackage> pkg)
     {
       if ( pkg == nullptr )
         return;
@@ -153,16 +165,16 @@ bool config::generate_config( const generate_options& go, const std::string& pat
         wlog::disable();
         for (const auto& c : components )
         {
-          vectconf.push_back( std::make_pair(c->name(), c->generate("") ) );
+          vectconf.push_back( std::make_pair(c->name(), c->generate(defarg) ) );
         }
         wlog::disable();
       }
     },
     [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
     {
-      return l->order() < r->order();
+      return l->show_order() < r->show_order();
     });
-    
+
     json::dict_vector< json::raw_value<> >::serializer()(vectconf, std::back_inserter(result));
   }
   else
@@ -172,7 +184,9 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     {
       if ( auto obj = g->registry.get_object<icomponent>("component", opt.first, true) )
       {
-        mainconf[opt.first] = obj->generate(opt.second);
+        std::string genopt = opt.second;
+        if ( genopt.empty() ) genopt = defarg;
+        mainconf[opt.first] = obj->generate(genopt);
       }
       else
       {
@@ -195,7 +209,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
         },
         [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
         {
-          return l->order() < r->order();
+          return l->show_order() < r->show_order();
         });
 
         result=ss.str();
@@ -204,7 +218,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
     }
     configuration_json::serializer()(mainconf, std::back_inserter(result));
   }
-  
+
   this->save_to_file_( path, result);
   return true;
 }
@@ -212,7 +226,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
 bool config::parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf)
 {
   auto g = this->global();
-  
+
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
 
@@ -220,10 +234,10 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
   jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
   if (!e)
     configuration_json::serializer()(mainconf, jsonbeg, jsonend, &e);
-  
+
   if ( e )
   {
-    SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': " 
+    SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': "
         << std::endl << json::strerror::message_trace(e, jsonbeg, jsonend )  )
     return false;
   }
@@ -309,11 +323,11 @@ namespace
     SYSTEM_LOG_WARNING("SIGHUP signal handler")
     if ( auto g = wfcglobal::static_global )
     {
-      g->io_service.post([g]()
+      boost::asio::post(g->io_context, [g]()
       {
         if ( auto c = g->registry.get_target<iconfig>("config") )
           c->reload_and_reconfigure();
-      });
+      }, nullptr);
     }
   }
 

@@ -27,7 +27,7 @@ struct core_config
   bool nocall_callback_show = true;
   bool double_callback_abort = false;
   bool double_callback_show = true;
-  
+
   std::set<int> wfc_cpu;
   std::set<int> sys_cpu;
   common_workflow_options common_workflow;

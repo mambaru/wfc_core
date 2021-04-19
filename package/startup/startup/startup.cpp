@@ -14,6 +14,7 @@
 #include <wfc/logger.hpp>
 #include <wfc/asio.hpp>
 
+#include <iostream>
 #include <fstream>
 #include <syslog.h>
 
@@ -68,27 +69,43 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     {
       for (std::string helpparams : _pa.help_options )
       {
-        std::string component_name;
+        std::string components_names;
         std::string component_args;
 
         size_t pos_params = helpparams.find(':');
         if ( pos_params == std::string::npos )
         {
-          component_name=helpparams;
+          components_names=helpparams;
         }
         else
         {
-          component_name = helpparams.substr(0, pos_params);
+          components_names = helpparams.substr(0, pos_params);
           component_args = helpparams.substr(pos_params + 1);
         }
 
-        if ( auto p = g->registry.get_object<icomponent>("component", component_name , true) )
+        std::vector<std::string> component_list;
+        boost::split( component_list, components_names, boost::is_any_of(",") );
+
+        for (const std::string& component_name: component_list)
         {
-          std::cout << p->help(component_args) << std::endl << std::endl;
-        }
-        else
-        {
-          std::cout << "ERROR: component '" << component_name  << "' is not exist." << std::endl << std::endl;
+          if ( auto p = g->registry.get_object<icomponent>("component", component_name, true) )
+          {
+            if ( component_list.size() > 1 )
+              std::cout << "***** " << "Help for '" << component_name << "' *****" << std::endl;
+            std::cout << p->help(component_args) << std::endl << std::endl;
+          }
+          else if ( component_name!="all" )
+          {
+            std::cout << "ERROR: component '" << component_name  << "' is not exist." << std::endl << std::endl;
+          }
+          else
+          {
+            g->registry.for_each<icomponent>("component", [component_args](const std::string& cmp_name, std::shared_ptr<icomponent> p1 )
+            {
+              std::cout << "***** " << "Help for '" << cmp_name << "' *****" << std::endl;
+              std::cout << p1->help(component_args) << std::endl << std::endl;
+            });
+          }
         }
       }
     }
@@ -135,7 +152,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     },
     [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
     {
-      return l->order() < r->order();
+      return l->show_order() < r->show_order();
     });
   }
   else if ( _pa.component_list )
@@ -157,7 +174,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     },
     [](std::shared_ptr<ipackage> l, std::shared_ptr<ipackage> r)->bool
     {
-      return l->order() < r->order();
+      return l->show_order() < r->show_order();
     });
   }
   else if ( _pa.generate )
@@ -189,16 +206,24 @@ bool startup_domain::ready_for_run()
   return _ready;
 }
 
-void startup_domain::clean_finalize()
+void startup_domain::stop()
 {
-  if ( _pid_path.empty() )
+/*  if ( _pid_path.empty() )
     return;
 
-  int code = ::remove(_pid_path.c_str());
-  if ( code != 0 )
+  if ( auto g = this->global() )
   {
-    std::cerr << "ERROR: pid file: " << strerror(errno) << std::endl;
+    std::string pid_path = _pid_path;
+    g->after_stop.insert([pid_path](){
+      int code = ::remove(pid_path.c_str());
+      if ( code != 0 )
+      {
+        std::cerr << "ERROR: pid file: " << strerror(errno) << std::endl;
+      }
+      return false;
+    });
   }
+ */ 
 }
 
 namespace {
@@ -211,9 +236,9 @@ namespace {
       std::cerr << fname << " open ERROR: " << strerror(errno) << std::endl;
       return pid_file;
     }
-    
+
     int rc = ::flock(pid_file, LOCK_EX | LOCK_NB);
-    
+
     if (rc)
     {
       std::cerr << fname << " blocked ERROR: " << strerror(errno) << std::endl;
@@ -230,7 +255,7 @@ namespace {
     }
     return pid_file;
   }
-  
+
   int write_loc_pid( int fileid, pid_t pid)
   {
     if ( -1 ==  ftruncate(fileid, 0) )
@@ -238,7 +263,7 @@ namespace {
       std::cerr << "ERROR ftruncate pid: " << strerror(errno) << std::endl;
       return -1;
     }
-      
+
     char buffer[128]={0};
     wjson::value<pid_t>::serializer()( pid, std::begin(buffer) );
     if ( -1 == ::write(fileid, buffer, strlen(buffer) ) )
@@ -381,7 +406,7 @@ int startup_domain::perform_start_( )
     }
     std::clog << "New working directory: " << _pa.user_name << std::endl;
   }
-  
+
   _pid_path = _pa.pid_dir;
   if ( !_pid_path.empty() && _pid_path.back()!='/' )
       _pid_path += '/';
@@ -397,17 +422,7 @@ int startup_domain::perform_start_( )
     return 8;
   }
 
-  if ( _pa.working_time != 0 )
-  {
-    g->after_start.insert([this]
-    {
-      this->get_common_workflow()->post(
-        std::chrono::seconds(_pa.working_time),
-        wfc_exit
-      );
-      return true;
-    });
-  }
+  g->after_start.insert(std::bind<bool>(&startup_domain::init_shutdown_timer_, this) );
 
   if ( _pa.daemonize )
   {
@@ -429,20 +444,11 @@ int startup_domain::perform_start_( )
     std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
 
-  // Это основной или мониторящий процесс (получаем pid после демонизации)
-  pid_t pid = ::getpid();
-  if ( -1 == write_loc_pid(pid_file, pid) )
-  {
-    return 9;
-  }
-
-  std::clog << "Process identifier (PID): " << pid << std::endl;
-
-  bool parent_proc = true;
+  bool working_proccess = true;
   if ( _pa.autoup )
   {
     bool success_autoup = _pa.success_autoup;
-    parent_proc = ::wfc::autoup(
+    working_proccess = !wfc::autoup(
       _pa.autoup_timeout,
       success_autoup,
       [](pid_t pid1, int count, int status, time_t work_time) -> bool
@@ -475,24 +481,98 @@ int startup_domain::perform_start_( )
     );
   }
 
-  if ( parent_proc )
+  // Это основной и не мониторящий процесс (получаем pid после демонизации)
+  if ( working_proccess )
   {
-    if ( !_pid_path.empty() )
-      unlink( _pid_path.c_str() );
+    pid_t pid = ::getpid();
+    if ( -1 == write_loc_pid(pid_file, pid) )
+    {
+      return 9;
+    }
 
-    if ( _pa.autoup )
-      return 0;
+    g->after_start.insert( [pid](){
+      SYSTEM_LOG_MESSAGE( "Process identifier (PID): " << pid );
+      return false;
+    } );
+    
+    std::string pid_path = _pid_path;
+    g->after_stop.insert([pid_path](){
+      int code = ::remove(pid_path.c_str());
+      if ( code != 0 )
+      {
+        SYSTEM_LOG_ERROR("ERROR: pid file: " << strerror(errno) );
+      }
+      return false;
+    });
+
   }
+  else if ( _pa.autoup )
+    return 0;
 
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);
 
-  if ( _pa.coredump )
-    ::wfc::dumpable();
+  bool enable_dump = _pa.coredump;
+  g->after_start.insert( [enable_dump](){
+    int resdump = wfc::dumpable(enable_dump);
+    if ( resdump == -2 )
+    {
+      SYSTEM_LOG_WARNING( "DUMPABLE (--coredump) is not set because prctl not detected" );
+    }
+    else if (resdump == 0)
+    {
+      SYSTEM_LOG_WARNING( "DUMPABLE (--coredump) is not set because prctl error: " <<  strerror(errno) );
+    }
+    else
+    {
+      SYSTEM_LOG_MESSAGE("SET_DUMPABLE:" << enable_dump)
+    }
+    return false;
+  });
 
   _ready = true;
   return 0;
 }
+
+
+bool startup_domain::init_shutdown_timer_()
+{
+  if ( !_pa.shutdown_time.empty() )
+  {
+    this->get_common_workflow()->safe_post(
+      _pa.shutdown_time,
+      std::bind(&startup_domain::init_working_timer_, this)
+    );
+  }
+  else if ( _pa.working_time!=0 )
+  {
+    this->init_working_timer_();
+  }
+
+  return false;
+}
+
+void startup_domain::init_working_timer_()
+{
+  if ( _pa.restart_by_timer )
+  {
+    SYSTEM_LOG_MESSAGE("*** Restart by timer! ***")
+    this->get_common_workflow()->post(
+      std::chrono::seconds(_pa.working_time),
+      std::bind(wfc_restart)
+    );
+  }
+  else
+  {
+    SYSTEM_LOG_MESSAGE("*** Shutdown by timer! ***")
+    this->get_common_workflow()->post(
+      std::chrono::seconds(_pa.working_time),
+      std::bind(wfc_exit)
+    );
+  }
+
+}
+
 
 ///
 /// help
@@ -564,7 +644,7 @@ bool startup_domain::show_info_(const std::string& package_name)
       },
       [](std::shared_ptr<ipackage> left, std::shared_ptr<ipackage> right)
       {
-        return left->order() < right->order();
+        return left->show_order() < right->show_order();
       }
     );
   }
