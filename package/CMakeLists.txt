@@ -46,6 +46,10 @@ if ( WFC_ENABLE_STAT )
   )
 endif()
 
+if ( NOT MSVC )
+  set_source_files_properties(config/config/config.cpp PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
+endif()
+
 add_library(wfc_core ${wfc_core_source_list})
 
 wci_targets(wfc_core)

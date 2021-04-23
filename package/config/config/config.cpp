@@ -327,7 +327,7 @@ namespace
       {
         if ( auto c = g->registry.get_target<iconfig>("config") )
           c->reload_and_reconfigure();
-      }, nullptr);
+      });
     }
   }
 
