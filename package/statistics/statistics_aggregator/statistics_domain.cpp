@@ -141,7 +141,7 @@ void statistics_domain::multi_push( multi_push_ptr req, multi_push_handler cb)
 {
   if ( this->bad_request(req, cb) )
     return;
-  
+
   time_point tm;
   size_point vm;
   if ( auto st = this->get_statistics() )
@@ -149,8 +149,8 @@ void statistics_domain::multi_push( multi_push_ptr req, multi_push_handler cb)
     tm = _multi_push_meter.create( static_cast<wrtstat::size_type>(1) );
     vm = _multi_count_meter.create( static_cast<wrtstat::value_type>(req->data.size()) );
   }
-  
-  
+
+
   std::string err;
   if ( !wrtstat::basic_packer::recompact(req.get(), &err) )
   {
@@ -159,14 +159,20 @@ void statistics_domain::multi_push( multi_push_ptr req, multi_push_handler cb)
     {
       res->status = false;
       res->error = err;
+      this->send_response( std::move(res), std::move(cb) );
     }
   }
-  
-  for (push_ptr::element_type& p: req->data )
-    this->push_( std::move(p) );
-  
-  auto res = this->create_response(cb);
-  this->send_response( std::move(res), std::move(cb) );
+  else
+  {
+    for (push_ptr::element_type& p: req->data )
+    {
+      DOMAIN_LOG_MESSAGE("Recompact REAY: " << p.name)
+      this->push_( std::move(p) );
+    }
+
+    auto res = this->create_response(cb);
+    this->send_response( std::move(res), std::move(cb) );
+  }
   fas::ignore_args(tm, vm);
 }
 
@@ -212,10 +218,10 @@ void statistics_domain::push_( push_ptr::element_type&& req)
     tm = _push_meter.create( static_cast<wrtstat::size_type>(1) );
     vm = _count_meter.create( static_cast<wrtstat::value_type>(req.data.size()) );
   }
-  
+
   if ( req.ts == 0 )
     req.ts = time(nullptr) * 1000000;
-  
+
   {
     read_lock<mutex_type> lk(_mutex);
     size_t pos = std::hash<std::string>()(req.name) % _stat_list.size();
