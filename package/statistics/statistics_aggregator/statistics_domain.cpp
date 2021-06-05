@@ -166,7 +166,6 @@ void statistics_domain::multi_push( multi_push_ptr req, multi_push_handler cb)
   {
     for (push_ptr::element_type& p: req->data )
     {
-      DOMAIN_LOG_MESSAGE("Recompact REAY: " << p.name)
       this->push_( std::move(p) );
     }
 
