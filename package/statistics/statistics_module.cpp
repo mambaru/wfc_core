@@ -5,12 +5,12 @@
 #include "system_statistics/system_statistics_multiton.hpp"
 #include "statistics_gateway/statistics_gateway_multiton.hpp"
 #include "statistics_service/statistics_service_multiton.hpp"
-//#include "statistics_gateway/deprecated/btp_deprecated_gateway_multiton.hpp"
+#include "statistics_service/statistics_service_compact_multiton.hpp"
 #include <wfc/module/component_list.hpp>
 #include <wfc/name.hpp>
 
 namespace wfc{ namespace core{
-  
+
 namespace
 {
   WFC_NAME2(module_name, "statistics")
@@ -22,7 +22,7 @@ namespace
     , statlog_multiton
     , statistics_gateway_multiton
     , statistics_service_multiton
-    //, btp_deprecated_gateway_multiton    
+    , statistics_service_compact_multiton
   >
   {
     virtual std::string description() const override
