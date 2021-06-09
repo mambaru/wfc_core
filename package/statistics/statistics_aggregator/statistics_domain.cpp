@@ -180,32 +180,24 @@ void statistics_domain::del( del_ptr req, del_handler cb)
   if ( this->bad_request(req, cb) )
     return;
 
-  // TODO: реализовать через выборку
-  abort();
-  /*
   auto res = this->create_response(cb);
 
   {
     read_lock<mutex_type> lk(_mutex);
-    size_t pos = std::hash<std::string>()(req->name) % _stat_list.size();
-    if (auto wf = _workflow_list[pos] )
+    for ( const std::string& name : req->names)
     {
-      auto st = _stat_list[pos];
-      auto preq = std::make_shared<wrtstat::request::del>( std::move(*req) );
-      wf->post([st, preq](){ st->del( preq->name); }, nullptr);
+      size_t pos = std::hash<std::string>()(name) % _stat_list.size();
+      _stat_list[pos]->del( name);
     }
   }
-
-  if ( res != nullptr )
-    res->status = true;
-
-  this->send_response( std::move(res), std::move(cb) );
 
   for ( auto wt : _targets ) if ( auto t = wt.lock() )
   {
     auto rreq = std::make_unique<wrtstat::request::del>( *req );
     t->del( std::move(rreq), nullptr );
-  }*/
+  }
+
+  this->send_response( std::move(res), std::move(cb) );
 }
 
 void statistics_domain::push_( push_ptr::element_type&& req)
