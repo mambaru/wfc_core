@@ -104,11 +104,18 @@ void core::reconfigure()
   if ( auto g = this->global() )
   {
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
-    cw_hndl.startup_handler = [g]( std::thread::id ){ g->cpu.set_current_thread("common_workflow");};
-    cw_hndl.finish_handler = [g]( std::thread::id id)
+    cw_hndl.startup_handler = []( std::thread::id )
     {
-      SYSTEM_LOG_MESSAGE( "common_workflow thread finished. std::thread::id=" << id )
-      g->cpu.del_current_thread();
+      if ( auto gl = ::wfc::wfcglobal::static_global )
+        gl->cpu.set_current_thread("common_workflow");
+    };
+    cw_hndl.finish_handler = []( std::thread::id id)
+    {
+      if ( auto gl = ::wfc::wfcglobal::static_global )
+      {
+        SYSTEM_LOG_MESSAGE( "common_workflow thread finished. std::thread::id=" << id )
+        gl->cpu.del_current_thread();
+      }
     };
 
     if ( g->common_workflow==nullptr )

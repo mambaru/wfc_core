@@ -46,8 +46,8 @@ if ( WFC_ENABLE_STAT )
   )
 endif()
 
-if ( NOT MSVC )
-  set_source_files_properties(config/config/config.cpp PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" )
+  set_source_files_properties(wflow/queue/asio_queue.cpp PROPERTIES COMPILE_FLAGS -Wno-zero-as-null-pointer-constant)
 endif()
 
 add_library(wfc_core ${wfc_core_source_list})
