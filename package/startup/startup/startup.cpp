@@ -439,7 +439,7 @@ int startup_domain::perform_start_( )
       g->after_start.insert( [fun](){ fun(); return false;} );
     }
   }
-  else if ( _pa.wait_daemonize)
+  else if ( _pa.wait_daemonize )
   {
     std::clog << "WARNING: wait_daemonize argument ignored. Only with -d worked" << std::endl;
   }
@@ -451,8 +451,11 @@ int startup_domain::perform_start_( )
     working_proccess = !wfc::autoup(
       _pa.autoup_timeout,
       success_autoup,
-      [](pid_t pid1, int count, int status, time_t work_time) -> bool
+      [this](pid_t pid1, int count, int status, time_t work_time) -> bool
       {
+        int pid_file1 = loc_file_pid(this->_pid_path);
+        write_loc_pid(pid_file1, pid1);
+
         std::clog << "Process PID=" << pid1 << " terminated with status " << status << " and will be restarted" << std::endl;
         std::clog << "Work Time: " << work_time << " seconds" << std::endl;
         std::clog << "Restart count: " << count << std::endl;
