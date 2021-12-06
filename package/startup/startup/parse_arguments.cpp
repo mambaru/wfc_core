@@ -49,7 +49,6 @@ try
   vstrings object_options;
   vstrings startup_options;
 
-  std::string working_time;
   std::string autoup_timeout;
   desc_startup.add_options()
     ("user,u", value<std::string>(&pa.user_name)->default_value(""), "Change user name")
@@ -60,7 +59,7 @@ try
     ("autoup,a", value<std::string>(&autoup_timeout)->default_value(""), "Auto restart daemon [minimum uptime in sec or '1d2h4m5s' format]")
     ("success-autoup,A", value<bool>(&pa.success_autoup)->zero_tokens(), "Auto restart daemon with success")
     ("shutdown-time,T", value<std::string>(&pa.shutdown_time)->default_value(""), "Shutdown time in the format '22:00:00' + working_time")
-    ("working-time,t", value<std::string>(&working_time)->default_value(""), "Work time daemon in seconds or '1d2h4m5s' format after shutdown_time")
+    ("working-time,t", value<std::string>(&pa.working_time)->default_value(""), "Work time daemon in seconds or '1d2h4m5s' format after shutdown_time")
     ("restart-by-timer,R", value<bool>(&pa.restart_by_timer)->zero_tokens(), "Restart daemon by timer if set (-T or -t) and -a")
     ("coredump,c", value<bool>(&pa.coredump)->implicit_value(true)->default_value(false), "Allow or deny core dump")
     ("name,n", value<std::string>(&pa.instance_name), "Unique daemon instance name")
@@ -75,20 +74,6 @@ try
   parsed_options parsed = command_line_parser(argc, argv).options(desc).run();
   store(parsed, vm);
   notify(vm);
-
-  if ( !working_time.empty() )
-  {
-    if ( working_time.end() != wjson::parser::parse_integer(working_time.begin(), working_time.end(), nullptr ) )
-      working_time = "\"" + working_time + "\"";
-    wjson::time_interval<time_t, 1>::serializer serializer;
-    wjson::json_error er;
-    serializer(pa.working_time, working_time.begin(), working_time.end(), &er);
-    if (er)
-    {
-      pa.errorstring = "Program option working_time invalid value";
-      return;
-    }
-  }
 
   if ( !autoup_timeout.empty() )
   {

@@ -34,10 +34,10 @@ struct program_arguments
   // Перезапусить процесс даже при успешном завершение (например при kill, kill -s SIGTERM или OOM killer)
   bool success_autoup = false;
 
-  // Время завершения работы в формате "22:00:00" + working_time
+  // Время завершения работы в формате "22:00:00" или "1d3m4s" или CRON + working_time
   std::string shutdown_time = "";
-  // Время работы в секундах. Если указан shutdown_time, то отсчет после указанного времени
-  time_t working_time = 0;
+  // Время работы в секундах (в том же формате shutdown_time). Если указан shutdown_time, то отсчет после указанного времени
+  std::string working_time = "";
   // Не завершать работу, а перезапустить демон если указаны shutdown_time и/или working_time и autoup
   // (нужен мониторящий процесс (указан autoup) иначе не сработает )
   bool restart_by_timer = false;

@@ -208,22 +208,6 @@ bool startup_domain::ready_for_run()
 
 void startup_domain::stop()
 {
-/*  if ( _pid_path.empty() )
-    return;
-
-  if ( auto g = this->global() )
-  {
-    std::string pid_path = _pid_path;
-    g->after_stop.insert([pid_path](){
-      int code = ::remove(pid_path.c_str());
-      if ( code != 0 )
-      {
-        std::cerr << "ERROR: pid file: " << strerror(errno) << std::endl;
-      }
-      return false;
-    });
-  }
- */ 
 }
 
 namespace {
@@ -465,7 +449,7 @@ int startup_domain::perform_start_( )
       {
         this->_pa.startup_options.clear();
 
-        g->after_start.insert([count, status, work_time]()
+        g->after_start.insert([count, status, work_time, this]()
         {
           SYSTEM_LOG_BEGIN("------------------------------------------------")
           if ( status != 0 )
@@ -477,6 +461,11 @@ int startup_domain::perform_start_( )
             SYSTEM_LOG_WARNING("Daemon was killed after work time " << work_time << "sec. ")
           }
           SYSTEM_LOG_WARNING("Restart №" << count)
+          if ( !_pa.shutdown_time.empty() )
+          {
+            SYSTEM_LOG_WARNING("Reset shutdown_time. Previous value: " << _pa.shutdown_time)
+            _pa.shutdown_time.clear();
+          }
           SYSTEM_LOG_END("------------------------------------------------")
           return false;
         });
@@ -547,7 +536,7 @@ bool startup_domain::init_shutdown_timer_()
       std::bind(&startup_domain::init_working_timer_, this)
     );
   }
-  else if ( _pa.working_time!=0 )
+  else if ( !_pa.working_time.empty() )
   {
     this->init_working_timer_();
   }
@@ -561,7 +550,7 @@ void startup_domain::init_working_timer_()
   {
     SYSTEM_LOG_MESSAGE("*** Restart by timer! ***")
     this->get_common_workflow()->post(
-      std::chrono::seconds(_pa.working_time),
+      _pa.working_time,
       std::bind(wfc_restart)
     );
   }
@@ -569,7 +558,7 @@ void startup_domain::init_working_timer_()
   {
     SYSTEM_LOG_MESSAGE("*** Shutdown by timer! ***")
     this->get_common_workflow()->post(
-      std::chrono::seconds(_pa.working_time),
+      _pa.working_time,
       std::bind(wfc_exit)
     );
   }
