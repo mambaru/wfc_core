@@ -511,7 +511,7 @@ int startup_domain::perform_start_( )
     {
       SYSTEM_LOG_WARNING( "DUMPABLE (--coredump) is not set because prctl not detected" );
     }
-    else if (resdump == 0)
+    else if (resdump != 0)
     {
       SYSTEM_LOG_WARNING( "DUMPABLE (--coredump) is not set because prctl error: " <<  strerror(errno) );
     }
