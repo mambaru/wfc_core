@@ -36,7 +36,7 @@ public:
     _procstat.pid = ::getpid();
   }
 
-  void add_threads( std::string name, std::vector<pid_t> ids )
+  void add_threads( const std::string& name, std::vector<pid_t> ids )
   {
     std::lock_guard<mutex_type> lk(_mutext);
     for (size_t i=0; i < ids.size(); ++i)
@@ -80,9 +80,11 @@ private:
     }
   }
 
-  protostat create_protostat_(std::string name, int pid)
+  protostat create_protostat_(const std::string& name, int pid)
   {
     protostat proto;
+    proto.ps = procstat();
+    proto.pid = pid;
     proto.utime = this->create_meter_(pid, name, "utime");
     proto.stime = this->create_meter_(pid, name, "stime");
     proto.vsize = this->create_meter_(pid, name, "vsize");

@@ -5,18 +5,21 @@
 #include <wfc/core/wfcglobal.hpp>
 #include <wfc/core/iconfig.hpp>
 #include <wfc/core/icore.hpp>
+#include <wfc/core/vars.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 #include <wfc/module/ipackage.hpp>
 #include <wfc/module/imodule.hpp>
 #include <wfc/module/icomponent.hpp>
 #include <wlog/init.hpp>
+#include <boost/filesystem.hpp>
 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <syslog.h>
+#include <iostream>
 
 
 namespace wfc{ namespace core{
@@ -35,7 +38,6 @@ config::~config()
 
 config::config()
   : _timer_id(0)
-  , _config_changed(0)
 {
 }
 
@@ -59,8 +61,8 @@ void config::start()
   {
     signal(SIGHUP, signal_sighup_handler);
   }
+  _changed_map[_path] = get_modify_time(this->_path);
 
-  this->_config_changed = get_modify_time(this->_path);
   this->restart();
 }
 
@@ -73,7 +75,7 @@ void config::stop()
 bool config::reload_and_reconfigure()
 {
   SYSTEM_LOG_BEGIN("Reload Configuration And Reconfigure")
-  std::string confstr = load_from_file_(_path);
+  std::string confstr = load_from_file_(_path, true);
   if ( confstr.empty() )
     return false;
   configuration mainconf;
@@ -95,7 +97,7 @@ bool config::reload_and_reconfigure()
 
 bool config::load_and_configure(std::string path)
 {
-  std::string confstr = load_from_file_(path);
+  std::string confstr = load_from_file_(path, false);
   if ( confstr.empty() )
     return false;
 
@@ -110,7 +112,7 @@ bool config::load_and_configure(std::string path)
 
 bool config::load_and_check(std::string path)
 {
-  std::string confstr = load_from_file_(path);
+  std::string confstr = load_from_file_(path, false);
   if ( confstr.empty() )
     return false;
 
@@ -223,10 +225,42 @@ bool config::generate_config( const generate_options& go, const std::string& pat
   return true;
 }
 
+namespace{
+  template<typename Map>
+  bool parse_map(const std::string& str, Map& map, std::string* err)
+  {
+    std::string::const_iterator jsonbeg = str.begin();
+    std::string::const_iterator jsonend = str.end();
+    json::json_error e;
+    jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
+
+    if (!e)
+    {
+      configuration_json::serializer()(map, jsonbeg, jsonend, &e);
+    }
+
+    if (e && err!=nullptr)
+    {
+      *err = json::strerror::message_trace(e, jsonbeg, jsonend );
+    }
+
+    return !e;
+  }
+}
+
 bool config::parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf)
 {
   auto g = this->global();
 
+  std::string strerr;
+  if ( !parse_map(confstr, mainconf, &strerr) )
+  {
+    SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': "
+        << std::endl << strerr  )
+    return false;
+
+  }
+  /*
   std::string::const_iterator jsonbeg = confstr.begin();
   std::string::const_iterator jsonend = confstr.end();
 
@@ -240,12 +274,13 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
     SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': "
         << std::endl << json::strerror::message_trace(e, jsonbeg, jsonend )  )
     return false;
-  }
+  }*/
 
   for ( auto& mconf : mainconf)
   {
     if ( auto m = g->registry.get_object<icomponent>("component", mconf.first, true) )
     {
+      json::json_error e;
       if ( !m->parse( mconf.second, &e) )
       {
         SYSTEM_LOG_ERROR(
@@ -270,36 +305,126 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
 
 bool config::timer_handler_()
 {
-  if ( this->_config_changed!=0 )
+  for (auto& file: _changed_map)
   {
-    time_t t = get_modify_time(this->_path);
-    if ( t!=this->_config_changed )
-      this->reload_and_reconfigure();
-    this->_config_changed = t;
+    if ( file.second!=0 )
+    {
+      time_t t = get_modify_time(file.first);
+      if ( t!=file.second )
+      {
+        file.second = t;
+        this->reload_and_reconfigure();
+        return true;
+      }
+    }
   }
   return true;
 }
 
-std::string config::load_from_file_(const std::string& path)
+std::string config::load_from_file_(const std::string& path, bool is_reload)
 try
 {
-  std::string confstr;
-  std::ifstream fconf(path);
-  if ( !fconf.good() )
+  std::vector<std::string> args_ini;
+  std::vector<std::string> opt_ini;
+  std::vector<std::string> orig_opt_ini = this->options().ini;
+
+  boost::filesystem::path pp(path);
+  if ( auto g = this->global() )
   {
-    SYSTEM_LOG_ERROR( "Bad json configuration file '" << path << "'" );
-    return std::string();
+    for (const std::string& file : g->ini)
+    {
+      boost::filesystem::path p(file);
+      if ( !pp.parent_path().empty() && p.parent_path().empty())
+      {
+        args_ini.push_back( (pp.parent_path()/p.filename()).string() );
+      }
+    }
   }
-  std::copy(
-    std::istreambuf_iterator<char>(fconf),
-    std::istreambuf_iterator<char>(),
-    std::back_inserter(confstr)
-  );
-  return confstr;
+
+  if ( !is_reload )
+  {
+    wfc::vars v;
+    v.add_ini(args_ini);
+    if (v.status() )
+      v.parse_file(path);
+
+    if ( !v.status() )
+    {
+      SYSTEM_LOG_ERROR("Bad configuration (initial pre-parse)'" << path << "': " << v.error_message() )
+      return std::string();
+    }
+    configuration mainconf;
+    bool status = this->parse_configure_(path, v.result(), mainconf);
+    if (!status)
+      return std::string();
+
+    std::string err;
+    if ( status && mainconf.count("config") > 0 )
+    {
+      configuration config_conf;
+      if ( status &= parse_map(mainconf["config"], config_conf, &err) )
+      {
+        if ( config_conf.count("ini") > 0 )
+        {
+          std::string ini_json = config_conf["ini"];
+          wjson::json_error je;
+          wjson::vector_of_strings<>::serializer()(orig_opt_ini, ini_json.begin(), ini_json.end(), &je);
+          status &= !je;
+          if (je)
+            err = wjson::strerror::message_trace(je, ini_json.begin(), ini_json.end());
+        }
+      }
+    }
+
+    if ( !status )
+    {
+      SYSTEM_LOG_ERROR("Bad configuration (initial pre-config)'" << path << "': " << err)
+      return std::string();
+    }
+  }
+
+  for (const std::string& file : orig_opt_ini)
+  {
+    boost::filesystem::path p(file);
+    if ( !pp.parent_path().empty() && p.parent_path().empty())
+    {
+      opt_ini.push_back( (pp.parent_path()/p.filename()).string() );
+    }
+  }
+
+  SYSTEM_LOG_MESSAGE("Config ini file: " << this->options().ini.size() )
+
+  wfc::vars v;
+
+  v.add_ini(opt_ini);
+  v.add_ini(args_ini);
+
+  if ( v.parse_file(path) )
+  {
+    for ( const auto& file: v.include_map() )
+    {
+      SYSTEM_LOG_MESSAGE("Add file to follow: " << file.first)
+      _changed_map[file.first] = get_modify_time(file.first);
+    }
+    /*wjson::json_error je;
+    std::string res_des, result = v.result() ;
+    wjson::parser::despace( result.cbegin(), result.cend(), std::back_inserter(res_des), &je);
+    if ( je )
+    {
+      SYSTEM_LOG_FATAL( "Despace: " << wjson::strerror::message_trace(je,result.cbegin(), result.cend()))
+    }
+    SYSTEM_LOG_MESSAGE("Config file: \n" << res_des )
+    return res_des;
+    */
+    return v.result();
+  }
+
+  SYSTEM_LOG_ERROR( "Bad configuration (parse)'" << path << "': " << v.error_message() );
+  return std::string();
 }
 catch(const std::exception& e)
 {
-  SYSTEM_LOG_ERROR( "Invalid json configuration file '" << path << "': " << e.what() );
+  SYSTEM_LOG_ERROR( "Bad configuration (exception) '" << path << "': " << e.what() );
   return std::string();
 }
 

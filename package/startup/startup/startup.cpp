@@ -353,6 +353,10 @@ int startup_domain::perform_start_( )
 
   if ( auto c = g->registry.get_target<iconfig>("config") )
   {
+    g->ini.clear();
+    std::copy(_pa.ini_list.begin(), _pa.ini_list.end(), std::back_inserter(g->ini) );
+    std::copy(_pa.startup_ini_list.begin(), _pa.startup_ini_list.end(), std::back_inserter(g->ini) );
+
     if ( !c->load_and_configure(_pa.config_path) )
     {
       std::cerr << "Configuration FAIL!" << std::endl;
@@ -448,6 +452,8 @@ int startup_domain::perform_start_( )
       [this, g](int count, int status, time_t work_time)
       {
         this->_pa.startup_options.clear();
+        this->_pa.startup_ini_list.clear();
+
 
         g->after_start.insert([count, status, work_time, this]()
         {
@@ -501,6 +507,7 @@ int startup_domain::perform_start_( )
   else if ( _pa.autoup )
     return 0;
 
+  g->args.clear();
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);
 

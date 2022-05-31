@@ -186,7 +186,8 @@ void statlog_domain::configure_()
         _table_format.sequence_of_list.push_back(orig_sequence[i]);
       }
 
-      def_sequence[j]="#";
+      if ( j < def_sequence.size() )
+        def_sequence[j]="#";
     }
 
     for (const auto& def_intem: def_sequence)

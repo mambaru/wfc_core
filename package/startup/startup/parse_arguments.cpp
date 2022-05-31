@@ -42,12 +42,14 @@ try
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(),
                    "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
-    ("check-config", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file without start")
+    ("check-config,V", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file without start")
 
     ;
 
   vstrings object_options;
   vstrings startup_options;
+  vstrings ini_list;
+  vstrings startup_ini_list;
 
   std::string autoup_timeout;
   desc_startup.add_options()
@@ -66,7 +68,12 @@ try
     ("config,C", value<std::string>(&pa.config_path)->default_value(""), "Path to the configuration file")
     ("pid-dir,P", value<std::string>(&pa.pid_dir), "Directory for pid file")
     ("object-options,O", value< vstrings >(&object_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom options for instance objects")
-    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after restart by autoup)");
+    ("startup-options,S", value< vstrings >(&startup_options)->multitoken(), "<<object-name>>:arg=value[:arg2=value2...] custom option for instance objects only for first start (сleaned after restart by autoup)")
+    ("ini", value< vstrings >(&ini_list)->multitoken(), "List of ini files for variable substitution in the"
+            " ${INI:<<section.name>>:<<default>>} format configuration file"
+            "Variables from this list override variables from the list of ini-files specified in the configuration")
+    ("startup-ini", value< vstrings >(&startup_ini_list)->multitoken(),
+            "Similar to --ini but only for first start (сleaned after restart by autoup)");
 
   desc.add(desc_startup);
 
@@ -114,6 +121,8 @@ try
 
   pa.object_options = parse_custom_options( object_options );
   pa.startup_options = parse_custom_options( startup_options );
+  pa.ini_list = ini_list;
+  pa.startup_ini_list = startup_ini_list;
 
   if ( pa.help )
   {

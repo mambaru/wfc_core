@@ -38,14 +38,14 @@ public:
 private:
   bool timer_handler_();
   bool parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf);
-  std::string load_from_file_(const std::string& path);
+  std::string load_from_file_(const std::string& path, bool is_reload);
   void save_to_file_(const std::string& path, const std::string& confstr);
 
 private:
   wflow::workflow::timer_id_t _timer_id;
-  time_t _config_changed;
   configuration _mainconf;
   std::string _path;
+  std::map<std::string, time_t> _changed_map;
 };
 
 }}

@@ -63,6 +63,8 @@ struct program_arguments
   map2 object_options;
   map2 startup_options;
 
+  std::vector<std::string> ini_list;
+  std::vector<std::string> startup_ini_list;
 };
 
 }}
