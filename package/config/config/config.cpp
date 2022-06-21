@@ -99,11 +99,12 @@ bool config::load_and_configure(std::string path)
 {
   std::string confstr = load_from_file_(path, false);
   if ( confstr.empty() )
-    return false;
+  { return false; }
 
   configuration mainconf;
   if ( !parse_configure_(path, confstr, mainconf) )
-    return false;
+  { return false; }
+
   _mainconf = mainconf;
   _path = path;
   return true;
@@ -114,11 +115,11 @@ bool config::load_and_check(std::string path)
 {
   std::string confstr = load_from_file_(path, false);
   if ( confstr.empty() )
-    return false;
+  { return false; }
 
   configuration mainconf;
   if ( !parse_configure_(path, confstr, mainconf) )
-    return false;
+  {  return false; }
   return true;
 }
 
@@ -260,21 +261,6 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
     return false;
 
   }
-  /*
-  std::string::const_iterator jsonbeg = confstr.begin();
-  std::string::const_iterator jsonend = confstr.end();
-
-  json::json_error e;
-  jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
-  if (!e)
-    configuration_json::serializer()(mainconf, jsonbeg, jsonend, &e);
-
-  if ( e )
-  {
-    SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': "
-        << std::endl << json::strerror::message_trace(e, jsonbeg, jsonend )  )
-    return false;
-  }*/
 
   for ( auto& mconf : mainconf)
   {
@@ -392,7 +378,7 @@ try
     }
   }
 
-  SYSTEM_LOG_MESSAGE("Config ini file: " << this->options().ini.size() )
+  SYSTEM_LOG_MESSAGE("Config ini files: " << orig_opt_ini.size() )
 
   wfc::vars v;
 
@@ -406,16 +392,7 @@ try
       SYSTEM_LOG_MESSAGE("Add file to follow: " << file.first)
       _changed_map[file.first] = get_modify_time(file.first);
     }
-    /*wjson::json_error je;
-    std::string res_des, result = v.result() ;
-    wjson::parser::despace( result.cbegin(), result.cend(), std::back_inserter(res_des), &je);
-    if ( je )
-    {
-      SYSTEM_LOG_FATAL( "Despace: " << wjson::strerror::message_trace(je,result.cbegin(), result.cend()))
-    }
-    SYSTEM_LOG_MESSAGE("Config file: \n" << res_des )
-    return res_des;
-    */
+
     return v.result();
   }
 

@@ -259,96 +259,11 @@ namespace {
   }
 }
 
-namespace {
-
-  struct checked_item
-  {
-    std::string name;
-  };
-
-  struct checked_item_json
-  {
-    JSON_NAME(name)
-    typedef wjson::object<
-      checked_item,
-      wjson::member_list<
-        wjson::member<n_name, checked_item, std::string, &checked_item::name>
-      >
-    > type;
-    typedef type::serializer serializer;
-    typedef type::target target;
-    typedef type::member_list member_list;
-  };
-
-  bool check_options(const std::string& path, const std::set<std::string>& required )
-  {
-    std::map<std::string, std::string> conf;
-    std::set<std::string> conf_names;
-    wjson::dict_map< wjson::raw_value<> >::serializer conf_json;
-    std::ifstream f(path);
-    wjson::json_error er;
-    std::string jsonconf;
-    std::copy(
-      std::istreambuf_iterator<char>(f),
-      std::istreambuf_iterator<char>(),
-      std::back_inserter(jsonconf)
-    );
-
-    conf_json(conf, std::begin(jsonconf), std::end(jsonconf), &er );
-
-    if (er)
-    {
-      std::cerr << "ERROR: " << wjson::strerror::message(er) << std::endl;
-      return false;
-    }
-
-    bool status = true;
-    for (const auto& item : conf )
-    {
-      if ( wjson::parser::is_object( item.second.begin(), item.second.end() ) )
-      {
-        if ( !conf_names.insert(item.first).second )
-        {
-          std::cerr << "ERROR: Item '" << item.first << "' already exist. Check the configuration for duplication of entities." << std::endl;
-          status = false;
-        }
-      }
-      else if ( wjson::parser::is_array( item.second.begin(), item.second.end() ) )
-      {
-        std::vector<checked_item> checked_list;
-        wjson::array< std::vector<checked_item_json> >::serializer checked_list_json;
-        checked_list_json(checked_list, item.second.begin(), item.second.end(), &er);
-        if (er)
-        {
-          std::cerr << wjson::strerror::message(er) << std::endl;
-          return false;
-        }
-        for (const auto& chk: checked_list )
-        {
-          if ( !conf_names.insert(chk.name).second )
-          {
-            std::cerr << "ERROR: instance '" << chk.name
-                      << "' already exist. Check the configuration for duplication of entities." << std::endl;
-            status = false;
-          }
-        }
-      }
-    }//
-
-    for ( const auto& name : required )
-    {
-      if ( conf_names.count(name) == 0 )
-      {
-        std::cerr << "ERROR: instance '"<< name << "' not found for program args" << std::endl;
-        status = false;
-      }
-    }
-    return status;
-  }
-}
 
 int startup_domain::perform_start_( )
 {
+  std::clog << "DEBUG : -1-" << std::endl;
+
   auto g = this->global();
 
   if ( auto c = g->registry.get_target<iconfig>("config") )
@@ -362,13 +277,31 @@ int startup_domain::perform_start_( )
       std::cerr << "Configuration FAIL!" << std::endl;
       return 5;
     }
+
+    std::set<std::string> required;
+    for (auto& item : _pa.object_options) required.insert(item.first);
+    for (auto& item : _pa.startup_options) required.insert(item.first);
+
+    for ( const auto& name : required )
+    {
+      if ( c->get_config(name).empty() )
+      {
+        std::cerr << "ERROR: instance '"<< name << "' not found for program args" << std::endl;
+        return 11;
+      }
+    }
   }
 
+  /*
   std::set<std::string> required;
   for (auto& item : _pa.object_options) required.insert(item.first);
   for (auto& item : _pa.startup_options) required.insert(item.first);
   if ( !check_options(_pa.config_path, required) )
-    return 5;
+  {
+    std::cerr << "Check options FAIL: "<< _pa.config_path << std::endl;
+    return 15;
+  }
+  */
 
   std::clog << "Program name: " << g->program_name << std::endl;
   std::clog << "Instance name: " << g->instance_name << std::endl;
