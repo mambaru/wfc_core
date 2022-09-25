@@ -20,11 +20,10 @@ namespace
 void parse_arguments(program_arguments& pa, int argc, char* argv[])
 try
 {
+  pa.program_path =  boost::filesystem::system_complete(argv[0]).parent_path().lexically_normal().native();
   pa.program_name = ::boost::filesystem::path(argv[0]).filename().native();
 
   pa.usage = ( argc == 1 );
-  if ( pa.usage )
-    return;
 
   using namespace boost::program_options;
   typedef std::vector<std::string> vstrings;
@@ -81,6 +80,16 @@ try
   parsed_options parsed = command_line_parser(argc, argv).options(desc).run();
   store(parsed, vm);
   notify(vm);
+
+  if ( !pa.working_directory.empty() )
+  {
+     pa.working_directory =  boost::filesystem::system_complete(pa.working_directory).lexically_normal().native();
+  }
+
+  if ( !pa.pid_dir.empty() )
+  {
+     pa.pid_dir =  boost::filesystem::system_complete(pa.pid_dir).lexically_normal().native();
+  }
 
   if ( !autoup_timeout.empty() )
   {
@@ -144,9 +153,13 @@ try
     pa.helpstring = ss.str();
   }
 
+
   if ( pa.instance_name.empty() )
   {
-    pa.instance_name = pa.program_name + "-" + ::boost::filesystem::path(pa.config_path).filename().native();
+    if (  pa.config_path.empty() )
+      pa.instance_name = pa.program_name;
+    else
+      pa.instance_name = pa.program_name + "-" + ::boost::filesystem::path(pa.config_path).filename().native();
   }
 }
 catch( const ::boost::program_options::error& e)

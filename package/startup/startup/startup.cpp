@@ -13,6 +13,8 @@
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 #include <wfc/asio.hpp>
+#include <wfc/system/system.hpp>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -41,8 +43,29 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     std::cerr << "wfcglobal::static_global initialization required" << std::endl;
   }
 
+
   g->program_name  = _pa.program_name;
+  g->program_path  = _pa.program_path;
   g->instance_name  = _pa.instance_name;
+
+  if ( _pa.config_path.empty() )
+  {
+    _pa.config_path = g->find_config(_pa.instance_name + ".conf");
+    if ( _pa.config_path.empty() )
+    {
+      _pa.config_path = g->find_config(_pa.program_name + ".conf");
+    }
+  }
+
+  if ( !_pa.config_path.empty() )
+  {
+    _pa.usage = false;
+    ::boost::filesystem::path confpath( g->find_config(_pa.config_path) );
+    g->config_path = confpath.parent_path().native();
+    g->config_name = confpath.filename().native();
+    std::clog << "Config path: " << g->config_path << std::endl;
+    std::clog << "Config name: " << g->config_name << std::endl;
+  }
 
   if ( !_pa.errorstring.empty() )
   {
@@ -262,8 +285,6 @@ namespace {
 
 int startup_domain::perform_start_( )
 {
-  std::clog << "DEBUG : -1-" << std::endl;
-
   auto g = this->global();
 
   if ( auto c = g->registry.get_target<iconfig>("config") )
@@ -292,17 +313,21 @@ int startup_domain::perform_start_( )
     }
   }
 
-  /*
-  std::set<std::string> required;
-  for (auto& item : _pa.object_options) required.insert(item.first);
-  for (auto& item : _pa.startup_options) required.insert(item.first);
-  if ( !check_options(_pa.config_path, required) )
+  if ( !_pa.working_directory.empty() )
   {
-    std::cerr << "Check options FAIL: "<< _pa.config_path << std::endl;
-    return 15;
+    std::string err;
+    if ( !::wfc::change_working_directory(_pa.working_directory, &err) )
+    {
+      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory << "': " << err << std::endl;
+      return 7;
+    }
+    g->working_directory = _pa.working_directory;
+    std::clog << "New working directory: " << _pa.working_directory << std::endl;
   }
-  */
-
+  else
+  {
+    g->working_directory = wfc::get_working_directory();
+  }
   std::clog << "Program name: " << g->program_name << std::endl;
   std::clog << "Instance name: " << g->instance_name << std::endl;
 
@@ -317,16 +342,6 @@ int startup_domain::perform_start_( )
     std::clog << "New user name: " << _pa.user_name << std::endl;
   }
 
-  if ( !_pa.working_directory.empty() )
-  {
-    std::string err;
-    if ( !::wfc::change_working_directory(_pa.working_directory, &err) )
-    {
-      std::cerr << "FAIL: cannot set new working directory '" << _pa.working_directory << "': " << err << std::endl;
-      return 7;
-    }
-    std::clog << "New working directory: " << _pa.user_name << std::endl;
-  }
 
   _pid_path = _pa.pid_dir;
   if ( !_pid_path.empty() && _pid_path.back()!='/' )

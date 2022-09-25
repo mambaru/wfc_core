@@ -49,6 +49,7 @@ struct program_arguments
   std::string working_directory;
 
   std::string program_name;
+  std::string program_path;
   std::string instance_name;
   std::string config_path;
   std::string check_config;

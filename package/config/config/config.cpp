@@ -61,6 +61,21 @@ void config::start()
   {
     signal(SIGHUP, signal_sighup_handler);
   }
+
+  if ( auto g = this->global() )
+  {
+    std::string confpath = _path;
+    auto confmap = _changed_map;
+    g->after_start.insert( [confpath, confmap](){
+      SYSTEM_LOG_MESSAGE( "Main config file: " << confpath );
+      for ( auto item : confmap )
+      {
+        SYSTEM_LOG_MESSAGE( "Additional config file: " << item.first );
+      }
+      return false;
+    });
+  }
+
   _changed_map[_path] = get_modify_time(this->_path);
 
   this->restart();
@@ -97,6 +112,11 @@ bool config::reload_and_reconfigure()
 
 bool config::load_and_configure(std::string path)
 {
+  if ( auto g = this->global() )
+  {
+    path = g->find_config(path);
+  }
+
   std::string confstr = load_from_file_(path, false);
   if ( confstr.empty() )
   { return false; }
@@ -189,7 +209,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
       {
         std::string genopt = opt.second;
         if ( genopt.empty() ) genopt = defarg;
-        mainconf[opt.first] = obj->generate(genopt);
+        mainconf.insert({opt.first,obj->generate(genopt)});
       }
       else
       {
@@ -230,19 +250,65 @@ namespace{
   template<typename Map>
   bool parse_map(const std::string& str, Map& map, std::string* err)
   {
+    typedef std::multimap<std::string, std::string> multi_config_t;
+    typedef wjson::dict_multimap< wjson::raw_value<std::string> > multi_config_json;
+
     std::string::const_iterator jsonbeg = str.begin();
     std::string::const_iterator jsonend = str.end();
     json::json_error e;
     jsonbeg = json::parser::parse_space(jsonbeg, jsonend, &e);
 
+    multi_config_t multi_config;
     if (!e)
     {
-      configuration_json::serializer()(map, jsonbeg, jsonend, &e);
+      multi_config_json::serializer()(multi_config, jsonbeg, jsonend, &e);
     }
 
-    if (e && err!=nullptr)
+    if (e )
     {
-      *err = json::strerror::message_trace(e, jsonbeg, jsonend );
+      if (err!=nullptr)
+        *err = wjson::strerror::message_trace(e, jsonbeg, jsonend );
+      return false;
+    }
+
+    for ( const auto& item : multi_config )
+    {
+      auto itr = map.find(item.first);
+      if ( itr == map.end() )
+      {
+        map[item.first] = item.second;
+      }
+      else
+      {
+        jsonbeg = item.second.begin();
+        jsonend = item.second.end();
+        jsonbeg = wjson::parser::parse_space(jsonbeg, jsonend, &e);
+
+        if (!e)
+        {
+          typedef wjson::vector_of< wjson::raw_value<std::string> > raw_vector_json;
+          std::vector< std::string> first, second;
+          raw_vector_json::serializer()(first, item.second.begin(), item.second.end(), &e);
+          if (!e)
+          {
+            raw_vector_json::serializer()(second, itr->second.begin(), itr->second.end(), &e);
+            if (!e)
+            {
+              std::copy( first.begin(), first.end(), std::back_inserter(second));
+              itr->second.clear();
+              raw_vector_json::serializer()(second, std::back_inserter(itr->second) );
+            }
+          }
+        }
+
+        if (e )
+        {
+          if (err!=nullptr)
+            *err = wjson::strerror::message_trace(e, jsonbeg, jsonend );
+          return false;
+        }
+
+      }
     }
 
     return !e;
@@ -329,14 +395,16 @@ try
 
   if ( !is_reload )
   {
-    wfc::vars v;
+    wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1 ));
     v.add_ini(args_ini);
     if (v.status() )
       v.parse_file(path);
 
     if ( !v.status() )
     {
-      SYSTEM_LOG_ERROR("Bad configuration (initial pre-parse)'" << path << "': " << v.error_message() )
+      SYSTEM_LOG_ERROR("Bad configuration (initial pre-parse)'" << path << "': "
+                    << static_cast<int>(v.error_code())
+                    << ": "<< v.error_message()  )
       return std::string();
     }
     configuration mainconf;
@@ -348,11 +416,11 @@ try
     if ( status && mainconf.count("config") > 0 )
     {
       configuration config_conf;
-      if ( status &= parse_map(mainconf["config"], config_conf, &err) )
+      if ( status &= parse_map(mainconf.find("config")->second, config_conf, &err) )
       {
         if ( config_conf.count("ini") > 0 )
         {
-          std::string ini_json = config_conf["ini"];
+          std::string ini_json = config_conf.find("ini")->second;
           wjson::json_error je;
           wjson::vector_of_strings<>::serializer()(orig_opt_ini, ini_json.begin(), ini_json.end(), &je);
           status &= !je;
@@ -378,9 +446,8 @@ try
     }
   }
 
-  SYSTEM_LOG_MESSAGE("Config ini files: " << orig_opt_ini.size() )
 
-  wfc::vars v;
+  wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1 ));
 
   v.add_ini(opt_ini);
   v.add_ini(args_ini);
@@ -392,6 +459,8 @@ try
       SYSTEM_LOG_MESSAGE("Add file to follow: " << file.first)
       _changed_map[file.first] = get_modify_time(file.first);
     }
+
+    SYSTEM_LOG_MESSAGE("Startup config: " <<  v.result())
 
     return v.result();
   }

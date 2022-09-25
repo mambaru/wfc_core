@@ -116,6 +116,20 @@ void logger::reconfigure()
 
 void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
 {
+  if ( !opt.path.empty() )
+  {
+    if ( auto g = this->global() )
+    {
+      std::string err;
+      std::string curpath = opt.path;
+      opt.path = g->make_directory_for_file(curpath, &err);
+      if ( !err.empty() )
+      {
+        SYSTEM_LOG_WARNING("Error creating directory for log '" << curpath << "': " << err)
+      }
+    }
+  }
+
   bool fatal_found = opt.get_customize("FATAL")!=nullptr;
   bool final_found = opt.get_customize("FINAL")!=nullptr;
   bool syslog_found = opt.get_customize("SYSLOG")!=nullptr;
