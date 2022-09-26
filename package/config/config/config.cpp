@@ -460,7 +460,10 @@ try
       _changed_map[file.first] = get_modify_time(file.first);
     }
 
-    SYSTEM_LOG_MESSAGE("Startup config: " <<  v.result())
+    if ( this->options().show_config )
+    {
+      SYSTEM_LOG_MESSAGE("Startup config: " << std::endl <<  v.result())
+    }
 
     return v.result();
   }

@@ -12,6 +12,7 @@ namespace wfc{ namespace core{
 
 struct config_config
 {
+  bool show_config = false;
   bool reload_sighup = false;
   time_t reload_changed_ms = 0;
   std::vector<std::string> ini;
