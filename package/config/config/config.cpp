@@ -66,12 +66,26 @@ void config::start()
   {
     std::string confpath = _path;
     auto confmap = _changed_map;
-    g->after_start.insert( [confpath, confmap](){
+
+
+    std::string mainconf_json;
+    if ( this->options().show_config )
+    {
+      configuration_json::serializer()(_mainconf, std::back_inserter(mainconf_json) );
+    }
+
+    g->after_start.insert( [confpath, confmap, mainconf_json](){
       SYSTEM_LOG_MESSAGE( "Main config file: " << confpath );
       for ( auto item : confmap )
       {
         SYSTEM_LOG_MESSAGE( "Additional config file: " << item.first );
       }
+
+      if ( !mainconf_json.empty() )
+      {
+        SYSTEM_LOG_MESSAGE("Startup config: " << std::endl << mainconf_json)
+      }
+
       return false;
     });
   }
@@ -97,6 +111,8 @@ bool config::reload_and_reconfigure()
   if ( !parse_configure_(_path, confstr, mainconf) )
     return false;
   _mainconf = mainconf;
+
+
   if ( auto c = this->get_target<icore>("core") )
   {
     c->core_reconfigure();
@@ -325,7 +341,6 @@ bool config::parse_configure_(const std::string& source, const std::string& conf
     SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': "
         << std::endl << strerr  )
     return false;
-
   }
 
   for ( auto& mconf : mainconf)
@@ -459,12 +474,6 @@ try
       SYSTEM_LOG_MESSAGE("Add file to follow: " << file.first)
       _changed_map[file.first] = get_modify_time(file.first);
     }
-
-    if ( this->options().show_config )
-    {
-      SYSTEM_LOG_MESSAGE("Startup config: " << std::endl <<  v.result())
-    }
-
     return v.result();
   }
 
