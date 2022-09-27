@@ -66,6 +66,12 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     std::clog << "Config path: " << g->config_path << std::endl;
     std::clog << "Config name: " << g->config_name << std::endl;
   }
+  else if( !_pa.check_config.empty() )
+  {
+    ::boost::filesystem::path confpath( g->find_config(_pa.check_config) );
+    g->config_path = confpath.parent_path().native();
+    g->config_name = confpath.filename().native();
+  }
 
   if ( !_pa.errorstring.empty() )
   {
