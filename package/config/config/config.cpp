@@ -71,7 +71,9 @@ void config::start()
     std::string mainconf_json;
     if ( this->options().show_config )
     {
-      configuration_json::serializer()(_mainconf, std::back_inserter(mainconf_json) );
+      std::string rawconf_json;
+      configuration_json::serializer()(_mainconf, std::back_inserter(rawconf_json) );
+      wjson::parser::despace(rawconf_json.begin(), rawconf_json.end(), std::back_inserter(mainconf_json), nullptr);
     }
 
     g->after_start.insert( [confpath, confmap, mainconf_json](){
@@ -461,7 +463,6 @@ try
     }
   }
 
-
   wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1 ));
 
   v.add_ini(opt_ini);
@@ -471,7 +472,6 @@ try
   {
     for ( const auto& file: v.include_map() )
     {
-      SYSTEM_LOG_MESSAGE("Add file to follow: " << file.first)
       _changed_map[file.first] = get_modify_time(file.first);
     }
     return v.result();
