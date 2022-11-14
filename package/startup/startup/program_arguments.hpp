@@ -26,6 +26,9 @@ struct program_arguments
   bool wait_daemonize = false;
   bool coredump = false;
 
+  // Удаляет все комментарии и пробелы, приводит конфиг к json-валидному состоянию перед выводм на экран или в лог
+  bool despace = false;
+
   // Создать следящий процесс которые автоматически перезапускает демон при падениях
   bool autoup = false;
   // Минимальное время работы дочернего процесса, после которого допустим перезапуск
@@ -53,6 +56,7 @@ struct program_arguments
   std::string instance_name;
   std::string config_path;
   std::string check_config;
+  std::string print_config;
   std::string pid_dir;
 
   typedef std::map<std::string, std::string> map1;

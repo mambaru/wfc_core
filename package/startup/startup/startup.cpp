@@ -8,6 +8,7 @@
 #include "parse_arguments.hpp"
 
 #include <wfc/core/iconfig.hpp>
+#include <wfc/core/vars.hpp>
 #include <wfc/module/imodule.hpp>
 #include <wfc/module/ipackage.hpp>
 #include <wfc/system/system.hpp>
@@ -47,6 +48,7 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
   g->program_name  = _pa.program_name;
   g->program_path  = _pa.program_path;
   g->instance_name  = _pa.instance_name;
+  g->despace = _pa.despace;
 
   if ( _pa.config_path.empty() )
   {
@@ -66,11 +68,27 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     std::clog << "Config path: " << g->config_path << std::endl;
     std::clog << "Config name: " << g->config_name << std::endl;
   }
-  else if( !_pa.check_config.empty() )
+  else if( !_pa.check_config.empty()  )
   {
-    ::boost::filesystem::path confpath( g->find_config(_pa.check_config) );
+    ::boost::filesystem::path confpath( g->find_config( _pa.check_config) );
     g->config_path = confpath.parent_path().native();
     g->config_name = confpath.filename().native();
+  }
+  else if( !_pa.print_config.empty() )
+  {
+    ::boost::filesystem::path confpath( g->find_config( _pa.print_config) );
+    g->config_path = confpath.parent_path().native();
+    g->config_name = confpath.filename().native();
+  }
+
+  vars::set_env( "PNAME", g->program_name);
+  vars::set_env( "PPATH", g->program_path);
+  vars::set_env( "INAME", g->instance_name);
+  vars::set_env( "CPATH", g->config_path);
+  vars::set_env( "CNAME", g->config_name);
+  if ( g->program_name.back() == 'd' )
+  {
+    vars::set_env( "SNAME", std::string(g->program_name.begin(), g->program_name.end() - 1) );
   }
 
   if ( !_pa.errorstring.empty() )
@@ -215,6 +233,13 @@ int startup_domain::startup(int argc, char** argv, std::string helpstring)
     if ( auto c = g->registry.get_target<iconfig>("config") )
     {
       return c->load_and_configure(_pa.check_config) ? 0 : 4;
+    }
+  }
+  else if ( !_pa.print_config.empty() )
+  {
+    if ( auto c = g->registry.get_target<iconfig>("config") )
+    {
+      std::cout << c->load_config(_pa.print_config) << std::endl;
     }
   }
   else if ( !_pa.config_path.empty() )

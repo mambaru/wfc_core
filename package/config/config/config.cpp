@@ -68,24 +68,23 @@ void config::start()
     auto confmap = _changed_map;
 
 
-    std::string mainconf_json;
+    std::shared_ptr<std::string> show_config;
     if ( this->options().show_config )
     {
-      std::string rawconf_json;
-      configuration_json::serializer()(_mainconf, std::back_inserter(rawconf_json) );
-      wjson::parser::despace(rawconf_json.begin(), rawconf_json.end(), std::back_inserter(mainconf_json), nullptr);
+      show_config = std::make_shared<std::string>( this->load_config(_path) );
     }
 
-    g->after_start.insert( [confpath, confmap, mainconf_json](){
+
+    g->after_start.insert( [confpath, confmap, show_config](){
       SYSTEM_LOG_MESSAGE( "Main config file: " << confpath );
       for ( auto item : confmap )
       {
         SYSTEM_LOG_MESSAGE( "Additional config file: " << item.first );
       }
 
-      if ( !mainconf_json.empty() )
+      if ( show_config != nullptr )
       {
-        SYSTEM_LOG_MESSAGE("Startup config: " << std::endl << mainconf_json)
+        SYSTEM_LOG_MESSAGE("Startup config: " << std::endl << *show_config )
       }
 
       return false;
@@ -110,7 +109,7 @@ bool config::reload_and_reconfigure()
   if ( confstr.empty() )
     return false;
   configuration mainconf;
-  if ( !parse_configure_(_path, confstr, mainconf) )
+  if ( !parse_configure_(_path, confstr, &mainconf) )
     return false;
   _mainconf = mainconf;
 
@@ -127,6 +126,27 @@ bool config::reload_and_reconfigure()
   return true;
 }
 
+std::string config::load_config(std::string path)
+{
+  bool despace = false;
+  if ( auto g = this->global() )
+    despace = g->despace;
+
+  std::string config_json;
+  std::string confstr = load_from_file_(path, false);
+  if ( !despace )
+    return confstr;
+
+  configuration mainconf;
+  if ( !parse_configure_(path, confstr, &mainconf) )
+  { return confstr; }
+
+  confstr.clear();
+  configuration_json::serializer()(mainconf, std::back_inserter(confstr));
+
+  wjson::parser::despace( confstr.begin(), confstr.end(), std::back_inserter(config_json), nullptr);
+  return config_json;
+}
 
 bool config::load_and_configure(std::string path)
 {
@@ -140,7 +160,7 @@ bool config::load_and_configure(std::string path)
   { return false; }
 
   configuration mainconf;
-  if ( !parse_configure_(path, confstr, mainconf) )
+  if ( !parse_configure_(path, confstr, &mainconf) )
   { return false; }
 
   _mainconf = mainconf;
@@ -156,15 +176,15 @@ bool config::load_and_check(std::string path)
   { return false; }
 
   configuration mainconf;
-  if ( !parse_configure_(path, confstr, mainconf) )
+  if ( !parse_configure_(path, confstr, &mainconf) )
   {  return false; }
   return true;
 }
 
 std::string config::get_config(std::string component_name)
 {
-  auto itr = _mainconf.find(component_name);
-  if (itr==_mainconf.end())
+  auto itr = conf_find( component_name, _mainconf );
+  if (itr==_mainconf.end() )
   {
     return std::string();
   }
@@ -227,7 +247,7 @@ bool config::generate_config( const generate_options& go, const std::string& pat
       {
         std::string genopt = opt.second;
         if ( genopt.empty() ) genopt = defarg;
-        mainconf.insert({opt.first,obj->generate(genopt)});
+        mainconf.push_back({opt.first,obj->generate(genopt)});
       }
       else
       {
@@ -265,11 +285,22 @@ bool config::generate_config( const generate_options& go, const std::string& pat
 }
 
 namespace{
+  /*
+   * конфигурация это std::vector< std::pair<std::string, std::string> >
+   * что позволяет обявлять разные компоненты одного модулея в разных местах
+   * а не в одном массиве:
+   * т.е. переформатирует
+   * {"module":[{comp1}], "module":[{comp2}] }
+   * в
+   * {"module":[{comp1},{comp2}] }
+   * Если указат despace то в сыром json конфигурации компонента удаляет
+   * комментарии и пробелы
+   */
   template<typename Map>
-  bool parse_map(const std::string& str, Map& map, std::string* err)
+  bool normalize_json_multimap(const std::string& str, bool despace, Map* map, std::string* err)
   {
-    typedef std::multimap<std::string, std::string> multi_config_t;
-    typedef wjson::dict_multimap< wjson::raw_value<std::string> > multi_config_json;
+    typedef configuration multi_config_t;
+    typedef configuration_json multi_config_json;
 
     std::string::const_iterator jsonbeg = str.begin();
     std::string::const_iterator jsonend = str.end();
@@ -282,19 +313,31 @@ namespace{
       multi_config_json::serializer()(multi_config, jsonbeg, jsonend, &e);
     }
 
-    if (e )
+    if (e)
     {
       if (err!=nullptr)
         *err = wjson::strerror::message_trace(e, jsonbeg, jsonend );
       return false;
     }
 
-    for ( const auto& item : multi_config )
+    for ( auto item : multi_config )
     {
-      auto itr = map.find(item.first);
-      if ( itr == map.end() )
+      if ( despace )
       {
-        map[item.first] = item.second;
+        std::string despace_item;
+        wjson::parser::despace(item.second.begin(), item.second.end(), std::back_inserter(despace_item), &e);
+        if (e)
+        {
+          if (err!=nullptr)
+            *err = wjson::strerror::message_trace(e, jsonbeg, jsonend );
+          return false;
+        }
+        item.second = despace_item;
+      }
+      auto itr = conf_find(item.first, *map);
+      if ( itr == map->end() )
+      {
+        map->push_back(item);
       }
       else
       {
@@ -333,19 +376,19 @@ namespace{
   }
 }
 
-bool config::parse_configure_(const std::string& source, const std::string& confstr, configuration& mainconf)
+bool config::parse_configure_(const std::string& source, const std::string& confstr, configuration* mainconf)
 {
   auto g = this->global();
 
   std::string strerr;
-  if ( !parse_map(confstr, mainconf, &strerr) )
+  if ( !normalize_json_multimap(confstr, g->despace, mainconf, &strerr) )
   {
     SYSTEM_LOG_ERROR( "Invalid json configuration from '" << source << "': "
         << std::endl << strerr  )
     return false;
   }
 
-  for ( auto& mconf : mainconf)
+  for ( auto& mconf : *mainconf)
   {
     if ( auto m = g->registry.get_object<icomponent>("component", mconf.first, true) )
     {
@@ -425,24 +468,27 @@ try
       return std::string();
     }
     configuration mainconf;
-    bool status = this->parse_configure_(path, v.result(), mainconf);
+    bool status = this->parse_configure_(path, v.result(), &mainconf);
     if (!status)
       return std::string();
 
     std::string err;
-    if ( status && mainconf.count("config") > 0 )
+    if ( status && conf_count("config", mainconf) > 0 )
     {
       configuration config_conf;
-      if ( status &= parse_map(mainconf.find("config")->second, config_conf, &err) )
+      if ( auto g = this->global() )
       {
-        if ( config_conf.count("ini") > 0 )
+        if ( status &= normalize_json_multimap(conf_find("config", mainconf)->second, g->despace, &config_conf, &err) )
         {
-          std::string ini_json = config_conf.find("ini")->second;
-          wjson::json_error je;
-          wjson::vector_of_strings<>::serializer()(orig_opt_ini, ini_json.begin(), ini_json.end(), &je);
-          status &= !je;
-          if (je)
-            err = wjson::strerror::message_trace(je, ini_json.begin(), ini_json.end());
+          if ( conf_count("ini", config_conf) > 0 )
+          {
+            std::string ini_json = conf_find("ini", config_conf)->second;
+            wjson::json_error je;
+            wjson::vector_of_strings<>::serializer()(orig_opt_ini, ini_json.begin(), ini_json.end(), &je);
+            status &= !je;
+            if (je)
+              err = wjson::strerror::message_trace(je, ini_json.begin(), ini_json.end());
+          }
         }
       }
     }

@@ -6,20 +6,16 @@
 
 #pragma once
 
-#include <wfc/json.hpp>
-
+#include <wjson/wjson.hpp>
 #include "configuration.hpp"
 
 namespace wfc{  namespace core{
 
 struct configuration_json
 {
-  typedef json::dict<
-    std::unordered_map<
-      json::value<std::string>,
-      json::raw_value<std::string>
-    >
-  >::serializer serializer;
+  typedef wjson::dict_vector<wjson::raw_value<std::string> > meta;
+  typedef meta::serializer serializer;
+  typedef meta::target target;
 };
 
 }}

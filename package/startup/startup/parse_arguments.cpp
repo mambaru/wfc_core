@@ -41,9 +41,12 @@ try
     ("component-list", value<bool>(&pa.component_list)->zero_tokens(), "Display all available components")
     ("generate,G", value< vstrings >(&generate_options)->multitoken()->zero_tokens(),
                    "Generate configuration [object-name[:arg]]. Use -C option for write to file.")
-    ("check-config,V", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file without start")
-
+    ("check-config,V", value<std::string>(&pa.check_config)->default_value(""), "Load and parse configuration file. Without start")
+    ("print-config,p", value<std::string>(&pa.print_config)->default_value(""),
+                      "Print configuration file after all replacements. Without start")
+    ("despace", value<bool>(&pa.despace)->zero_tokens(), "Convert the json configuration to the correct form")
     ;
+
 
   vstrings object_options;
   vstrings startup_options;
