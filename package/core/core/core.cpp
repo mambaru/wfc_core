@@ -49,7 +49,7 @@ namespace
 
     std::for_each(beg, end, [&pids](const boost::filesystem::directory_entry& de)
     {
-      boost::filesystem::path p(de, fas_null_param);
+      boost::filesystem::path p{de};
       if ( boost::filesystem::is_directory(p) )
       {
         pid_t pid = ::atoi( p.filename().c_str() );
