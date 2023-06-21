@@ -220,8 +220,10 @@ void statistics_domain::push_( push_ptr::element_type&& req)
     {
       auto st = _stat_list[pos];
       auto preq = std::make_shared<push_ptr::element_type>( std::move(req) );
-      wf->post([st, preq](){
-        st->add( preq->name, *preq);
+      bool sp = _suspend_push;
+      wf->post([sp, st, preq](){
+        if ( !sp )
+          st->add( preq->name, *preq);
       }, nullptr);
     }
   }
