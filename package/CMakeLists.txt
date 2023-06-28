@@ -30,8 +30,12 @@ if ( WFC_ENABLE_STAT )
     wfc_core_source_list
     ${wfc_core_source_list}
     statistics/statistics_module.cpp
-    statistics/statistics_aggregator/statistics_multiton.cpp
-    statistics/statistics_aggregator/statistics_domain.cpp
+
+    statistics/statistics/statistics_multiton.cpp
+    statistics/statistics/statistics_domain.cpp
+
+    statistics/statistics_aggregator/aggregator_multiton.cpp
+    statistics/statistics_aggregator/aggregator_domain.cpp
 
     statistics/statistics_log/statlog_multiton.cpp
     statistics/statistics_log/statlog_domain.cpp

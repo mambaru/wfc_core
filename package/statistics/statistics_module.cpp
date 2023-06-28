@@ -1,6 +1,7 @@
 
 #include "statistics_module.hpp"
-#include "statistics_aggregator/statistics_multiton.hpp"
+#include "statistics/statistics_multiton.hpp"
+#include "statistics_aggregator/aggregator_multiton.hpp"
 #include "statistics_log/statlog_multiton.hpp"
 #include "system_statistics/system_statistics_multiton.hpp"
 #include "statistics_gateway/statistics_gateway_multiton.hpp"
@@ -18,6 +19,7 @@ namespace
   class impl: public ::wfc::component_list<
     module_name
     , statistics_multiton
+    , aggregator_multiton
     , system_statistics_multiton
     , statlog_multiton
     , statistics_gateway_multiton
