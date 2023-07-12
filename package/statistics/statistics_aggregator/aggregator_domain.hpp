@@ -38,7 +38,8 @@ private:
   typedef std::shared_ptr<stat_impl> stat_ptr;
   typedef std::weak_ptr<istatistics> statistics_wptr;
 
-  stat_ptr get_stat_(const std::string& name);
+
+  //stat_ptr get_stat_(const std::string& name);
   
 /*  template<typename StatPtr>
   bool handler_(StatPtr st, size_t offset, size_t step);
@@ -46,14 +47,19 @@ private:
   void push_( push_ptr::element_type&& req);
   
   void push_next_( push_ptr req);
+
+  void pack_next_mt_( push_ptr req);
+
+  void mulit_push_next_( multi_push_ptr req);
+
   stat_ptr _stat;
 
   std::vector< statistics_wptr > _targets;
   timer_id_t _timer_id;
   std::string _log;
  
-  std::atomic<bool> _started;
-  std::chrono::system_clock::time_point _start_point;
+  /*std::atomic<bool> _started;
+  std::chrono::system_clock::time_point _start_point;*/
   
   time_meter _push_meter;
   size_meter _count_meter;
@@ -64,6 +70,7 @@ private:
   mutex_type _mutex;
   
   std::atomic<bool> _suspend_push;
+  std::atomic<bool> _enabled_packer;
 };
 
 }}

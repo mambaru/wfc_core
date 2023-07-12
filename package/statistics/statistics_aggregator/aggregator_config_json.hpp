@@ -1,5 +1,5 @@
 //
-// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018, 2023
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -9,14 +9,33 @@
 #include "aggregator_config.hpp"
 #include <wfc/json.hpp>
 #include <wrtstat/multi_aggregator/multi_aggregator_options_json.hpp>
+#include <wrtstat/multi_packer/packer_options_json.hpp>
 
 namespace wfc{ namespace core{
+
+struct packer_options_json
+{
+  JSON_NAME(disabled)
+  typedef wjson::object<
+    packer_options,
+    wjson::member_list<
+      json::member< n_disabled,   packer_options, bool, &packer_options::disabled>,
+      json::base<wrtstat::packer_options_json>
+     >,
+    json::strict_mode
+  > meta;
+
+  typedef meta::target target;
+  typedef meta::serializer serializer;
+  typedef meta::member_list member_list;
+};
 
 struct aggregator_config_json
 {
   JSON_NAME(targets)
   JSON_NAME(pushout_timer_ms)
   JSON_NAME(suspend_push)
+  JSON_NAME(packer)
 
   
   typedef json::object<
@@ -26,7 +45,9 @@ struct aggregator_config_json
       json::member< n_targets,  aggregator_config, std::vector<std::string>, &aggregator_config::targets,
                     json::vector_of_strings<> >,
       json::member< n_suspend_push,   aggregator_config, bool, &aggregator_config::suspend_push>,
-      json::member< n_pushout_timer_ms, aggregator_config, time_t, &aggregator_config::pushout_timer_ms, wjson::time_interval_ms<> >
+      json::member< n_pushout_timer_ms, aggregator_config, time_t, &aggregator_config::pushout_timer_ms, wjson::time_interval_ms<> >,
+      json::member< n_packer,  aggregator_config, packer_options, &aggregator_config::packer,
+                    packer_options_json >
      >,
     json::strict_mode
   > meta;

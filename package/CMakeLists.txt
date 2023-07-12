@@ -45,6 +45,7 @@ if ( WFC_ENABLE_STAT )
     statistics/system_statistics/impl/get_procstat.cpp
 
     statistics/statistics_gateway/statistics_gateway_multiton.cpp
+    statistics/statistics_gateway/statistics_gateway_compact_multiton.cpp
     statistics/statistics_service/statistics_service_multiton.cpp
     statistics/statistics_service/statistics_service_compact_multiton.cpp
   )

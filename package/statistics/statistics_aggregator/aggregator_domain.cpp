@@ -14,9 +14,15 @@ class aggregator_domain::stat_impl
   : public wrtstat::multi_aggregator
 {
 public:
+
+  typedef wrtstat::basic_packer packer_type;
+  typedef std::shared_ptr<packer_type> packer_ptr;
+
   explicit stat_impl(const wrtstat::multi_aggregator_options& opt )
     : multi_aggregator(opt)
   {}
+
+  packer_ptr packer;
 };
 
 
@@ -29,8 +35,10 @@ void aggregator_domain::reconfigure()
 {
   auto opt =  this->options();
   _suspend_push = opt.suspend_push;
+  _enabled_packer = !opt.packer.disabled;
   std::lock_guard<mutex_type> lk(_mutex);
   _stat = std::make_shared<stat_impl>( opt );
+  _stat->packer = std::make_shared< stat_impl::packer_type >(opt.packer, nullptr);
 }
 
 void aggregator_domain::initialize()
@@ -54,8 +62,9 @@ void aggregator_domain::restart()
       auto next = std::bind(&aggregator_domain::push_next_, this, std::placeholders::_1);
       _timer_id = wf->create_timer(
         std::chrono::milliseconds( this->options().pushout_timer_ms ),
-        [st, next](){
-          st->pushout(next);
+        [this,  next](){
+          this->_stat->pushout(next);
+          this->pack_next_mt_(nullptr);
           return true;
         }
       );
@@ -76,7 +85,7 @@ void aggregator_domain::restart()
 
 void aggregator_domain::start()
 {
-  _start_point = std::chrono::system_clock::now();
+  // _start_point = std::chrono::system_clock::now();
   this->restart();
 }
 
@@ -175,6 +184,12 @@ void aggregator_domain::push_( push_ptr::element_type&& req)
 
 void aggregator_domain::push_next_( push_ptr req)
 {
+  if ( _enabled_packer )
+  {
+    this->pack_next_mt_( std::move(req) );
+    return;
+  }
+
   if ( !_targets.empty() )
   {
     for ( size_t j = 1; j < _targets.size(); ++j ) if ( auto t = _targets[j].lock() )
@@ -188,6 +203,41 @@ void aggregator_domain::push_next_( push_ptr req)
     }
   }
 }
+
+void aggregator_domain::pack_next_mt_( push_ptr req)
+{
+  std::deque<multi_push_ptr> next_list;
+  {
+    std::lock_guard<mutex_type> lk(_mutex);
+    if ( req!= nullptr )
+    {
+      _stat->packer->push( std::move(req) );
+    }
+    while ( auto next_req = _stat->packer->multi_pop() )
+      next_list.push_back( std::move(next_req) );
+  }
+
+  for ( auto& next_req : next_list)
+    this->mulit_push_next_( std::move(next_req) );
+}
+
+
+void aggregator_domain::mulit_push_next_( multi_push_ptr req)
+{
+  if ( !_targets.empty() )
+  {
+    for ( size_t j = 1; j < _targets.size(); ++j ) if ( auto t = _targets[j].lock() )
+    {
+      t->multi_push(std::make_unique<wrtstat::request::multi_push>(*req), nullptr);
+    }
+
+    if ( auto t = _targets[0].lock() )
+    {
+      t->multi_push(std::move(req), nullptr);
+    }
+  }
+}
+
 
 /*
 template<typename StatPtr>

@@ -1,5 +1,5 @@
 //
-// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018
+// Author: Vladimir Migashko <migashko@gmail.com>, (C) 2013-2018, 2023
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -8,8 +8,15 @@
 
 
 #include <wrtstat/multi_aggregator/multi_aggregator_options_json.hpp>
+#include <wrtstat/multi_packer/packer_options.hpp>
 
 namespace wfc{ namespace core{
+
+struct packer_options:
+  ::wrtstat::packer_options
+{
+  bool disabled = true;
+};
 
 struct aggregator_config:
   wrtstat::multi_aggregator_options
@@ -18,6 +25,7 @@ struct aggregator_config:
   std::vector< std::string > targets;
   time_t pushout_timer_ms = 0;
   bool suspend_push = false;
+  packer_options packer;
 };
 
 struct aggregator_statistics_config
