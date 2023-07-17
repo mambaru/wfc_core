@@ -64,7 +64,7 @@ void aggregator_domain::restart()
         std::chrono::milliseconds( this->options().pushout_timer_ms ),
         [this,  next](){
           this->_stat->pushout(next);
-          this->pack_next_mt_(nullptr);
+          this->mulit_push_next_mt_();
           return true;
         }
       );
@@ -206,6 +206,12 @@ void aggregator_domain::push_next_( push_ptr req)
 
 void aggregator_domain::pack_next_mt_( push_ptr req)
 {
+  if ( req!= nullptr )
+  {
+    std::lock_guard<mutex_type> lk(_mutex);
+    _stat->packer->push( std::move(req) );
+  }
+  /*
   std::deque<multi_push_ptr> next_list;
   {
     std::lock_guard<mutex_type> lk(_mutex);
@@ -218,22 +224,32 @@ void aggregator_domain::pack_next_mt_( push_ptr req)
   }
 
   for ( auto& next_req : next_list)
-    this->mulit_push_next_( std::move(next_req) );
+    this->mulit_push_next_( std::move(next_req) );*/
 }
 
 
-void aggregator_domain::mulit_push_next_( multi_push_ptr req)
+void aggregator_domain::mulit_push_next_mt_()
 {
   if ( !_targets.empty() )
   {
-    for ( size_t j = 1; j < _targets.size(); ++j ) if ( auto t = _targets[j].lock() )
+    std::deque<multi_push_ptr> next_list;
     {
-      t->multi_push(std::make_unique<wrtstat::request::multi_push>(*req), nullptr);
+      std::lock_guard<mutex_type> lk(_mutex);
+      while ( auto pop_req = _stat->packer->multi_pop() )
+        next_list.push_back( std::move(pop_req) );
     }
 
-    if ( auto t = _targets[0].lock() )
+    for ( auto& next_req : next_list)
     {
-      t->multi_push(std::move(req), nullptr);
+      for ( size_t j = 1; j < _targets.size(); ++j ) if ( auto t = _targets[j].lock() )
+      {
+        t->multi_push(std::make_unique<wrtstat::request::multi_push>(*next_req), nullptr);
+      }
+
+      if ( auto t = _targets[0].lock() )
+      {
+        t->multi_push(std::move(next_req), nullptr);
+      }
     }
   }
 }

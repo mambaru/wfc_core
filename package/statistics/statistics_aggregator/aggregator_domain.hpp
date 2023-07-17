@@ -50,7 +50,7 @@ private:
 
   void pack_next_mt_( push_ptr req);
 
-  void mulit_push_next_( multi_push_ptr req);
+  void mulit_push_next_mt_();
 
   stat_ptr _stat;
 
