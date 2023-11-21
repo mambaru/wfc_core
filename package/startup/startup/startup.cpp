@@ -329,19 +329,6 @@ int startup_domain::perform_start_( )
       std::cerr << "Configuration FAIL!" << std::endl;
       return 5;
     }
-
-    std::set<std::string> required;
-    for (auto& item : _pa.object_options) required.insert(item.first);
-    for (auto& item : _pa.startup_options) required.insert(item.first);
-
-    for ( const auto& name : required )
-    {
-      if ( c->get_config(name).empty() )
-      {
-        std::cerr << "ERROR: instance '"<< name << "' not found for program args" << std::endl;
-        return 11;
-      }
-    }
   }
 
   if ( !_pa.working_directory.empty() )
@@ -486,6 +473,7 @@ int startup_domain::perform_start_( )
   else if ( _pa.autoup )
     return 0;
 
+
   g->args.clear();
   g->args.insert(_pa.startup_options);
   g->args.insert(_pa.object_options);
@@ -505,6 +493,7 @@ int startup_domain::perform_start_( )
     {
       SYSTEM_LOG_MESSAGE("SET_DUMPABLE:" << enable_dump)
     }
+
     return false;
   });
 
