@@ -157,25 +157,69 @@ void logger::init_log_(wlog::logger_options opt, wlog::logger_handlers dlh)
   }
 
   bool stop_by_fatal = this->options().stop_with_fatal_log_entry;
-  dlh.after.push_back([this, stop_by_fatal](const wlog::time_point& tp, const std::string& logname, const std::string& ident, const std::string& message)
-  {
-    if ( ident=="FATAL" )
+  std::weak_ptr<icore> wcore; // На этапе конфигурации нет доступа к ядру
+  wlog::formatter logformat(opt, wlog::logger_handlers() );
+
+  dlh.after.push_back(
+    [this, stop_by_fatal, wcore, logformat]
+    (const wlog::time_point& tp, const std::string& logname, const std::string& ident, const std::string& message)
+    mutable
     {
-      if ( auto g = this->global())
+      if ( ident=="FATAL" )
       {
+        if ( wcore.lock() == nullptr )
         {
-          std::lock_guard<mutex_type> lk( this->_mutex);
-          if ( _last_message == nullptr)
-            _last_message = std::make_unique<message_t>(tp, logname, ident, message);
+          if ( this->is_configured() )
+            wcore = this->get_target<icore>("core");
         }
 
-        if ( stop_by_fatal && g->stop_signal_flag == false )
+        if ( auto pc = wcore.lock() )
         {
-          wfc_abort("Abnormal Shutdown by 'FATAL' message!");
+          std::stringstream ss;
+          logformat( ss, tp, logname, ident, message );
+
+          if ( stop_by_fatal )
+            pc->set_status(core_status::ABORT, ss.str() );
+          else
+            pc->set_status(core_status::ERROR, ss.str() );
         }
+
+        if ( auto g = this->global())
+        {
+          {
+            std::lock_guard<mutex_type> lk( this->_mutex);
+            if ( _last_message == nullptr)
+              _last_message = std::make_unique<message_t>(tp, logname, ident, message);
+          }
+
+          if ( stop_by_fatal && g->stop_signal_flag == false )
+          {
+            wfc_abort("Abnormal Shutdown by 'FATAL' message!");
+          }
+        }
+      } // FATAL
+      else if ( ident=="ERROR" || ident=="WARNING" )
+      {
+        if ( wcore.lock() == nullptr )
+        {
+          if ( this->is_configured() )
+            wcore = this->get_target<icore>("core", true);
+        }
+
+        if ( auto pc = wcore.lock() )
+        {
+          std::stringstream ss;
+          logformat( ss, tp, logname, ident, message );
+          if ( ident=="ERROR" )
+            pc->set_status(core_status::ERROR, ss.str() );
+          else
+            pc->set_status(core_status::WARINING, ss.str() );
+        }
+
       }
+
     }
-  });
+  );
 
   wlog::init( opt, dlh );
 }

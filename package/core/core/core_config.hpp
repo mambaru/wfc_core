@@ -8,6 +8,7 @@
 
 #include <ctime>
 #include <wfc/core/workflow_options.hpp>
+#include <package/core/core/detail/status_log_options.hpp>
 #include <set>
 
 namespace wfc{ namespace core{
@@ -30,6 +31,8 @@ struct core_config
 
   std::set<int> wfc_cpu;
   std::set<int> sys_cpu;
+
+  status_log_options status;
   common_workflow_options common_workflow;
 };
 
