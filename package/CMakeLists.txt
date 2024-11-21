@@ -25,6 +25,17 @@ SET(
   workflow/workflow/workflow_domain.cpp
 )
 
+if ( WITH_PROMETHEUS )
+  SET(
+    wfc_core_source_list
+    ${wfc_core_source_list}
+    prometheus/prometheus_module.cpp
+    prometheus/prometheus/prometheus_multiton.cpp
+    prometheus/prometheus/prometheus_domain.cpp
+  )
+endif()
+
+
 if ( WFC_ENABLE_STAT )
   SET(
     wfc_core_source_list
@@ -63,6 +74,11 @@ enable_stat(wfc_core)
 target_include_directories(wfc_core PUBLIC $<BUILD_INTERFACE:${wfc_core_SOURCE_DIR}>)
 
 target_link_libraries(wfc_core PUBLIC wfc)
+if ( WITH_PROMETHEUS )
+  get_boost(atomic)
+  target_link_libraries(wfc_core PUBLIC prometheus-cpp::core prometheus-cpp::pull Boost::atomic)
+endif()
 target_compile_definitions(wfc_core PRIVATE -DBOOST_ASIO_NO_DEPRECATED)
+
 build_info(TARGET wfc_core PREFIX core)
 

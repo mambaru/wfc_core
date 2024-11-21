@@ -1,10 +1,9 @@
 #include "core.hpp"
 
-
 #include <wfc/core/iconfig.hpp>
 #include <wfc/module/iinstance.hpp>
 #include <wfc/module/icomponent.hpp>
-
+#include <wfc/core/cpuset.hpp>
 #include <wfc/system/system.hpp>
 #include <wfc/logger.hpp>
 #include <wfc/memory.hpp>
@@ -20,8 +19,11 @@
 #include <sys/resource.h>
 #include <sched.h>
 
+#include "detail/status_log.hpp"
 
 namespace wfc{  namespace core{
+
+
 
 namespace
 {
@@ -83,6 +85,7 @@ namespace
 
 } // namespace
 
+
 core::~core()
 {
 }
@@ -91,6 +94,7 @@ core::core()
   : _reconfigure_flag(false)
   , _stop_flag(false)
   , _abort_flag(false)
+  , _status_log(nullptr)
 {
   gs_stop_signal = false;
 }
@@ -103,11 +107,17 @@ void core::reconfigure()
   cw_opt.id = this->name();
   if ( auto g = this->global() )
   {
+    _status_log = std::make_shared<status_log>(opt.status, &g->cpu);
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
-    cw_hndl.startup_handler = []( std::thread::id )
+    cw_hndl.startup_handler = []( std::thread::id ) noexcept
     {
       if ( auto gl = ::wfc::wfcglobal::static_global )
         gl->cpu.set_current_thread("common_workflow");
+    };
+    pid_t pid = 0;
+    cw_hndl.status_handler = [pid, g]( std::thread::id ) mutable
+    {
+      pid = g->cpu.thread_active(pid);
     };
     cw_hndl.finish_handler = []( std::thread::id id)
     {
@@ -236,7 +246,9 @@ int core::run()
   qopt.wrnsize = 0;
   qopt.maxsize = 0;
   qopt.threads = 0;
-  _core_workflow = std::make_shared< wflow::workflow >( this->global()->io_context, qopt );
+
+  workflow_handlers qwhs;
+  _core_workflow = std::make_shared< wflow::workflow >( this->global()->io_context, qopt, qwhs );
   return this->_main_loop();
 }
 
@@ -277,6 +289,25 @@ void core::core_restart()
     g->stop_signal_flag = true;
 }
 
+void core::set_status(core_status s, const std::string& msg)
+{
+  _status_log->set_status(s, msg);
+}
+
+void core::set_stage(core_stage s)
+{
+  _status_log->set_stage(s);
+}
+
+core_status core::get_status(core_stage* stage, std::vector<std::pair<core_status, std::string>>* status_list)
+{
+  return _status_log->get_status(stage, status_list);
+}
+
+std::string core::get_status_text(size_t errlogs, size_t wrnlogs)
+{
+  return _status_log->get_status_text(errlogs, wrnlogs);
+}
 
 bool core::_idle()
 {
@@ -303,10 +334,11 @@ bool core::_idle()
 
   if ( !_stop_flag )
   {
+    size_t cpucount = 0;
     ::wfc::cpuset& cpumgr = this->global()->cpu;
+    _pid = cpumgr.thread_active(_pid);
     if ( cpumgr.clean_dirty() )
     {
-      SYSTEM_LOG_BEGIN("CPU threads reconfiguring... ProcID=" << ::getpid() << " ParentId=" << ::getppid() )
       auto all_pids = ::wfc::core::get_threads();
       auto wfc_cpu = this->options().wfc_cpu;
       auto sys_cpu = this->options().sys_cpu;
@@ -319,6 +351,7 @@ bool core::_idle()
           cpu = wfc_cpu;
         if ( cpu.empty() )
           continue;
+        ++cpucount;
         std::string scpu = setaffinity( p, cpu );
         SYSTEM_LOG_MESSAGE("For WFC thread " << p << " ('" << cpumgr.get_name(p) << "') CPU set " << scpu )
       }
@@ -327,11 +360,16 @@ bool core::_idle()
       {
         for ( pid_t p : all_pids )
         {
+          ++cpucount;
           std::string scpu = setaffinity( p, sys_cpu );
           SYSTEM_LOG_MESSAGE("For SYS thread " << p << " CPU set " << scpu )
         }
       }
-      SYSTEM_LOG_END("CPU threads reconfigured.")
+      if ( cpucount > 0 )
+      {
+        SYSTEM_LOG_MESSAGE("CPU threads [" << cpucount << "] reconfigured. ProcID="
+                            << ::getpid() << " ParentId=" << ::getppid() )
+      }
     }
   }
   else
@@ -385,12 +423,14 @@ int core::_main_loop()
 
 void core::_sunrise()
 {
+  _status_log->set_stage(core_stage::CONFIGURING);
   SYSTEM_LOG_MESSAGE("----------- configuration -------------")
   this->_configure();
 
   if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
+    _status_log->set_stage(core_stage::INITIALIZING);
     SYSTEM_LOG_MESSAGE("----------- initialization ------------")
     this->_initialize();
   }
@@ -398,6 +438,7 @@ void core::_sunrise()
   if ( _stop_flag ) return;
   if ( !_abort_flag )
   {
+    _status_log->set_stage(core_stage::STARTING);
     SYSTEM_LOG_MESSAGE("-------------- starting ---------------")
     this->_start();
   }
@@ -407,6 +448,7 @@ void core::_sunrise()
 
   if ( !_abort_flag )
   {
+    _status_log->set_stage(core_stage::IS_RUN);
     WSYSLOG_INFO("daemon " << this->global()->program_name << " started!")
   }
   else
@@ -565,6 +607,8 @@ void core::_stop()
 
   if ( g == nullptr)
     return;
+
+  _status_log->set_stage(core_stage::STOPPING);
 
   SYSTEM_LOG_BEGIN("stop '" << g->instance_name << "'...")
 

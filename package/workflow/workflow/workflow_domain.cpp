@@ -1,6 +1,6 @@
 
 #include "workflow_domain.hpp"
-
+#include <iostream>
 namespace wfc{ namespace core{
 
 class workflow_domain::impl
@@ -8,12 +8,12 @@ class workflow_domain::impl
   , public wflow::workflow
 {
 public:
-  explicit impl(io_context_type& io)
+  /*explicit impl(io_context_type& io)
     : workflow(io)
-  {}
+  {}*/
 
-  impl(io_context_type& io, const workflow_options& opt )
-    : workflow(io, opt)
+  impl(io_context_type& io, const workflow_options& opt, const wflow::workflow_handlers& whd )
+    : workflow(io, opt, whd)
   {}
 };
 
@@ -26,7 +26,7 @@ void workflow_domain::configure()
 {
   auto opt = this->options();
   opt.id = this->name();
-  _workflow = std::make_shared<impl>( this->global()->io_context, opt );
+  _workflow = std::make_shared<impl>( this->global()->io_context, opt, _handlers );
   this->reg_object( "workflow", this->name(), _workflow );
 }
 
@@ -34,9 +34,8 @@ void workflow_domain::reconfigure()
 {
   auto opt = this->options();
   opt.id = this->name();
-  wflow::workflow_handlers hndl;
-  hndl.control_workflow = this->get_common_workflow();
-  _workflow->reconfigure(opt, hndl);
+  _handlers.control_workflow = this->get_common_workflow();
+  _workflow->reconfigure(opt, _handlers);
 }
 
 void workflow_domain::initialize()
@@ -71,21 +70,28 @@ void workflow_domain::initialize()
 
 void workflow_domain::start()
 {
-
   this->restart();
   _workflow->start();
-
 }
 
 void workflow_domain::restart()
 {
   auto opt = this->options();
   auto statopt = this->statistics_options();
-  wflow::workflow_handlers whndl;
-  //auto g = this->global();
   opt.id = this->name();
-  whndl.startup_handler = std::bind( &self::reg_thread, this );
-  whndl.finish_handler = std::bind( &self::unreg_thread, this );
+  _handlers.startup_handler = std::bind( &self::reg_thread, this );
+  _handlers.finish_handler = std::bind( &self::unreg_thread, this );
+
+  std::weak_ptr<wfcglobal> wg = this->global();
+  pid_t thread_pid = 0;
+  _handlers.status_handler = [wg, thread_pid](std::thread::id) mutable noexcept
+  {
+    if (auto g = wg.lock() )
+    {
+      // Для отслеживания "зависания" потоков
+      thread_pid = g->cpu.thread_active(thread_pid);
+    }
+  };
 
   if ( this->get_statistics() != nullptr )
   {
@@ -95,7 +101,7 @@ void workflow_domain::restart()
     value_meter proto_time;
     value_meter proto_total;
     auto tcount = std::make_shared< std::atomic<int> >();
-    whndl.statistics_handler  =
+    _handlers.statistics_handler  =
       [wthis, first, proto_time, proto_total, tcount, statopt]
     (std::thread::id, size_t count, wflow::workflow_handlers::statistics_duration span) mutable
     {
@@ -111,7 +117,7 @@ void workflow_domain::restart()
             ss << pthis->name() << statopt.thread << id;
             proto_time = stat->create_value_meter( ss.str());
             std::stringstream ss1;
-            ss1 << pthis->name() << ".threads";
+            ss1 << pthis->name() << "." << statopt.thread << "s";
             proto_total = stat->create_value_meter( ss1.str());
           }
           else
@@ -124,7 +130,7 @@ void workflow_domain::restart()
       }
     };
   }
-  _workflow->reconfigure( opt, whndl );
+  _workflow->reconfigure( opt, _handlers );
 
 }
 

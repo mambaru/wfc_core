@@ -9,7 +9,7 @@
 #include "core_config.hpp"
 #include <wfc/json.hpp>
 #include <wfc/core/workflow_options_json.hpp>
-
+#include "detail/status_log_options_json.hpp"
 namespace wfc{ namespace core{
 
 struct common_workflow_options_json
@@ -42,6 +42,7 @@ struct core_config_json
   JSON_NAME(nocall_callback_show)
   JSON_NAME(double_callback_abort)
   JSON_NAME(double_callback_show)
+  JSON_NAME(status)
 
   JSON_NAME2(n_wfc_cpu, "wfc-cpu")
   JSON_NAME2(n_sys_cpu, "sys-cpu")
@@ -50,15 +51,15 @@ struct core_config_json
   typedef json::object<
     core_config,
     json::member_list<
-       json::member<n_core_timeout_ms, core_config, time_t, &core_config::core_timeout_ms, wjson::time_interval<time_t,1000> >,
-       json::member<n_idle_timeout_ms, core_config, time_t, &core_config::idle_timeout_ms, wjson::time_interval<time_t,1000> >,
+       json::member<n_core_timeout_ms, core_config, time_t, &core_config::core_timeout_ms, wjson::time_interval_ms<time_t> >,
+       json::member<n_idle_timeout_ms, core_config, time_t, &core_config::idle_timeout_ms, wjson::time_interval_ms<time_t> >,
        json::member<n_rlimit_as_mb, core_config, size_t, &core_config::rlimit_as_mb, wjson::size_value<size_t, 1024*1024> >,
        json::member<n_disable_statistics, core_config, bool, &core_config::disable_statistics >,
        json::member<n_nocall_callback_abort, core_config, bool, &core_config::nocall_callback_abort >,
        json::member<n_nocall_callback_show, core_config, bool, &core_config::nocall_callback_show >,
        json::member<n_double_callback_abort, core_config, bool, &core_config::double_callback_abort >,
        json::member<n_double_callback_show, core_config, bool, &core_config::double_callback_show >,
-       // json::member<n_datapool, core_config, ::iow::io::data_map_options, &core_config::datapool, ::iow::io::data_map_options_json >,
+       json::member<n_status, core_config, status_log_options, &core_config::status, status_log_options_json >,
        json::member<n_workflow, core_config, common_workflow_options, &core_config::common_workflow, common_workflow_options_json >,
        json::member<n_wfc_cpu, core_config, std::set<int>, &core_config::wfc_cpu, json::array< std::set< json::value<int> > > >,
        json::member<n_sys_cpu, core_config, std::set<int>, &core_config::sys_cpu, json::array< std::set< json::value<int> > > >

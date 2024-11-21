@@ -32,6 +32,7 @@ public:
   virtual void restart() override;
   virtual void stop() override;
 private:
+  wflow::workflow_handlers _handlers;
   std::shared_ptr<impl> _workflow;
   timer_id_t _stat_timer;
   value_meter _meter_size;

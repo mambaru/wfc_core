@@ -5,6 +5,7 @@
 #include "startup/startup_module.hpp"
 #include "config/config_module.hpp"
 #include "logger/logger_module.hpp"
+#include "prometheus/prometheus_module.hpp"
 #include "workflow/workflow_module.hpp"
 #include "statistics/statistics_module.hpp"
 #include <wfc/module/module_list.hpp>
@@ -20,6 +21,9 @@ namespace
       core::core_module,
       core::logger_module,
       core::workflow_module
+#ifdef WITH_PROMETHEUS
+      ,core::prometheus_module
+#endif
 #ifdef WFC_ENABLE_STAT
       ,core::statistics_module
 #endif
