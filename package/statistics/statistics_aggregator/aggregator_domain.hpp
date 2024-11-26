@@ -56,6 +56,7 @@ private:
 
   std::vector< statistics_wptr > _targets;
   timer_id_t _timer_id;
+  timer_id_t _stat_timer_id;
   std::string _log;
  
   /*std::atomic<bool> _started;

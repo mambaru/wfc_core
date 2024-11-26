@@ -141,11 +141,12 @@ std::string config::load_config(std::string path)
   if ( !parse_configure_(path, confstr, &mainconf) )
   { return confstr; }
 
-  confstr.clear();
-  configuration_json::serializer()(mainconf, std::back_inserter(confstr));
 
-  wjson::parser::despace( confstr.begin(), confstr.end(), std::back_inserter(config_json), nullptr);
-  return config_json;
+  configuration_json::serializer()(mainconf, std::back_inserter(config_json));
+
+  confstr.clear();
+  wjson::parser::despace( config_json.begin(), config_json.end(), std::back_inserter(confstr), nullptr);
+  return confstr;
 }
 
 bool config::load_and_configure(std::string path)

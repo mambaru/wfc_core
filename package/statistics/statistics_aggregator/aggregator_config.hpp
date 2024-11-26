@@ -30,10 +30,17 @@ struct aggregator_config:
 
 struct aggregator_statistics_config
 {
+  time_t stat_timer_ms = 1000;
   std::string multi_push_meter = "multi_push.time";
-  std::string multi_count_meter = "multi_push.values";
+  std::string multi_count_meter = "multi_push.push_count";
   std::string push_meter = "push.time";
-  std::string count_meter = "push.values";
+  std::string value_meter = "push.values";
+
+  std::string ag_counter = "ag_counter";
+  std::string ag_data = "ag_data";
+  std::string packer_top = "packer_top";
+  std::string packer_data = "packer_data";
+
 };
 
 }}

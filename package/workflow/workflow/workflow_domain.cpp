@@ -50,9 +50,9 @@ void workflow_domain::initialize()
     if ( auto stat = this->get_statistics() )
     {
       if ( !opt.queue.empty() )
-        _meter_size = stat->create_value_meter(this->name() + opt.queue);
+        _meter_size = stat->create_value_meter(this->name() + "." + opt.queue);
       if ( !opt.dropped.empty() )
-        _meter_drop = stat->create_value_meter(this->name() + opt.dropped);
+        _meter_drop = stat->create_value_meter(this->name() + "." +opt.dropped);
 
       _stat_timer = wrkf->create_timer( std::chrono::milliseconds(opt.interval_ms), [this, stat]()->bool
       {
@@ -114,7 +114,7 @@ void workflow_domain::restart()
             first=false;
             int id = tcount->fetch_add(1);
             std::stringstream ss;
-            ss << pthis->name() << statopt.thread << id;
+            ss << pthis->name() << "." << statopt.thread << id;
             proto_time = stat->create_value_meter( ss.str());
             std::stringstream ss1;
             ss1 << pthis->name() << "." << statopt.thread << "s";

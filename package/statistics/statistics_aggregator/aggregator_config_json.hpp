@@ -61,17 +61,25 @@ struct aggregator_config_json
 struct aggregator_statistics_config_json
 {
   JSON_NAME2(n_multi_push_meter, "multi_push.time")
-  JSON_NAME2(n_multi_count_meter, "multi_push.values")
+  JSON_NAME2(n_multi_count_meter, "multi_push.push_count")
   JSON_NAME2(n_push_meter, "push.time")
-  JSON_NAME2(n_count_meter, "push.values")
-  
+  JSON_NAME2(n_value_meter, "push.values")
+  JSON_NAME(ag_counter)
+  JSON_NAME(ag_data)
+  JSON_NAME(packer_top)
+  JSON_NAME(packer_data)
+
   typedef json::object<
     aggregator_statistics_config,
     json::member_list<
       json::member< n_multi_push_meter,   aggregator_statistics_config, std::string, &aggregator_statistics_config::multi_push_meter>,
       json::member< n_multi_count_meter,   aggregator_statistics_config, std::string, &aggregator_statistics_config::multi_count_meter>,
       json::member< n_push_meter,   aggregator_statistics_config, std::string, &aggregator_statistics_config::push_meter>,
-      json::member< n_count_meter,   aggregator_statistics_config, std::string, &aggregator_statistics_config::count_meter>
+      json::member< n_value_meter,   aggregator_statistics_config, std::string, &aggregator_statistics_config::value_meter>,
+      json::member< n_ag_counter,   aggregator_statistics_config, std::string, &aggregator_statistics_config::ag_counter>,
+      json::member< n_ag_data,   aggregator_statistics_config, std::string, &aggregator_statistics_config::ag_data>,
+      json::member< n_packer_top,   aggregator_statistics_config, std::string, &aggregator_statistics_config::packer_top>,
+      json::member< n_packer_data,   aggregator_statistics_config, std::string, &aggregator_statistics_config::packer_data>
     >,
     json::strict_mode
   > meta;

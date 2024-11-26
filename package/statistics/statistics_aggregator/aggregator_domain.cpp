@@ -58,7 +58,7 @@ void aggregator_domain::restart()
     wf->release_timer(_timer_id);
     if ( this->options().pushout_timer_ms!=0 )
     {
-      auto st = _stat;
+      // auto st = _stat;
       auto next = std::bind(&aggregator_domain::push_next_, this, std::placeholders::_1);
       _timer_id = wf->create_timer(
         std::chrono::milliseconds( this->options().pushout_timer_ms ),
@@ -71,16 +71,47 @@ void aggregator_domain::restart()
     }
     else
       _timer_id = -1;
+
+    if ( auto st = this->get_statistics() )
+    {
+      wf->release_timer(_stat_timer_id);
+      auto sopt =  this->statistics_options();
+      if ( sopt.stat_timer_ms!=0 )
+      {
+        std::vector<  wfc::value_meter> meters = {
+          st->create_value_meter(sopt.ag_counter),
+          st->create_value_meter(sopt.ag_data),
+          st->create_value_meter(sopt.packer_top),
+          st->create_value_meter(sopt.packer_data),
+        };
+        auto pmeters = std::make_shared<std::vector<wfc::value_meter>>(std::move(meters));
+
+        _stat_timer_id = wf->create_timer(
+          std::chrono::milliseconds( sopt.stat_timer_ms ),
+          [this,pmeters](){
+            size_t ag_data = 0;
+            size_t ag_count = this->_stat->size(&ag_data);
+            size_t pack_data = 0;
+            size_t pack_count = this->_stat->size(&pack_data);
+            pmeters->at(0).create(static_cast<wrtstat::value_type>(ag_count), 0ul);
+            pmeters->at(1).create(static_cast<wrtstat::value_type>(ag_data), 0ul);
+            pmeters->at(2).create(static_cast<wrtstat::value_type>(pack_count), 0ul);
+            pmeters->at(3).create(static_cast<wrtstat::value_type>(pack_data), 0ul);
+            return true;
+          }
+        );
+      }
+      else
+        _stat_timer_id = -1;
+
+      _multi_push_meter = st->create_time_meter(sopt.multi_push_meter);
+      _multi_count_meter = st->create_size_meter(sopt.multi_count_meter);
+
+      _push_meter = st->create_time_meter(sopt.push_meter);
+      _count_meter = st->create_size_meter(sopt.value_meter);
+    }
   }
 
-  if ( auto st = this->get_statistics() )
-  {
-    _multi_push_meter = st->create_time_meter("multi_push.time");
-    _multi_count_meter = st->create_size_meter("multi_push.push_count");
-
-    _push_meter = st->create_time_meter("push.time");
-    _count_meter = st->create_size_meter("push.values");
-  }
 }
 
 void aggregator_domain::start()
