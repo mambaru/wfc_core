@@ -92,7 +92,12 @@ void aggregator_domain::restart()
             size_t ag_data = 0;
             size_t ag_count = this->_stat->size(&ag_data);
             size_t pack_data = 0;
-            size_t pack_count = this->_stat->packer->size(&pack_data);
+            size_t pack_count = 0;
+
+            {
+              std::lock_guard<mutex_type> lk(_mutex);
+              pack_count = this->_stat->packer->size(&pack_data);
+            }
             pmeters->at(0).create(static_cast<wrtstat::value_type>(ag_count), 0ul);
             pmeters->at(1).create(static_cast<wrtstat::value_type>(ag_data), 0ul);
             pmeters->at(2).create(static_cast<wrtstat::value_type>(pack_count), 0ul);
