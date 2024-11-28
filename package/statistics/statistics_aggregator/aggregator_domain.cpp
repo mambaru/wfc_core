@@ -83,6 +83,8 @@ void aggregator_domain::restart()
           st->create_value_meter(sopt.ag_data),
           st->create_value_meter(sopt.packer_top),
           st->create_value_meter(sopt.packer_data),
+          st->create_value_meter(sopt.ag_capacity),
+          st->create_value_meter(sopt.packer_capacity),
         };
         auto pmeters = std::make_shared<std::vector<wfc::value_meter>>(std::move(meters));
 
@@ -90,18 +92,22 @@ void aggregator_domain::restart()
           std::chrono::milliseconds( sopt.stat_timer_ms ),
           [this,pmeters](){
             size_t ag_data = 0;
-            size_t ag_count = this->_stat->size(&ag_data);
+            size_t ag_capacity = 0;
+            size_t ag_count = this->_stat->size(&ag_data, &ag_capacity);
             size_t pack_data = 0;
+            size_t pack_capacity = 0;
             size_t pack_count = 0;
 
             {
               std::lock_guard<mutex_type> lk(_mutex);
-              pack_count = this->_stat->packer->size(&pack_data);
+              pack_count = this->_stat->packer->size(&pack_data, &pack_capacity);
             }
             pmeters->at(0).create(static_cast<wrtstat::value_type>(ag_count), 0ul);
             pmeters->at(1).create(static_cast<wrtstat::value_type>(ag_data), 0ul);
             pmeters->at(2).create(static_cast<wrtstat::value_type>(pack_count), 0ul);
             pmeters->at(3).create(static_cast<wrtstat::value_type>(pack_data), 0ul);
+            pmeters->at(4).create(static_cast<wrtstat::value_type>(ag_capacity), 0ul);
+            pmeters->at(5).create(static_cast<wrtstat::value_type>(pack_capacity), 0ul);
             return true;
           }
         );
@@ -268,7 +274,7 @@ void aggregator_domain::mulit_push_next_mt_()
 {
   if ( !_targets.empty() )
   {
-    std::deque<multi_push_ptr> next_list;
+    std::vector<multi_push_ptr> next_list;
     {
       std::lock_guard<mutex_type> lk(_mutex);
       while ( auto pop_req = _stat->packer->multi_pop() )

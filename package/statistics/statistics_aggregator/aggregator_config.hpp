@@ -38,8 +38,10 @@ struct aggregator_statistics_config
 
   std::string ag_counter = "ag_counter";
   std::string ag_data = "ag_data";
+  std::string ag_capacity = "ag_capacity";
   std::string packer_top = "packer_top";
   std::string packer_data = "packer_data";
+  std::string packer_capacity = "packer_capacity";
 
 };
 
