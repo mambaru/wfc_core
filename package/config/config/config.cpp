@@ -456,7 +456,7 @@ try
 
   if ( !is_reload )
   {
-    wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1 ));
+    wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1, static_cast<std::list<std::string>*>(nullptr) ));
     v.add_ini(args_ini);
     if (v.status() )
       v.parse_file(path);
@@ -510,7 +510,7 @@ try
     }
   }
 
-  wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1 ));
+  wfc::vars v(std::bind( &wfcglobal::find_config, this->global(), std::placeholders::_1, static_cast<std::list<std::string>*>(nullptr) ));
 
   v.add_ini(opt_ini);
   v.add_ini(args_ini);

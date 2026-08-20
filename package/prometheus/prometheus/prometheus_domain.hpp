@@ -7,6 +7,7 @@
 #pragma once
 
 #include <wfc/domain_object.hpp>
+#include <wfc/statistics/meters.hpp>
 #include "prometheus_config.hpp"
 #include <string>
 #include <memory>
@@ -14,11 +15,11 @@
 namespace wfc{ namespace core{
 
 class prometheus_domain
-  : public domain_object<iinterface, prometheus_config>
+  : public domain_object<iinterface, prometheus_config, defstat>
   , public std::enable_shared_from_this<prometheus_domain>
 {
   class impl;
-  typedef domain_object<iinterface, prometheus_config> self;
+  typedef domain_object<iinterface, prometheus_config, defstat> self;
 public:
   
   virtual ~prometheus_domain();
@@ -29,8 +30,23 @@ public:
   virtual void restart() override;
   virtual void stop() override;
 private:
+  struct status_counts
+  {
+    size_t errors = 0;
+    size_t warnings = 0;
+    size_t hangs = 0;
+  };
+
+  void init_meters_();
+  void update_();
+  void fire_btp_(const status_counts& counts);
+
   std::shared_ptr<impl> _prometheus;
   timer_id_t _timer = -1;
+
+  value_meter _m_error;
+  value_meter _m_warning;
+  value_meter _m_hang;
 };
 
 }}

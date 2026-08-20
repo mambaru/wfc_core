@@ -109,16 +109,24 @@ void core::reconfigure()
   {
     _status_log = std::make_shared<status_log>(opt.status, &g->cpu);
     g->cpu.set_cpu( "common_workflow", opt.common_workflow.cpu);
-    cw_hndl.startup_handler = []( std::thread::id ) noexcept
+    cw_hndl.startup_handler = []( std::thread::id id) noexcept
     {
       if ( auto gl = ::wfc::wfcglobal::static_global )
+      {
+        SYSTEM_LOG_MESSAGE( "common_workflow thread start. std::thread::id=" << id )
         gl->cpu.set_current_thread("common_workflow");
+      }
     };
-    pid_t pid = 0;
-    cw_hndl.status_handler = [pid, g]( std::thread::id ) mutable
+
+    int pid = 0;
+    cw_hndl.status_handler = [pid](std::thread::id) mutable
     {
-      pid = g->cpu.thread_active(pid);
+      if ( auto gl = ::wfc::wfcglobal::static_global )
+      {
+        pid = gl->cpu.thread_active(pid);
+      }
     };
+
     cw_hndl.finish_handler = []( std::thread::id id)
     {
       if ( auto gl = ::wfc::wfcglobal::static_global )
@@ -454,6 +462,7 @@ void core::_sunrise()
   else
   {
     WSYSLOG_ALERT("daemon " << this->global()->program_name << " fail at the starting ")
+    //SYSTEM_LOG_FATAL("daemon " << this->global()->program_name << " fail at the starting ")
   }
 }
 
@@ -466,7 +475,8 @@ bool core::_configure()
 
   if ( auto conf = g->registry.get_target<iconfig>("config") )
   {
-    g->registry.for_each<icomponent>("component", [this, conf](const std::string& component_name, std::shared_ptr<icomponent> obj)
+    std::vector<std::string> all_names;
+    g->registry.for_each<icomponent>("component", [this, conf, &all_names](const std::string& component_name, std::shared_ptr<icomponent> obj)
     {
       if ( this->_abort_flag )
       {
@@ -478,7 +488,7 @@ bool core::_configure()
       {
         //SYSTEM_LOG_BEGIN("Configure component '" << component_name << "'...")
         json::json_error er;
-        if ( !obj->configure(confstr, &er ) )
+        if ( !obj->configure(confstr, &er, &all_names ) )
         {
           auto message = json::strerror::message( er);
           auto trace = json::strerror::trace( er, confstr.begin(), confstr.end() );
@@ -497,6 +507,16 @@ bool core::_configure()
         SYSTEM_LOG_MESSAGE("Configuration for '" << component_name << "' is not set")
       }
     });
+
+    std::unordered_set<std::string> name_set;
+    for (const auto& name : all_names)
+    {
+      if (!name_set.insert(name).second)
+      {
+        SYSTEM_LOG_FATAL("Duplicate names detected: '" << name << "'" )
+        this->_abort_flag = true;
+      }
+    }
   }
   else
   {

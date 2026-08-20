@@ -13,6 +13,9 @@ struct prometheus_config
   std::string addr="127.0.0.1";
   std::string port="8080";
   time_t update_ms = 1000;
+  /// Сколько ms подряд core_status!=OK после последнего OK, прежде чем ok=0.
+  /// 0 — сразу ok=0 (старое поведение).
+  time_t ok_timeout_ms = 0;
 };
 
 }}
