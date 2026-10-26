@@ -16,13 +16,15 @@ struct prometheus_config_json
   JSON_NAME(addr)
   JSON_NAME(port)
   JSON_NAME(update_ms)
+  JSON_NAME(ok_timeout_ms)
 
   typedef wjson::object<
     prometheus_config,
     wjson::member_list<
       wjson::member< n_addr, prometheus_config, std::string, &prometheus_config::addr>,
       wjson::member< n_port, prometheus_config, std::string, &prometheus_config::port>,
-      wjson::member< n_update_ms, prometheus_config, time_t, &prometheus_config::update_ms, wjson::time_interval_ms<time_t> >
+      wjson::member< n_update_ms, prometheus_config, time_t, &prometheus_config::update_ms, wjson::time_interval_ms<time_t> >,
+      wjson::member< n_ok_timeout_ms, prometheus_config, time_t, &prometheus_config::ok_timeout_ms, wjson::time_interval_ms<time_t> >
     >,
     wjson::strict_mode
   > meta;

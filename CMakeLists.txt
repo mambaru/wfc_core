@@ -10,15 +10,17 @@ if ( WITH_PROMETHEUS )
   add_definitions(-DWITH_PROMETHEUS=${WITH_PROMETHEUS})
 endif()
 
-wci_submodule(NAME wfc SUPERMODULE)
+wci_submodule(NAME wfc SUPERMODULE RECURSIVE)
 
 if ( WITH_PROMETHEUS )
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/prometheus_deps.cmake)
+  wfc_prometheus_ensure_deps()
+
   find_package(prometheus-cpp QUIET)
 
   if(NOT prometheus-cpp_FOUND)
-    wci_third_party(NAME prometheus-cpp SUPERMODULE)
-    list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/third_party/lib64/cmake/prometheus-cpp)
-    include(prometheus-cpp-targets)
+    # pull only; civetweb — единственный submodule (без googletest / SUPERMODULE)
+    wfc_prometheus_build_and_import()
   endif()
 endif()
 

@@ -76,7 +76,7 @@ target_include_directories(wfc_core PUBLIC $<BUILD_INTERFACE:${wfc_core_SOURCE_D
 target_link_libraries(wfc_core PUBLIC wfc)
 if ( WITH_PROMETHEUS )
   get_boost(atomic)
-  target_link_libraries(wfc_core PUBLIC prometheus-cpp::core prometheus-cpp::pull Boost::atomic)
+  target_link_libraries(wfc_core PUBLIC prometheus-cpp::core prometheus-cpp::pull ${Boost_LIBRARIES})
 endif()
 target_compile_definitions(wfc_core PRIVATE -DBOOST_ASIO_NO_DEPRECATED)
 

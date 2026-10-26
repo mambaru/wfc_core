@@ -362,18 +362,22 @@ int startup_domain::perform_start_( )
 
 
   _pid_path = _pa.pid_dir;
-  if ( !_pid_path.empty() && _pid_path.back()!='/' )
-      _pid_path += '/';
-
-  _pid_path += _pa.instance_name + ".pid";
-  int pid_file = loc_file_pid(_pid_path);
-
-  if ( pid_file < 0 )
+  int pid_file = -1;
+  if ( !_pid_path.empty() )
   {
-    if ( pid_file == -2 )
-      std::cerr << "FAIL :  another instance '"<< _pa.instance_name <<"' is running" << std::endl;
-    _pid_path.clear();
-    return 8;
+    if ( !_pid_path.empty() && _pid_path.back()!='/' )
+        _pid_path += '/';
+
+    _pid_path += _pa.instance_name + ".pid";
+    pid_file = loc_file_pid(_pid_path);
+
+    if ( pid_file < 0 )
+    {
+      if ( pid_file == -2 )
+        std::cerr << "FAIL :  another instance '"<< _pa.instance_name <<"' is running" << std::endl;
+      _pid_path.clear();
+      return 8;
+    }
   }
 
   g->after_start.insert(std::bind<bool>(&startup_domain::init_shutdown_timer_, this) );
@@ -407,6 +411,11 @@ int startup_domain::perform_start_( )
       success_autoup,
       [this](pid_t pid1, int count, int status, time_t work_time) -> bool
       {
+        if ( this->_pid_path.empty() )
+          return true;
+
+        // При автоперезапуске игнорируем ошибки связанные с pid-файлом.
+        // Например кто-то изменил права доступа или пр. а перезапуск произошел ночью
         int pid_file1 = loc_file_pid(this->_pid_path);
         write_loc_pid(pid_file1, pid1);
 
@@ -449,9 +458,13 @@ int startup_domain::perform_start_( )
   if ( working_proccess )
   {
     pid_t pid = ::getpid();
-    if ( -1 == write_loc_pid(pid_file, pid) )
+
+    if ( pid_file > 0 )
     {
-      return 9;
+      if ( -1 == write_loc_pid(pid_file, pid) )
+      {
+        return 9;
+      }
     }
 
     g->after_start.insert( [pid](){
@@ -459,15 +472,18 @@ int startup_domain::perform_start_( )
       return false;
     } );
     
-    std::string pid_path = _pid_path;
-    g->after_stop.insert([pid_path](){
-      int code = ::remove(pid_path.c_str());
-      if ( code != 0 )
-      {
-        SYSTEM_LOG_ERROR("ERROR: pid file: " << strerror(errno) );
-      }
-      return false;
-    });
+    if ( !_pid_path.empty() )
+    {
+      std::string pid_path = _pid_path;
+      g->after_stop.insert([pid_path](){
+        int code = ::remove(pid_path.c_str());
+        if ( code != 0 )
+        {
+          SYSTEM_LOG_ERROR("ERROR: pid file: " << strerror(errno) );
+        }
+        return false;
+      });
+    }
 
   }
   else if ( _pa.autoup )
